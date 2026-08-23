@@ -1,0 +1,24 @@
+{
+  "sourceSite": "https://whaleora.vercel.app/",
+  "capturedAt": "2026-08-23",
+  "assets": [
+    {"originalUrl":"https://whaleora.vercel.app/logos/Logo.svg","file":"/brand/whaleora-logo.svg","type":"svg logo","dimensions":"371x96","usage":"global navigation and footer"},
+    {"originalUrl":"https://whaleora.vercel.app/patterns/Pattern%20wo%20Background.svg","file":"/patterns/whaleora-pattern.svg","type":"svg brand pattern","dimensions":"2560x1440","usage":"subtle section texture"},
+    {"originalUrl":"https://whaleora.vercel.app/images/Founder.jpg","file":"/founder/sheuli-founder.webp","type":"optimised WebP photograph","dimensions":"2316x3088","usage":"founder story and about page"},
+    {"originalUrl":"https://whaleora.vercel.app/images/SOS%20mock%20up.png","file":"/products/sos-alarm-mockup.webp","type":"optimised WebP product mockup","dimensions":"2048x2048","usage":"hero product composition, collection, PDP"},
+    {"originalUrl":"https://whaleora.vercel.app/images/Spray%20MockUP.png","file":"/products/pepper-spray-mockup.webp","type":"optimised WebP product mockup","dimensions":"1170x912","usage":"collection and PDP"},
+    {"originalUrl":"https://whaleora.vercel.app/images/Window%20Breaker%20mock%20up.png","file":"/products/window-breaker-mockup.webp","type":"optimised WebP product mockup","dimensions":"2048x2048","usage":"collection and PDP"},
+    {"originalUrl":"https://whaleora.vercel.app/images/Whistle%20mock%20up.png","file":"/products/survival-whistle-mockup.webp","type":"optimised WebP product mockup","dimensions":"2048x2048","usage":"collection and PDP"},
+    {"originalUrl":"https://whaleora.vercel.app/images/spray.png","file":"/products/pepper-spray-product.webp","type":"optimised WebP product photograph","dimensions":"1168x912","usage":"pepper spray detail composition"},
+    {"originalUrl":"https://cdn.shopify.com/s/files/1/0818/0894/9478/files/FlatLayalarm_93dc959f-80d7-49a7-8c0c-8ffbc5bd4106.png?v=1786185885","file":"/lifestyle/sos-alarm-flatlay.webp","type":"optimised WebP Whaleora-owned lifestyle image","dimensions":"2048x2048","usage":"SOS product story"},
+    {"originalUrl":"https://cdn.shopify.com/s/files/1/0818/0894/9478/files/Bag_Shot_Whistle.png?v=1786190629","file":"/lifestyle/whistle-bag-shot.webp","type":"optimised WebP Whaleora-owned lifestyle image","dimensions":"2048x2048","usage":"whistle product story"},
+    {"originalUrl":"https://cdn.shopify.com/s/files/1/0818/0894/9478/files/Ecom_Whistle.png?v=1786190629","file":"/products/survival-whistle-ecom.webp","type":"optimised WebP product image","dimensions":"2048x2048","usage":"alternate whistle gallery image"},
+    {"originalUrl":"https://cdn.shopify.com/s/files/1/0818/0894/9478/files/Flat_lay_whistle.png?v=1786190730","file":"/lifestyle/whistle-flatlay.webp","type":"optimised WebP Whaleora-owned lifestyle image","dimensions":"1408x1127","usage":"editorial product story"},
+    {"originalUrl":"generated for this proposal","file":"/lifestyle/mumbai-commute-hero.webp","type":"optimised WebP original generated lifestyle photograph","dimensions":"1750x899","usage":"homepage hero background","notes":"No product, logo or factual claim depicted."}
+  ],
+  "notReused": [
+    {"url":"https://whaleora.vercel.app/images/SOS.png","reason":"source returned 404 outside Next image cache"},
+    {"url":"https://whaleora.vercel.app/images/drink-cover.jpg","reason":"source returned 404; product omitted from commerce prototype"},
+    {"url":"competitor imagery","reason":"reference only; no competitor assets downloaded or reused"}
+  ]
+}

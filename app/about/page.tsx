@@ -1,0 +1,17 @@
+import Image from 'next/image';
+import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Our Story — Whaleora', description: 'Why Whaleora is reimagining personal safety as a calm, confident part of everyday life.' };
+
+export default function AboutPage() {
+  return <main className="page-main about-page">
+    <section className="editorial-hero shell"><p className="eyebrow dark">Our story</p><h1>Safety shouldn’t<br /><em>feel scary.</em></h1><div><p>It should create the quiet confidence to keep moving, exploring and living on your terms.</p><span>Whaleora · India</span></div></section>
+    <section className="about-photo"><Image src="/lifestyle/mumbai-commute-hero.webp" fill alt="Everyday movement in Mumbai" priority sizes="100vw" /><p>Personal safety, reimagined as part of everyday life.</p></section>
+    <section className="about-origin shell section-pad"><div><p className="eyebrow dark">Why Whaleora exists</p><span className="section-number">01</span></div><div><h2>Traditional safety tools often speak the language of fear. <em>We wanted to speak the language of life.</em></h2><p>Whaleora exists to make personal safety simple, reliable and beautifully designed. We believe preparedness should become part of everyday life—not something people think about only after an emergency.</p></div></section>
+    <section className="founder-story about-founder"><div className="founder-photo"><Image src="/founder/sheuli-founder.webp" fill alt="Sheuli, founder of Whaleora" sizes="(max-width: 800px) 100vw, 58vw" /></div><div className="founder-copy"><p className="eyebrow dark">The founder’s note</p><blockquote>“Through months of research, testing and learning, I realised that safety doesn’t need to create fear—it should create confidence.”</blockquote><p>Every product we create is intended to fit naturally into everyday life: thoughtful in design, easy to carry, and supported by awareness and education.</p><cite>Sheuli<br /><span>Founder, Whaleora</span></cite></div></section>
+    <section className="principles shell section-pad"><p className="eyebrow dark">Our design philosophy</p><div><article><span>01</span><h3>Calm, never alarmist</h3><p>We communicate practical preparedness without using fear as a sales tactic.</p></article><article><span>02</span><h3>Useful before beautiful</h3><p>Beauty earns attention; clear information and simple use earn trust.</p></article><article><span>03</span><h3>Part of real life</h3><p>Products belong in the routines, bags and environments people already know.</p></article><article><span>04</span><h3>Education matters</h3><p>Objects are one layer of a wider culture of awareness and community.</p></article></div></section>
+    <section className="mission-grid shell section-pad"><article><small>Mission</small><h2>Make personal safety simple, reliable and accessible.</h2></article><article><small>Vision</small><h2>A world where preparedness feels like part of everyday life.</h2></article><article><small>Promise</small><h2>Responsible tools, honest information, thoughtful design.</h2></article></section>
+    <section className="about-cta"><div className="shell"><p className="eyebrow">The next chapter</p><h2>Carry confidence.<br /><em>Share preparedness.</em></h2><div><Link href="/products" className="button button-light">Explore the collection →</Link><Link href="/safety-hub" className="text-link">Visit the Safety Hub ↗</Link></div></div></section>
+  </main>;
+}

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { guideCategories, guides, personas } from '@/data/guides';
 
@@ -9,7 +8,12 @@ export function SafetyHubExplorer() {
   const [query, setQuery] = useState('');
   useEffect(() => {
     const selected = new URLSearchParams(window.location.search).get('category');
-    if (selected && guideCategories.includes(selected)) setCategory(selected);
+    if (!selected || !guideCategories.includes(selected)) return;
+    let active = true;
+    queueMicrotask(() => {
+      if (active) setCategory(selected);
+    });
+    return () => { active = false; };
   }, []);
   const shown = useMemo(() => guides.filter((guide) => (category === 'All' || guide.category === category) && `${guide.title} ${guide.excerpt} ${guide.category}`.toLowerCase().includes(query.toLowerCase())), [category, query]);
   return <>

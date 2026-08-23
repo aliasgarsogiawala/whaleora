@@ -25,11 +25,16 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem('whaleora-cart');
-      if (saved) setLines(JSON.parse(saved));
-    } catch { /* device storage may be unavailable */ }
-    setReady(true);
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      try {
+        const saved = window.localStorage.getItem('whaleora-cart');
+        if (saved) setLines(JSON.parse(saved));
+      } catch { /* device storage may be unavailable */ }
+      setReady(true);
+    });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {

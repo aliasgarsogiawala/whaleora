@@ -2,59 +2,152 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import type { Product } from '@/data/products';
+import { ShoppingCart } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import type { CSSProperties } from 'react';
+import { addToCartAction, getCartAction, removeCartLineAction, updateCartLineAction } from '@/app/actions/cart';
+import type { CatalogProduct } from '@/lib/shopify/catalog';
+import type { CartState, CartStateLine } from '@/lib/shopify/types';
 import { formatPrice, products } from '@/data/products';
 
-type CartLine = { productId: string; quantity: number };
+/** Product as rendered by the shop: local editorial plus whatever Shopify knows. */
+export type ShopProduct = CatalogProduct;
+
+const FREE_SHIPPING_THRESHOLD = 1499;
+
+const emptyCart: CartState = {
+  connected: false,
+  id: null,
+  checkoutUrl: null,
+  currencyCode: 'INR',
+  subtotal: 0,
+  totalQuantity: 0,
+  lines: [],
+};
+
 type CartContextValue = {
-  lines: CartLine[];
+  cart: CartState;
+  pending: boolean;
   open: boolean;
   setOpen: (open: boolean) => void;
-  add: (productId: string, quantity?: number) => void;
-  update: (productId: string, quantity: number) => void;
-  remove: (productId: string) => void;
+  add: (product: ShopProduct, quantity?: number) => void;
+  update: (line: CartStateLine, quantity: number) => void;
+  remove: (line: CartStateLine) => void;
   count: number;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+const LOCAL_KEY = 'whaleora-cart';
+
+/** Local-bag maths, used only while Shopify is unreachable or unconfigured. */
+const localLine = (product: ShopProduct, quantity: number): CartStateLine => ({
+  id: null,
+  productId: product.id,
+  variantId: product.shopify?.variantId ?? null,
+  handle: product.shopify?.handle ?? product.slug,
+  title: product.title,
+  quantity,
+  unitPrice: product.price,
+  currencyCode: product.currencyCode ?? 'INR',
+});
+
+const recalculate = (lines: CartStateLine[]): CartState => ({
+  ...emptyCart,
+  lines,
+  subtotal: lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0),
+  totalQuantity: lines.reduce((sum, line) => sum + line.quantity, 0),
+  currencyCode: lines[0]?.currencyCode ?? 'INR',
+});
+
 export function CommerceProvider({ children }: { children: React.ReactNode }) {
-  const [lines, setLines] = useState<CartLine[]>([]);
+  const [cart, setCart] = useState<CartState>(emptyCart);
   const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
+  const [pending, startTransition] = useTransition();
 
+  // Read the Shopify cart from its cookie. If the store is not connected, fall
+  // back to whatever the previous local-only bag held.
   useEffect(() => {
     let active = true;
-    queueMicrotask(() => {
-      if (!active) return;
-      try {
-        const saved = window.localStorage.getItem('whaleora-cart');
-        if (saved) setLines(JSON.parse(saved));
-      } catch { /* device storage may be unavailable */ }
-      setReady(true);
-    });
+    getCartAction()
+      .then((serverCart) => {
+        if (!active) return;
+        if (serverCart.connected) {
+          setCart(serverCart);
+          setReady(true);
+          return;
+        }
+        try {
+          const saved = window.localStorage.getItem(LOCAL_KEY);
+          if (saved) setCart(recalculate(JSON.parse(saved) as CartStateLine[]));
+        } catch { /* device storage may be unavailable */ }
+        setReady(true);
+      })
+      .catch(() => { if (active) setReady(true); });
     return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    if (ready) window.localStorage.setItem('whaleora-cart', JSON.stringify(lines));
-  }, [lines, ready]);
+    if (!ready || cart.connected) return;
+    try {
+      window.localStorage.setItem(LOCAL_KEY, JSON.stringify(cart.lines));
+    } catch { /* device storage may be unavailable */ }
+  }, [cart, ready]);
 
-  const add = (productId: string, quantity = 1) => {
-    setLines((current) => {
-      const exists = current.find((line) => line.productId === productId);
-      return exists
-        ? current.map((line) => line.productId === productId ? { ...line, quantity: line.quantity + quantity } : line)
-        : [...current, { productId, quantity }];
-    });
+  const applyLocal = useCallback((next: (lines: CartStateLine[]) => CartStateLine[]) => {
+    setCart((current) => recalculate(next(current.lines)));
+  }, []);
+
+  const add = useCallback((product: ShopProduct, quantity = 1) => {
     setOpen(true);
-  };
-  const update = (productId: string, quantity: number) => setLines((current) => quantity < 1 ? current.filter((line) => line.productId !== productId) : current.map((line) => line.productId === productId ? { ...line, quantity } : line));
-  const remove = (productId: string) => setLines((current) => current.filter((line) => line.productId !== productId));
-  const count = lines.reduce((sum, line) => sum + line.quantity, 0);
+    const variantId = product.shopify?.variantId;
+    if (cart.connected && variantId) {
+      startTransition(async () => {
+        const next = await addToCartAction(variantId, quantity);
+        if (next.connected) setCart(next);
+      });
+      return;
+    }
+    applyLocal((lines) => {
+      const exists = lines.find((line) => line.productId === product.id);
+      return exists
+        ? lines.map((line) => line.productId === product.id ? { ...line, quantity: line.quantity + quantity } : line)
+        : [...lines, localLine(product, quantity)];
+    });
+  }, [applyLocal, cart.connected]);
 
-  return <CartContext.Provider value={{ lines, open, setOpen, add, update, remove, count }}>{children}<CartDrawer /></CartContext.Provider>;
+  const update = useCallback((line: CartStateLine, quantity: number) => {
+    if (cart.connected && line.id) {
+      startTransition(async () => {
+        const next = await updateCartLineAction(line.id!, quantity);
+        if (next.connected) setCart(next);
+      });
+      return;
+    }
+    applyLocal((lines) => quantity < 1
+      ? lines.filter((item) => item.productId !== line.productId)
+      : lines.map((item) => item.productId === line.productId ? { ...item, quantity } : item));
+  }, [applyLocal, cart.connected]);
+
+  const remove = useCallback((line: CartStateLine) => {
+    if (cart.connected && line.id) {
+      startTransition(async () => {
+        const next = await removeCartLineAction(line.id!);
+        if (next.connected) setCart(next);
+      });
+      return;
+    }
+    applyLocal((lines) => lines.filter((item) => item.productId !== line.productId));
+  }, [applyLocal, cart.connected]);
+
+  const value = useMemo<CartContextValue>(
+    () => ({ cart, pending, open, setOpen, add, update, remove, count: cart.totalQuantity }),
+    [cart, pending, open, add, update, remove],
+  );
+
+  return <CartContext.Provider value={value}>{children}<CartDrawer /></CartContext.Provider>;
 }
 
 export function useCart() {
@@ -63,66 +156,151 @@ export function useCart() {
   return value;
 }
 
+const NAV_LINKS = [
+  { href: '/products', label: 'Shop' },
+  { href: '/safety-hub', label: 'Safety Hub' },
+  { href: '/about', label: 'About' },
+  { href: '/institutions', label: 'Partnerships' },
+];
+
+const MENU_LINKS = [...NAV_LINKS, { href: '/contact', label: 'Contact' }];
+
+/** A link is current on its own page and on anything nested beneath it. */
+const isCurrent = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+function useOverlayFocus(open: boolean, close: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open || !ref.current) return;
+    const panel = ref.current;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusable = () => Array.from(panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea, [tabindex="0"]')).filter((element) => element.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+      if (event.key !== 'Tab') return;
+      const elements = focusable();
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', onKey); previous?.focus(); };
+  }, [open, close]);
+  return ref;
+}
+
 export function Header() {
   const { count, setOpen } = useCart();
+  const pathname = usePathname() ?? '/';
   const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const menuRef = useOverlayFocus(menuOpen, closeMenu);
   const [scrolled, setScrolled] = useState(false);
+  // On a page with a full-bleed hero the header sits on the photograph until
+  // the hero has scrolled past, so the image runs the full height of the frame.
+  const [overHero, setOverHero] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const hero = document.querySelector<HTMLElement>('[data-hero-overlay]');
+    const onScroll = () => {
+      setScrolled(window.scrollY > 30);
+      setOverHero(hero ? hero.getBoundingClientRect().bottom > 120 : false);
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [pathname]);
 
   return (
     <>
-      <div className="announcement">Free shipping on orders above ₹1,499</div>
-      <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
-        <button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu"><span /><span /></button>
+      <div className="announcement"><span>Free shipping over ₹1,499 · Delivered across India</span></div>
+      <header className={`site-header ${scrolled ? 'is-scrolled' : ''} ${overHero ? 'is-over-hero' : ''}`}>
+        <button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}><span /><span /></button>
         <Link href="/" className="brand" aria-label="Whaleora home"><Image src="/brand/whaleora-logo.svg" width={186} height={48} alt="Whaleora" priority /></Link>
         <nav aria-label="Primary navigation">
-          <Link href="/products">Shop</Link><Link href="/safety-hub">Safety Hub</Link><Link href="/about">About</Link><Link href="/institutions">Partnerships</Link>
+          {NAV_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} aria-current={isCurrent(pathname, link.href) ? 'page' : undefined}>{link.label}</Link>
+          ))}
         </nav>
         <div className="header-actions">
-          <Link href="/contact" className="contact-link">Contact</Link>
-          <button className="cart-button" onClick={() => setOpen(true)} aria-label={`Open cart with ${count} items`}>Bag <span>{count}</span></button>
+          <Link href="/contact" className="contact-link" aria-current={isCurrent(pathname, '/contact') ? 'page' : undefined}>Contact</Link>
+          <button className="cart-button" onClick={() => setOpen(true)} aria-label={`Open cart with ${count} items`}>
+            <ShoppingCart className="nav-cart-icon" size={20} strokeWidth={1.6} aria-hidden="true" />
+            {/* Keyed on the count so the badge replays its pop each time the bag changes. */}
+            <span key={count} className="cart-count" data-empty={count === 0}>{count}</span>
+          </button>
         </div>
       </header>
-      <div className={`mobile-menu ${menuOpen ? 'open' : ''}`} aria-hidden={!menuOpen}>
-        <button onClick={() => setMenuOpen(false)} aria-label="Close menu">Close ×</button>
+      <div ref={menuRef} className={`mobile-menu ${menuOpen ? 'open' : ''}`} role="dialog" aria-modal={menuOpen || undefined} aria-label="Navigation menu" aria-hidden={!menuOpen} inert={!menuOpen}>
+        <button className="menu-close" onClick={() => setMenuOpen(false)} aria-label="Close menu"><span /><span /></button>
         <nav>
-          {['Shop', 'Safety Hub', 'About', 'Partnerships', 'Contact'].map((label, index) => {
-            const href = ['/products', '/safety-hub', '/about', '/institutions', '/contact'][index];
-            return <Link key={label} href={href} onClick={() => setMenuOpen(false)}><small>0{index + 1}</small>{label}<span>↗</span></Link>;
-          })}
+          {MENU_LINKS.map((link, index) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{ '--i': index } as CSSProperties}
+              aria-current={isCurrent(pathname, link.href) ? 'page' : undefined}
+              onClick={() => setMenuOpen(false)}
+            >
+              <small>0{index + 1}</small>{link.label}<span>↗</span>
+            </Link>
+          ))}
         </nav>
+        <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop from ₹299 <span>→</span></Link>
         <p>Prepared, not afraid.<br />Designed in India.</p>
       </div>
     </>
   );
 }
 
+/** Local record for a cart line, so the drawer keeps the site's own imagery and links. */
+const localRecord = (line: CartStateLine) =>
+  products.find((product) => product.id === line.productId)
+  ?? products.find((product) => product.slug === line.handle);
+
 function CartDrawer() {
-  const { lines, open, setOpen, update, remove } = useCart();
-  const detailed = lines.map((line) => ({ ...line, product: products.find((product) => product.id === line.productId)! })).filter((line) => line.product);
-  const subtotal = detailed.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
-  const shippingGap = Math.max(0, 1499 - subtotal);
+  const { cart, pending, open, setOpen, update, remove } = useCart();
+  const closeCart = useCallback(() => setOpen(false), [setOpen]);
+  const drawerRef = useOverlayFocus(open, closeCart);
+  const [checkoutNote, setCheckoutNote] = useState(false);
+  const { subtotal, currencyCode, lines } = cart;
+  const shippingGap = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+
+  const checkout = () => {
+    if (cart.checkoutUrl) {
+      window.location.href = cart.checkoutUrl;
+      return;
+    }
+    setCheckoutNote(true);
+  };
 
   return (
-    <div className={`cart-layer ${open ? 'open' : ''}`} aria-hidden={!open}>
+    <div ref={drawerRef} className={`cart-layer ${open ? 'open' : ''}`} role="dialog" aria-modal={open || undefined} aria-label="Shopping bag" aria-hidden={!open} inert={!open}>
       <button className="cart-backdrop" onClick={() => setOpen(false)} aria-label="Close cart" />
-      <aside className="cart-drawer" aria-label="Shopping bag">
-        <div className="cart-head"><div><small>Your selection</small><h2>Shopping bag <sup>{detailed.reduce((sum, line) => sum + line.quantity, 0)}</sup></h2></div><button onClick={() => setOpen(false)} aria-label="Close cart">×</button></div>
-        {detailed.length === 0 ? (
-          <div className="empty-cart"><span>○</span><h3>Ready when you are.</h3><p>Your everyday safety essentials will appear here.</p><Link href="/products" onClick={() => setOpen(false)} className="button button-primary">Explore the collection →</Link></div>
+      <aside className="cart-drawer" aria-label="Shopping bag" aria-busy={pending}>
+        <div className="cart-head"><div><small>Your selection</small><h2>Shopping bag <sup>{cart.totalQuantity}</sup></h2></div><button onClick={() => setOpen(false)} aria-label="Close cart">×</button></div>
+        {lines.length === 0 ? (
+          <div className="empty-cart"><span>○</span><h3>Nothing in here yet.</h3><p>Four objects, starting at ₹299. Most people begin with the alarm.</p><Link href="/products" onClick={() => setOpen(false)} className="button button-primary">Browse all four →</Link></div>
         ) : (
           <>
-            <div className="shipping-progress"><div><span style={{ width: `${Math.min(100, subtotal / 1499 * 100)}%` }} /></div><p>{shippingGap ? `${formatPrice(shippingGap)} away from free shipping.` : 'You have unlocked free shipping.'}</p></div>
-            <div className="cart-lines">{detailed.map(({ product, quantity }) => <div className="cart-line" key={product.id}>
-              <Image src={product.images[0]} width={130} height={130} alt="" />
-              <div><small>{product.category}</small><Link href={`/products/${product.slug}`} onClick={() => setOpen(false)}>{product.title}</Link><strong>{formatPrice(product.price)}</strong><div className="quantity"><button onClick={() => update(product.id, quantity - 1)} aria-label="Decrease quantity">−</button><span>{quantity}</span><button onClick={() => update(product.id, quantity + 1)} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(product.id)}>Remove</button></div>
-            </div>)}</div>
-            <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p><button className="button button-primary" onClick={() => window.alert('Prototype checkout — connect Whaleora’s commerce backend to continue.')}>Checkout <span>→</span></button></div>
+            <div className="shipping-progress"><div><span style={{ width: `${Math.min(100, subtotal / FREE_SHIPPING_THRESHOLD * 100)}%` }} /></div><p>{shippingGap ? `${formatPrice(shippingGap, currencyCode)} away from free shipping.` : 'You have unlocked free shipping.'}</p></div>
+            <div className="cart-lines">{lines.map((line) => {
+              const record = localRecord(line);
+              // A Shopify-only line may carry no handle; then the title is plain text.
+              const lineSlug = record?.slug ?? line.handle;
+              return <div className="cart-line" key={line.id ?? line.productId}>
+                <Image src={record?.images[0] ?? '/products/survival-whistle-mockup.webp'} width={130} height={130} alt="" />
+                <div><small>{record?.category ?? 'Whaleora'}</small>{lineSlug ? <Link href={`/products/${lineSlug}`} onClick={() => setOpen(false)}>{line.title}</Link> : line.title}<strong>{formatPrice(line.unitPrice, line.currencyCode)}</strong><div className="quantity"><button onClick={() => update(line, line.quantity - 1)} disabled={pending} aria-label="Decrease quantity">−</button><span>{line.quantity}</span><button onClick={() => update(line, line.quantity + 1)} disabled={pending} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(line)} disabled={pending}>Remove</button></div>
+              </div>;
+            })}</div>
+            <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p><button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span>→</span></button>{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href="https://wa.me/8169219734?text=Hi%20Whaleora!%20I%27d%20like%20to%20place%20an%20order.">WhatsApp</a> or email hello@whaleora.com.</p>}</div>
           </>
         )}
       </aside>
@@ -130,22 +308,25 @@ function CartDrawer() {
   );
 }
 
-export function AddToCartButton({ productId, quantity = 1, className = '' }: { productId: string; quantity?: number; className?: string }) {
-  const { add } = useCart();
-  return <button className={`button button-primary ${className}`} onClick={() => add(productId, quantity)}>Add to bag <span>→</span></button>;
+export function AddToCartButton({ product, quantity = 1, className = '' }: { product: ShopProduct; quantity?: number; className?: string }) {
+  const { add, pending } = useCart();
+  const soldOut = product.shopify ? !product.shopify.availableForSale : false;
+  if (soldOut) return <button className={`button button-primary ${className}`} disabled>Sold out</button>;
+  return <button className={`button button-primary ${className}`} onClick={() => add(product, quantity)} disabled={pending}>Add to bag <span>→</span></button>;
 }
 
-export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
-  const { add } = useCart();
+export function ProductCard({ product, index = 0 }: { product: ShopProduct; index?: number }) {
+  const { add, pending } = useCart();
+  const soldOut = product.shopify ? !product.shopify.availableForSale : false;
   return (
     <article className="product-card" style={{ '--accent': product.accent } as React.CSSProperties}>
       <Link href={`/products/${product.slug}`} className="product-visual">
         <small>0{index + 1} · {product.category}</small>
-        <Image src={product.images[0]} width={700} height={700} alt={product.title} sizes="(max-width: 700px) 50vw, 25vw" />
+        <Image src={product.slug === 'pepperspray' ? '/products/pepper-spray-product.webp' : product.images[0]} width={700} height={700} alt={product.title} sizes="(max-width: 1100px) 50vw, 25vw" />
         <span>View object ↗</span>
       </Link>
-      <div className="product-meta"><div><Link href={`/products/${product.slug}`}>{product.title}</Link><small>{product.shortDescription}</small></div><strong>{formatPrice(product.price)}</strong></div>
-      <button className="quick-add" onClick={() => add(product.id)} aria-label={`Add ${product.title} to bag`}>Quick add <span>＋</span></button>
+      <div className="product-meta"><div><Link href={`/products/${product.slug}`}>{product.title}</Link><small>{product.shortDescription}</small></div><strong>{formatPrice(product.price, product.currencyCode)}</strong></div>
+      <button className="quick-add" onClick={() => add(product)} disabled={soldOut || pending} aria-label={`Add ${product.title} to bag`}>{soldOut ? 'Sold out' : 'Add to bag'} <span>{soldOut ? '—' : '＋'}</span></button>
     </article>
   );
 }
@@ -160,8 +341,8 @@ export function Footer() {
   ], []);
   return (
     <footer className="footer">
-      <section className="community-signup"><p className="eyebrow">Join the Whaleora movement</p><div><h2>Safer people.<br /><em>Stronger communities.</em></h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">Practical tips, checklists, launches and workshops.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} →</button></div></form></div></section>
-      <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Your Safety.<br />Our Priority.</p><address>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => <Link href={href} key={label}>{label}</Link>)}</div>)}</div></section>
+      <section className="community-signup"><p className="eyebrow">The monthly note</p><div><h2>One email a month. No fear-mongering.</h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">A checklist, a short read, and anything new we’ve made. Unsubscribe in one click.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} →</button></div></form></div></section>
+      <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Prepared,<br />not afraid.</p><address>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => <Link href={href} key={label}>{label}</Link>)}</div>)}</div></section>
       <div className="footer-bottom"><span>© 2026 Whaleora</span><div><a href="mailto:hello@whaleora.com">hello@whaleora.com</a><a href="https://www.instagram.com/whaleora.safety">Instagram ↗</a><a href="https://www.linkedin.com/company/whaleora-safety/">LinkedIn ↗</a></div></div>
       <div className="footer-word">WHALEORA</div>
     </footer>

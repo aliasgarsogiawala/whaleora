@@ -1,29 +1,32 @@
 import type { Metadata } from 'next';
-import { DM_Serif_Display, Manrope } from 'next/font/google';
+import { Geist, Lora } from 'next/font/google';
 import { CommerceProvider, Footer, Header } from '@/components/commerce';
+import { MotionDirector } from '@/components/brand-motion';
 import './globals.css';
+import './card-refinements.css';
+import './review-videos.css';
 
-const display = DM_Serif_Display({ variable: '--font-display', subsets: ['latin'], weight: '400' });
-const sans = Manrope({ variable: '--font-sans', subsets: ['latin'] });
+const display = Lora({ variable: '--font-display', subsets: ['latin'], weight: ['400', '500', '600'], style: ['normal', 'italic'], display: 'swap' });
+const sans = Geist({ variable: '--font-sans', subsets: ['latin'] });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://whaleora.com'),
-  title: 'Whaleora — Personal Safety, Reimagined',
-  description: 'Thoughtfully designed personal safety essentials, practical guides and community programmes for everyday confidence.',
+  title: 'Whaleora — Personal safety tools that fit on a keyring',
+  description: 'A 130dB SOS alarm, a 120dB whistle, pepper spray and a car window breaker. Honest specs, ₹299 to ₹1,799, free shipping over ₹1,499 across India.',
   openGraph: {
-    title: 'Whaleora — Personal Safety, Reimagined',
-    description: 'Prepared, not afraid. Thoughtfully designed safety essentials for everyday confidence.',
-    images: [{ url: '/og.png', width: 1536, height: 1024, alt: 'Whaleora — Personal safety, reimagined' }],
+    title: 'Whaleora — Personal safety tools that fit on a keyring',
+    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects, ₹299 to ₹1,799.',
+    images: [{ url: '/og.png', width: 1536, height: 1024, alt: 'Whaleora personal safety objects' }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Whaleora — Personal Safety, Reimagined',
-    description: 'Prepared, not afraid. Thoughtfully designed safety essentials for everyday confidence.',
+    title: 'Whaleora — Personal safety tools that fit on a keyring',
+    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects, ₹299 to ₹1,799.',
     images: ['/og.png'],
   },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body suppressHydrationWarning className={`${display.variable} ${sans.variable}`}><CommerceProvider><Header />{children}<Footer /></CommerceProvider></body></html>;
+  return <html lang="en"><body suppressHydrationWarning className={`${display.variable} ${sans.variable}`}><CommerceProvider><MotionDirector /><Header />{children}<Footer /></CommerceProvider></body></html>;
 }

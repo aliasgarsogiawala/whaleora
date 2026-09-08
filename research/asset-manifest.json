@@ -14,7 +14,13 @@
     {"originalUrl":"https://cdn.shopify.com/s/files/1/0818/0894/9478/files/Bag_Shot_Whistle.png?v=1786190629","file":"/lifestyle/whistle-bag-shot.webp","type":"optimised WebP Whaleora-owned lifestyle image","dimensions":"2048x2048","usage":"whistle product story"},
     {"originalUrl":"https://cdn.shopify.com/s/files/1/0818/0894/9478/files/Ecom_Whistle.png?v=1786190629","file":"/products/survival-whistle-ecom.webp","type":"optimised WebP product image","dimensions":"2048x2048","usage":"alternate whistle gallery image"},
     {"originalUrl":"https://cdn.shopify.com/s/files/1/0818/0894/9478/files/Flat_lay_whistle.png?v=1786190730","file":"/lifestyle/whistle-flatlay.webp","type":"optimised WebP Whaleora-owned lifestyle image","dimensions":"1408x1127","usage":"editorial product story"},
-    {"originalUrl":"generated for this proposal","file":"/lifestyle/mumbai-commute-hero.webp","type":"optimised WebP original generated lifestyle photograph","dimensions":"1750x899","usage":"homepage hero background","notes":"No product, logo or factual claim depicted."}
+    {"originalUrl":"https://unsplash.com/photos/Swm5zDicbkQ","file":"/stock/hero-commute.webp","type":"Unsplash stock photograph","dimensions":"2200x3300","usage":"homepage hero and commute story"},
+    {"originalUrl":"https://unsplash.com","file":"/stock/journey-train.webp","type":"Unsplash stock photograph","dimensions":"1200x1800","usage":"radial safety journey — train"},
+    {"originalUrl":"https://unsplash.com","file":"/stock/journey-city.webp","type":"Unsplash stock photograph","dimensions":"1200x1800","usage":"radial safety journey — city"},
+    {"originalUrl":"https://unsplash.com","file":"/stock/journey-campus.webp","type":"Unsplash stock photograph","dimensions":"1200x1798","usage":"radial safety journey — campus"},
+    {"originalUrl":"https://unsplash.com","file":"/stock/journey-work.webp","type":"Unsplash stock photograph","dimensions":"1200x1800","usage":"radial safety journey — work"},
+    {"originalUrl":"https://unsplash.com","file":"/stock/journey-travel.webp","type":"Unsplash stock photograph","dimensions":"1200x1500","usage":"radial safety journey — travel"},
+    {"originalUrl":"https://unsplash.com","file":"/stock/journey-night.webp","type":"Unsplash stock photograph","dimensions":"1200x1800","usage":"radial safety journey — evening"}
   ],
   "notReused": [
     {"url":"https://whaleora.vercel.app/images/SOS.png","reason":"source returned 404 outside Next image cache"},

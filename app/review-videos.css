@@ -1,0 +1,75 @@
+.cart-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 60px; min-height: 44px; }
+.cart-button::before { content: none !important; }
+.cart-button .nav-cart-icon { flex: none; display: block; }
+.cart-button .cart-count { margin-left: 0; }
+
+/* Two quiet, opposing rows, following the supplied testimonial reference. */
+.testimonials-marquee { padding: 64px 0 100px; overflow: hidden; background: var(--ivory); color: var(--ink); }
+.testimonials-toolbar { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 36px; }
+.testimonials-toolbar h2 { margin: 0; font-size: clamp(26px, 2.5vw, 38px); line-height: 1.15; letter-spacing: -.02em; }
+.testimonials-toolbar p { margin: 12px 0 0; color: rgba(16,40,68,.6); font-size: 12px; line-height: 1.5; }
+.testimonials-pause { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); background: transparent; border-radius: 999px; font-size: 11px; cursor: pointer; }
+.testimonials-pause:hover { border-color: var(--ink); }
+.testimonial-viewport { width: 100%; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.testimonial-viewport + .testimonial-viewport { margin-top: 24px; }
+.testimonial-track { display: flex; width: max-content; animation: testimonial-drift 65s linear infinite; }
+.testimonial-track.reverse { animation-direction: reverse; animation-duration: 75s; animation-delay: -12s; }
+.testimonial-group { display: flex; gap: 24px; padding-right: 24px; flex: none; }
+.written-review { width: 440px; min-height: 204px; margin: 0; padding: 32px 34px; display: flex; flex-direction: column; justify-content: space-between; gap: 30px; border: 1px solid rgba(16,40,68,.14); border-radius: 24px; background: transparent; }
+.written-review blockquote { margin: 0; max-width: 35ch; font-family: var(--font-sans), sans-serif; font-size: 18px; line-height: 1.55; letter-spacing: -.035em; text-wrap: pretty; }
+.written-review figcaption { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: 12px; line-height: 1.4; }
+.written-review figcaption i { width: 24px; height: 1px; margin-right: 2px; background: var(--sage); }
+.written-review figcaption strong { font-weight: 600; }
+.written-review figcaption span { color: rgba(16,40,68,.6); }
+.testimonial-viewport:hover .testimonial-track, .testimonials-marquee.is-paused .testimonial-track { animation-play-state: paused; }
+@keyframes testimonial-drift { to { transform: translateX(-50%); } }
+@media (max-width: 600px) {
+  .testimonials-marquee { padding: 48px 0 68px; }
+  .testimonials-toolbar { align-items: flex-start; gap: 16px; margin-bottom: 28px; }
+  .testimonials-toolbar h2 { font-size: 27px; }
+  .testimonials-toolbar p { font-size: 11px; }
+  .testimonials-pause { min-width: 44px; padding: 10px; }
+  .testimonials-pause span { display: none; }
+  .testimonial-viewport { mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+  .testimonial-group { gap: 14px; padding-right: 14px; }
+  .testimonial-viewport + .testimonial-viewport { margin-top: 14px; }
+  .written-review { width: 300px; min-height: 200px; padding: 26px 24px; border-radius: 20px; }
+  .written-review blockquote { font-size: 16px; }
+  .written-review figcaption { font-size: 11px; gap: 6px 8px; }
+  .written-review figcaption i { width: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-viewport { overflow-x: auto; mask-image: none; padding-inline: 18px; }
+  .testimonial-track, .testimonial-track.reverse { animation: none; transform: none; }
+  .testimonial-group[aria-hidden="true"] { display: none; }
+  .testimonials-pause { display: none; }
+}
+
+.review-demo-note { display: inline-block; margin-top: 10px; font-size: 12px; color: rgba(16,40,68,.6); }
+.review-card { border-radius: 8px; }
+.review-card > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.review-card .journey-card-shade { background: linear-gradient(180deg, rgba(10,27,47,.2), transparent 35%, rgba(10,27,47,.12) 55%, var(--deep) 76%); }
+.review-card-top { position: absolute; z-index: 4; inset: 16px 16px auto; display: flex; justify-content: space-between; gap: 12px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.review-card-top span { background: var(--deep); color: var(--paper); padding: 6px 8px; }
+.review-play { position: absolute; top: 42%; left: 50%; z-index: 3; transform: translate(-50%, -50%); display: grid; place-items: center; width: 48px; height: 48px; padding-left: 3px; border: 1px solid rgba(255,255,255,.7); border-radius: 50%; background: rgba(10,27,47,.35); color: white; }
+.review-card .journey-card-copy h3 { font-size: 30px; line-height: 1.08; }
+.review-card .journey-card-copy > span { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.review-dialog { position: fixed; inset: 0; margin: auto; padding: 0; width: min(440px, calc(100vw - 28px)); max-height: calc(100dvh - 28px); border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); overflow-y: auto; }
+.review-dialog::backdrop { background: rgba(10,27,47,.78); }
+.review-player-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 8px 20px; border-bottom: 1px solid var(--line); }
+.review-player-head > span { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.review-player-head button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; cursor: pointer; }
+.review-player-shell > video { display: block; width: 100%; max-height: calc(100dvh - 250px); aspect-ratio: 9/16; background: var(--deep); object-fit: contain; }
+.review-player-caption { padding: 20px; }
+.review-player-caption h2 { margin: 0; font-size: 25px; line-height: 1.2; }
+.review-player-caption p { margin: 8px 0 14px; font-size: 11px; color: rgba(16,40,68,.65); }
+.review-player-caption a { display: inline-flex; gap: 20px; align-items: center; min-height: 44px; border-bottom: 1px solid var(--ink); font-size: 11px; }
+@media (max-width: 600px) {
+  .cart-button { min-width: 52px; padding-inline: 8px; gap: 5px; }
+  .review-card { border-radius: 6px; }
+  .review-card-top { inset: 12px 10px auto; font-size: 8px; gap: 5px; }
+  .review-card .journey-card-copy { left: 16px; right: 16px; bottom: 18px; }
+  .review-card .journey-card-copy h3 { font-size: 25px; }
+  .review-section .journey-instruction { font-size: 9px; gap: 10px; }
+  .review-section .journey-instruction i { width: 30px; }
+}

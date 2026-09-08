@@ -2,11 +2,15 @@ export type Product = {
   id: string;
   slug: string;
   title: string;
+  /** Product handle in Shopify admin. Defaults to `slug` when omitted. */
+  shopifyHandle?: string;
   category: 'Alarms' | 'Tools';
   label: string;
   shortDescription: string;
   longDescription: string;
   price: number;
+  /** ISO currency for `price`. Shopify overrides this when the store is connected. */
+  currencyCode?: string;
   images: string[];
   features: string[];
   specifications: { label: string; value: string }[];
@@ -14,6 +18,21 @@ export type Product = {
   scenarios: string[];
   included: string[];
   accent: string;
+  /** Three headline figures for the 3D studio. */
+  highlights: { value: string; label: string }[];
+  /** Plain-language row data for the side-by-side chooser. */
+  compare: {
+    /** The one job it does. */
+    job: string;
+    /** When you'd actually reach for it. */
+    reachFor: string;
+    /** What powers it, if anything. */
+    power: string;
+    /** Where it lives when you're not using it. */
+    carry: string;
+    /** The honest caveat. */
+    caveat: string;
+  };
 };
 
 export const products: Product[] = [
@@ -23,8 +42,8 @@ export const products: Product[] = [
     title: 'Personal SOS Alarm',
     category: 'Alarms',
     label: 'Acoustic defence',
-    shortDescription: 'A compact dual-siren alarm with strobe light and pull-pin activation.',
-    longDescription: 'Designed to draw attention when activated, in a minimal keychain format that fits naturally into everyday carry.',
+    shortDescription: 'Pull the pin: 130dB siren and a strobe, until you put the pin back.',
+    longDescription: 'Pull the pin and it does two things at once — a 130dB dual-siren and a strobe light. Push the pin back in and it stops. No app, no pairing, no charging.',
     price: 1799,
     images: ['/products/sos-alarm-mockup.webp', '/lifestyle/sos-alarm-flatlay.webp'],
     features: ['Pull-pin activation', 'Compact keychain format', 'Built-in strobe light', 'Weather-resistant casing'],
@@ -43,6 +62,14 @@ export const products: Product[] = [
     scenarios: ['Campus', 'Commute', 'Travel', 'Evening walks'],
     included: ['Personal SOS Alarm', 'CR2032 battery', 'Keychain attachment'],
     accent: '#d7673d',
+    highlights: [{ value: '130 dB', label: 'Dual siren' }, { value: '38 g', label: 'Carry weight' }, { value: 'CR2032', label: 'Swap it yourself' }],
+    compare: {
+      job: 'Makes noise you cannot ignore',
+      reachFor: 'Someone is following you, or you need people to look up right now',
+      power: 'CR2032 battery, included',
+      carry: 'Keyring or bag strap',
+      caveat: 'Noise draws attention. It does not stop anyone on its own.',
+    },
   },
   {
     id: 'pepper-spray',
@@ -50,8 +77,8 @@ export const products: Product[] = [
     title: 'Pepper Spray',
     category: 'Tools',
     label: 'Self defence',
-    shortDescription: 'A compact 50ml stream spray with a protective locking cap.',
-    longDescription: 'A quick-release personal-safety tool designed for one-hand deployment and convenient bag or pocket carry.',
+    shortDescription: '50ml stream spray, 8–10 feet of range, locking cap so it never goes off in your bag.',
+    longDescription: 'A 50ml OC stream canister built for one-handed use, with a locking cap so it stays inert until you release it. Range is 8–10 feet.',
     price: 499,
     images: ['/products/pepper-spray-mockup.webp', '/products/pepper-spray-product.webp'],
     features: ['One-hand deployment', 'Protective safety lock', 'Stream spray format', 'Pocket-friendly canister'],
@@ -71,6 +98,14 @@ export const products: Product[] = [
     scenarios: ['Commute', 'Travel', 'Parking', 'Walking'],
     included: ['50ml Pepper Spray canister', 'Protective locking cap'],
     accent: '#8f351b',
+    highlights: [{ value: '50 ml', label: 'Capacity' }, { value: '8–10 ft', label: 'Range' }, { value: '3 yr', label: 'Shelf life' }],
+    compare: {
+      job: 'Buys you distance and time',
+      reachFor: 'Someone is already close and you need to get away',
+      power: 'None. Shelf life up to 3 years',
+      carry: 'Jacket pocket or outer bag pocket',
+      caveat: 'Rules vary by state and by airline. Check before you travel with it.',
+    },
   },
   {
     id: 'window-breaker',
@@ -78,8 +113,8 @@ export const products: Product[] = [
     title: 'Emergency Window Breaker',
     category: 'Tools',
     label: 'Emergency escape tool',
-    shortDescription: 'A compact spring-loaded glass breaker with a concealed seatbelt cutter.',
-    longDescription: 'Designed for vehicle emergency preparedness with a tungsten strike point and a hidden stainless-steel blade.',
+    shortDescription: 'Spring-loaded tungsten point for car glass, plus a hidden blade for a stuck seatbelt.',
+    longDescription: 'Two tools in 28 grams: a spring-loaded tungsten strike point for automotive glass, and a concealed stainless blade for a seatbelt that will not release.',
     price: 599,
     images: ['/products/window-breaker-mockup.webp'],
     features: ['Spring-loaded strike head', 'Tungsten steel point', 'Concealed seatbelt blade', 'Keyring-friendly format'],
@@ -98,6 +133,14 @@ export const products: Product[] = [
     scenarios: ['Road trips', 'Daily driving', 'Cab travel', 'Vehicle kits'],
     included: ['Emergency Window Breaker', 'Keyring attachment'],
     accent: '#748a83',
+    highlights: [{ value: '28 g', label: 'Carry weight' }, { value: 'Tungsten', label: 'Strike point' }, { value: 'Hidden', label: 'Seatbelt blade' }],
+    compare: {
+      job: 'Gets you out of a car',
+      reachFor: 'A seatbelt jams, or a door will not open after a crash',
+      power: 'None. Mechanical spring',
+      carry: 'Glovebox or door pocket — not your keyring',
+      caveat: 'Works on tempered side glass. Windscreens are laminated and will not shatter.',
+    },
   },
   {
     id: 'survival-whistle',
@@ -105,8 +148,8 @@ export const products: Product[] = [
     title: 'Survival Whistle',
     category: 'Tools',
     label: '120dB dual-tube design',
-    shortDescription: 'A battery-free aluminium whistle designed to create a strong audible signal.',
-    longDescription: 'An ultra-lightweight, weather-resistant signal tool for everyday bags, travel and outdoor preparedness.',
+    shortDescription: '120dB from a 12g piece of aluminium. Nothing to charge, nothing to break.',
+    longDescription: 'Twelve grams of aviation-grade aluminium with a dual-tube design that puts out 120dB on one breath. No battery, no electronics, nothing that can fail.',
     price: 299,
     images: ['/products/survival-whistle-mockup.webp', '/products/survival-whistle-ecom.webp', '/lifestyle/whistle-bag-shot.webp'],
     features: ['Breath activated', 'Dual-tube construction', 'Battery-free', 'Keychain and zipper attachment'],
@@ -125,8 +168,30 @@ export const products: Product[] = [
     scenarios: ['Travel', 'Outdoor walks', 'Campus', 'Emergency kits'],
     included: ['Survival Whistle', 'Attachment ring'],
     accent: '#102844',
+    highlights: [{ value: '120 dB', label: 'Dual tube' }, { value: '12 g', label: 'Carry weight' }, { value: 'None', label: 'Battery needed' }],
+    compare: {
+      job: 'Signals for help with zero failure points',
+      reachFor: 'You are lost, hurt, or out of phone battery',
+      power: 'None. Your breath',
+      carry: 'Keyring, zipper pull, or a kid’s school bag',
+      caveat: 'Needs you conscious and able to breathe hard.',
+    },
   },
 ];
 
 export const getProduct = (slug: string) => products.find((product) => product.slug === slug);
-export const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
+
+/** Shopify handle for a product, falling back to the URL slug. */
+export const handleFor = (product: Pick<Product, 'slug' | 'shopifyHandle'>) => product.shopifyHandle ?? product.slug;
+
+const localeFor = (currencyCode: string) => (currencyCode === 'INR' ? 'en-IN' : 'en-US');
+
+export const formatPrice = (price: number, currencyCode = 'INR') =>
+  new Intl.NumberFormat(localeFor(currencyCode), {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: Number.isInteger(price) ? 0 : 2,
+  }).format(price);
+
+export const cheapest = (list: Pick<Product, 'price'>[] = products) => Math.min(...list.map((product) => product.price));

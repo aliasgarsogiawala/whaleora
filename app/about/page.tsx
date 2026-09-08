@@ -1,17 +1,94 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Our Story — Whaleora', description: 'Why Whaleora is reimagining personal safety as a calm, confident part of everyday life.' };
+export const metadata: Metadata = {
+  title: 'About Whaleora — Safety should not feel scary',
+  description: 'We believe personal safety should feel calm, intuitive and accessible—not intimidating.',
+};
+
+const founderStory = [
+  'Whaleora began with a simple question: Why do the tools meant to keep us safe often feel intimidating and difficult? I wanted to change that.',
+  "Through months of research, conversations with manufacturers, testing products, and learning every part of the design process from scratch, I realized that safety doesn't need to create fear—it should create confidence.",
+  'Every product we create is designed to fit naturally into everyday life. Premium in quality, thoughtful in design, and easy to carry, our goal is to help you feel prepared without constantly reminding you of danger.',
+  "Whaleora isn't just about products. It's about creating a future where feeling prepared is part of everyday life. Thank you for being a part of that journey.",
+] as const;
+
+const commitments = [
+  { label: 'Vision', text: 'A world where every person moves through life with the quiet confidence of knowing they are safe.' },
+  { label: 'Mission', text: 'To make personal safety simple, reliable and accessible through thoughtfully designed products, education and partnerships.' },
+  { label: 'Promise', text: 'Safety you can trust, when it matters most.' },
+] as const;
 
 export default function AboutPage() {
-  return <main className="page-main about-page">
-    <section className="editorial-hero shell"><p className="eyebrow dark">Our story</p><h1>Safety shouldn’t<br /><em>feel scary.</em></h1><div><p>It should create the quiet confidence to keep moving, exploring and living on your terms.</p><span>Whaleora · India</span></div></section>
-    <section className="about-photo"><Image src="/lifestyle/mumbai-commute-hero.webp" fill alt="Everyday movement in Mumbai" priority sizes="100vw" /><p>Personal safety, reimagined as part of everyday life.</p></section>
-    <section className="about-origin shell section-pad"><div><p className="eyebrow dark">Why Whaleora exists</p><span className="section-number">01</span></div><div><h2>Traditional safety tools often speak the language of fear. <em>We wanted to speak the language of life.</em></h2><p>Whaleora exists to make personal safety simple, reliable and beautifully designed. We believe preparedness should become part of everyday life—not something people think about only after an emergency.</p></div></section>
-    <section className="founder-story about-founder"><div className="founder-photo"><Image src="/founder/sheuli-founder.webp" fill alt="Sheuli, founder of Whaleora" sizes="(max-width: 800px) 100vw, 58vw" /></div><div className="founder-copy"><p className="eyebrow dark">The founder’s note</p><blockquote>“Through months of research, testing and learning, I realised that safety doesn’t need to create fear—it should create confidence.”</blockquote><p>Every product we create is intended to fit naturally into everyday life: thoughtful in design, easy to carry, and supported by awareness and education.</p><cite>Sheuli<br /><span>Founder, Whaleora</span></cite></div></section>
-    <section className="principles shell section-pad"><p className="eyebrow dark">Our design philosophy</p><div><article><span>01</span><h3>Calm, never alarmist</h3><p>We communicate practical preparedness without using fear as a sales tactic.</p></article><article><span>02</span><h3>Useful before beautiful</h3><p>Beauty earns attention; clear information and simple use earn trust.</p></article><article><span>03</span><h3>Part of real life</h3><p>Products belong in the routines, bags and environments people already know.</p></article><article><span>04</span><h3>Education matters</h3><p>Objects are one layer of a wider culture of awareness and community.</p></article></div></section>
-    <section className="mission-grid shell section-pad"><article><small>Mission</small><h2>Make personal safety simple, reliable and accessible.</h2></article><article><small>Vision</small><h2>A world where preparedness feels like part of everyday life.</h2></article><article><small>Promise</small><h2>Responsible tools, honest information, thoughtful design.</h2></article></section>
-    <section className="about-cta"><div className="shell"><p className="eyebrow">The next chapter</p><h2>Carry confidence.<br /><em>Share preparedness.</em></h2><div><Link href="/products" className="button button-light">Explore the collection →</Link><Link href="/safety-hub" className="text-link">Visit the Safety Hub ↗</Link></div></div></section>
-  </main>;
+  return (
+    <main className="page-main about-page">
+      <section className="about-story-hero">
+        <div className="about-story-glow" aria-hidden="true" />
+        <div className="shell about-story-hero-inner">
+          <p className="eyebrow dark">About Whaleora</p>
+          <h1>Safety shouldn&apos;t<br />feel <em>scary.</em></h1>
+          <p>We believe personal safety should feel calm, intuitive and accessible—not intimidating.</p>
+          <span className="about-scroll-cue" aria-hidden="true"><i /></span>
+        </div>
+      </section>
+
+      <section className="founder-chapter" aria-labelledby="founder-story-title">
+        <div className="founder-chapter-visual">
+          <div className="founder-chapter-image">
+            <Image src="/founder/sheuli-founder.webp" fill priority sizes="(max-width: 900px) 100vw, 48vw" alt="Sheuli, founder of Whaleora" />
+          </div>
+          <div className="founder-image-wash" />
+          <p>Sheuli<br /><span>Founder, Whaleora</span></p>
+        </div>
+        <div className="founder-chapter-copy">
+          <div className="founder-quote" data-reveal>
+            <p className="eyebrow dark">A Word from the Founder</p>
+            <h2 id="founder-story-title">&ldquo;Safety should be something you&apos;re proud to carry, not something you hesitate to buy.&rdquo;</h2>
+          </div>
+          <div className="founder-pages">
+            {founderStory.map((paragraph, index) => (
+              <article data-reveal key={paragraph}>
+                <span>0{index + 1}</span>
+                <p>{paragraph}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="why-chapter">
+        <div className="why-chapter-image" aria-hidden="true">
+          <Image src="/lifestyle/mumbai-commute-hero.webp" fill sizes="100vw" alt="" />
+        </div>
+        <div className="shell why-chapter-inner">
+          <div data-reveal>
+            <p className="eyebrow">Why Whaleora</p>
+            <h2>Preparedness belongs in everyday life.</h2>
+          </div>
+          <div className="why-chapter-copy" data-reveal>
+            <p>Whaleora exists to make personal safety simple, reliable and beautifully designed.</p>
+            <p>We believe preparedness should become part of everyday life—not something people think about only after an emergency.</p>
+            <p>Through thoughtfully crafted products, awareness programmes and institutional partnerships from our base in Mumbai, we are building an ecosystem where safety feels calm, accessible and empowering.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="confidence-chapter section-pad">
+        <div className="shell">
+          <div className="confidence-heading" data-reveal>
+            <h2>Safety isn&apos;t panic.<br /><em>Safety is confidence.</em></h2>
+          </div>
+          <div className="commitment-stories">
+            {commitments.map((commitment, index) => (
+              <article data-reveal key={commitment.label}>
+                <span>0{index + 1}</span>
+                <h3>{commitment.label}</h3>
+                <p>{commitment.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }

@@ -3,8 +3,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AddToCartButton, ProductCard } from '@/components/commerce';
+import { ProductGallery, ProductPurchase, ProductQuote, ProductReviewRail } from '@/components/product-detail';
+import { Headphones, PackageCheck, Truck } from 'lucide-react';
+import { publishedContent } from '@/lib/content/store';
 import { formatPrice } from '@/data/products';
 import { getCatalog, getCatalogProduct } from '@/lib/shopify/catalog';
+import './product-page.css';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
   const catalog = await getCatalog();
@@ -26,68 +32,40 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const catalog = await getCatalog();
+  const [catalog, content] = await Promise.all([getCatalog(), publishedContent()]);
   const product = catalog.find((item) => item.slug === slug);
   if (!product) notFound();
   const related = catalog.filter((item) => item.id !== product.id).slice(0, 3);
+  const videos = content.settings.showVideos ? content.videos.filter((item) => item.visible && item.slug === slug) : [];
+  const quotes = content.settings.showWritten ? content.testimonials.filter((item) => item.visible && (item.detail === product.title || videos.some((video) => video.product === item.detail))) : [];
 
-  return <main className="pdp page-main">
-    <section className="pdp-top shell">
-      <div className="pdp-gallery">{product.images.map((image, index) => <div className="pdp-image" key={image}><Image src={image} fill alt={index === 0 ? product.title : `${product.title} detail ${index + 1}`} priority={index === 0} sizes="(max-width: 900px) 100vw, 55vw" /><span>0{index + 1}</span></div>)}</div>
-      <div className="pdp-buy">
-        <div className="breadcrumbs"><Link href="/products">Collection</Link><span>/</span><span>{product.category}</span></div>
-        <p className="eyebrow dark">{product.label}</p>
-        <h1>{product.title}</h1>
-        <p className="pdp-lede">{product.longDescription}</p>
-        <strong className="pdp-price">{formatPrice(product.price, product.currencyCode)}{product.shopify?.compareAtPrice ? <s> {formatPrice(product.shopify.compareAtPrice, product.currencyCode)}</s> : null}</strong>
-        <p className="tax-note">Inclusive of all taxes{product.price >= 1499 ? ' · Free shipping' : ` · Free shipping over ₹1,499`}{product.shopify && !product.shopify.availableForSale ? ' · Currently sold out' : ''}</p>
-        <div className="pdp-actions"><AddToCartButton product={product} /></div>
-        <ul className="buy-trust">
-          <li><b>Reach for it when</b>{product.compare.reachFor}.</li>
-          <li><b>Powered by</b>{product.compare.power}.</li>
-          <li><b>Lives in</b>{product.compare.carry}.</li>
-        </ul>
-        <p className="responsible-note"><b>Worth knowing:</b> {product.compare.caveat} A safety tool buys you attention and time — it can’t promise an outcome, and we won’t say otherwise.</p>
-      </div>
+  return <main className="pdp-reference">
+    <nav className="pdp-breadcrumb shell" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href="/products">Shop</Link><span>/</span><span aria-current="page">{product.title}</span></nav>
+    <section className="pdp-layout shell">
+      <div className="pdp-media-column"><ProductGallery key={product.id} product={product} /><ProductQuote items={quotes} /></div>
+      <ProductPurchase key={product.id} product={product}>
+        <ProductReviewRail items={videos} />
+        {related.length > 0 && <section className="pdp-pair-with"><h2>Pair it with</h2>{related.slice(0, 2).map((item) => <div className="pdp-pair-row" key={item.id}><Link href={`/products/${item.slug}`} className="pdp-pair-image"><Image src={item.images[0] || '/brand/whaleora-logo.svg'} alt={item.title} fill sizes="64px" /></Link><div><Link href={`/products/${item.slug}`}>{item.title}</Link><span>{formatPrice(item.price, item.currencyCode)}</span></div><AddToCartButton product={item} label="Add" /></div>)}</section>}
+      </ProductPurchase>
     </section>
 
-    <section className="product-story shell section-pad">
-      <div><p className="eyebrow dark">The short version</p><h2>{product.compare.job}.</h2></div>
-      <p>{product.shortDescription} It’s built to be carried, not admired — which mostly means it had to be small enough that you stop noticing it’s there.</p>
-    </section>
+    <div className="pdp-service-strip"><div className="shell"><span><Truck size={22} strokeWidth={1.5} />Delivery across India</span><span><PackageCheck size={22} strokeWidth={1.5} />Free shipping over ₹1,499</span><span><Headphones size={22} strokeWidth={1.5} />Support from a real person</span></div></div>
 
-    <section className="feature-band"><div className="shell"><p className="eyebrow">What you get</p><div>{product.features.map((feature, index) => <article key={feature}><span>0{index + 1}</span><h3>{feature}</h3></article>)}</div></div></section>
+    {product.howItWorks.length > 0 && <section className="pdp-how shell pdp-section" id="how-to-use"><div className="pdp-section-heading"><p className="eyebrow dark">Simple by design</p><h2>How to use it.</h2><p>Get familiar with it before you need it. Start with the instructions included with your product.</p></div><div className="pdp-how-layout"><div className="pdp-how-image"><Image src={product.images[1] || product.images[0] || '/brand/whaleora-logo.svg'} alt={`${product.title} up close`} fill sizes="(max-width: 800px) 90vw, 40vw" /></div><ol>{product.howItWorks.map((step, i) => <li key={step.title}><span>0{i + 1}</span><div><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol></div></section>}
 
-    <section className="how-product shell section-pad">
-      <div className="section-heading">
-        <div><p className="eyebrow dark">How it works</p><h2>Three steps, and none of them are settings.</h2></div>
-        <p>Read the instructions in the box once before you need it. That’s the only preparation this asks of you.</p>
-      </div>
-      <ol>{product.howItWorks.map((step, index) => <li key={step.title}><span>0{index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></li>)}</ol>
-    </section>
+    {product.scenarios.length > 0 && <section className="pdp-use-section pdp-section"><div className="shell"><div className="pdp-section-heading"><p className="eyebrow dark">Made for your everyday</p><h2>A little more prepared.<br />Wherever the day takes you.</h2><p>{product.shortDescription}</p></div><div className="pdp-use-grid">{product.scenarios.map((scenario, i) => <article key={scenario}><span>0{i + 1}</span><h3>{scenario}</h3><p>{i % 2 === 0 ? 'Keep it somewhere easy to reach.' : 'Make it part of your everyday kit.'}</p></article>)}</div><p className="pdp-use-caveat">{product.compare.caveat}</p></div></section>}
 
-    <section className="scenarios"><div className="shell"><p className="eyebrow">Where people carry it</p><h2>Bought most often for these.</h2><div>{product.scenarios.map((scenario) => <span key={scenario}>{scenario}</span>)}</div></div></section>
+    {catalog.length > 1 && <section className="pdp-comparison shell pdp-section"><div className="pdp-section-heading"><p className="eyebrow dark">Different tools. Different jobs.</p><h2>Find the right fit for your day.</h2><p>A side-by-side look at what each tool does, and what it needs from you.</p></div><div className="pdp-compare-scroll" tabIndex={0} role="region" aria-label="Product comparison, scroll horizontally on smaller screens"><table><caption className="visually-hidden">Compare Whaleora safety products</caption><thead><tr><th scope="col">At a glance</th>{[product, ...related].map((item) => <th scope="col" key={item.id} className={item.id === product.id ? 'current' : ''}><Link href={`/products/${item.slug}`}>{item.title}</Link>{item.id === product.id && <small>You’re viewing</small>}<span>{formatPrice(item.price, item.currencyCode)}</span></th>)}</tr></thead><tbody>{([{ label: 'The job', key: 'job' }, { label: 'Powered by', key: 'power' }, { label: 'Where to keep it', key: 'carry' }, { label: 'Worth knowing', key: 'caveat' }] as const).map((row) => <tr key={row.key}><th scope="row">{row.label}</th>{[product, ...related].map((item) => <td key={item.id} className={item.id === product.id ? 'current' : ''}>{item.compare[row.key]}</td>)}</tr>)}</tbody></table></div></section>}
 
-    <section className="spec-section shell section-pad">
-      <div><p className="eyebrow dark">Every number we have</p><h2>Specifications</h2></div>
-      <dl>{product.specifications.map((spec) => <div key={spec.label}><dt>{spec.label}</dt><dd>{spec.value}</dd></div>)}</dl>
-      <div className="included"><h3>In the box</h3>{product.included.map((item) => <p key={item}>— {item}</p>)}</div>
-    </section>
+    <section className="pdp-faq pdp-section"><div className="shell"><div className="pdp-section-heading"><p className="eyebrow dark">Before you decide</p><h2>Your questions, answered.</h2><p>The practical details, in one place.</p></div><div className="pdp-faq-list">
+      {product.specifications.length > 0 && <details><summary>What are the specifications?<span>+</span></summary><dl>{product.specifications.map((spec) => <div key={spec.label}><dt>{spec.label}</dt><dd>{spec.value}</dd></div>)}</dl></details>}
+      {product.included.length > 0 && <details><summary>What comes in the box?<span>+</span></summary><ul>{product.included.map((item) => <li key={item}>{item}</li>)}</ul></details>}
+      <details><summary>How much does shipping cost?<span>+</span></summary><p>Free shipping on orders over ₹1,499 across India. Below that, shipping charges and the delivery estimate for your pincode are shown at checkout.</p></details>
+      <details><summary>What if I need help with my order?<span>+</span></summary><p>Email <a href="mailto:hello@whaleora.com">hello@whaleora.com</a> or <Link href="/contact">contact our team</Link>. If your unit arrived faulty, tell us what happened so we can help. Contact us before returning an item.</p></details>
+      <details><summary>Can I take it when I travel?<span>+</span></summary><p>Check the rules for your destination, airline, and venue before travelling, especially with pepper spray or tools containing a blade. Follow the product instructions and local requirements.</p></details>
+      <details><summary>What should I know before relying on it?<span>+</span></summary><p>{product.compare.caveat !== '—' ? product.compare.caveat : product.shortDescription} A safety tool cannot guarantee an outcome. Keep it accessible and learn how to use it before you need it.</p></details>
+    </div></div></section>
 
-    <section className="accordions shell">
-      <details><summary>Shipping &amp; delivery <span>＋</span></summary><p>Free shipping on orders over ₹1,499, anywhere in India. Below that, shipping is calculated at checkout along with the delivery estimate for your pincode.</p></details>
-      <details><summary>Returns &amp; support <span>＋</span></summary><p>Email hello@whaleora.com before sending anything back and we’ll sort it out. If a unit arrived faulty, tell us what it did and we’ll replace it — you don’t need to argue the case.</p></details>
-      <details><summary>Is this legal to carry? <span>＋</span></summary><p>Our current guidance is that these are legal to carry in most jurisdictions, but rules genuinely vary — particularly for pepper spray, and particularly on aircraft. Check what applies where you live and where you’re travelling.</p></details>
-    </section>
-
-    <section className="related shell section-pad">
-      <div className="section-heading"><div><p className="eyebrow dark">Commonly bought together</p><h2>Most people end up with two.</h2></div><p>An alarm for attention and a whistle for when the battery is the last thing you want to depend on.</p></div>
-      <div className="product-grid">{related.map((item, index) => <ProductCard key={item.id} product={item} index={index} />)}</div>
-    </section>
-
-    <div className="sticky-buy">
-      <div><small>{product.title}</small><strong>{formatPrice(product.price, product.currencyCode)}</strong></div>
-      <AddToCartButton product={product} />
-    </div>
+    {related.length > 0 && <section className="pdp-recommendations shell pdp-section"><div className="pdp-section-heading"><p className="eyebrow dark">Better prepared, together</p><h2>Build your everyday kit.</h2><p>Choose the tools that suit your routine.</p></div><div className="product-grid">{related.map((item, index) => <ProductCard key={item.id} product={item} index={index} />)}</div></section>}
   </main>;
 }

@@ -1,7 +1,24 @@
 import { handleFor, products, type Product } from '@/data/products';
 import { isShopifyConfigured, safely, shopifyFetch, SHOPIFY_PRODUCTS_TAG } from './client';
 import { PRODUCTS_QUERY } from './queries';
-import type { ShopifyProduct } from './types';
+import type { ShopifyProduct, ShopifyVariant } from './types';
+
+export type CatalogVariant = {
+  id: string;
+  title: string;
+  availableForSale: boolean;
+  price: number;
+  currencyCode: string;
+  compareAtPrice: number | null;
+  selectedOptions: { name: string; value: string }[];
+};
+
+const variantsFor = (remote: ShopifyProduct): CatalogVariant[] => remote.variants.nodes.map((variant: ShopifyVariant) => ({
+  id: variant.id, title: variant.title, availableForSale: remote.availableForSale && variant.availableForSale,
+  price: Number(variant.price.amount), currencyCode: variant.price.currencyCode,
+  compareAtPrice: variant.compareAtPrice ? Number(variant.compareAtPrice.amount) : null,
+  selectedOptions: variant.selectedOptions,
+}));
 
 /** How long a Storefront catalogue read is reused before Shopify is asked again. */
 const CATALOG_REVALIDATE_SECONDS = 900;
@@ -15,6 +32,7 @@ export type CatalogProduct = Product & {
     variantId: string;
     availableForSale: boolean;
     compareAtPrice: number | null;
+    variants: CatalogVariant[];
   } | null;
 };
 
@@ -63,6 +81,7 @@ function merge(local: Product, remote: ShopifyProduct | undefined): CatalogProdu
           variantId: variant.id,
           availableForSale: remote.availableForSale && variant.availableForSale,
           compareAtPrice: variant.compareAtPrice ? toNumber(variant.compareAtPrice.amount) : null,
+          variants: variantsFor(remote),
         }
       : null,
   };
@@ -103,6 +122,7 @@ function adopt(remote: ShopifyProduct): CatalogProduct {
           variantId: variant.id,
           availableForSale: remote.availableForSale && variant.availableForSale,
           compareAtPrice: variant.compareAtPrice ? toNumber(variant.compareAtPrice.amount) : null,
+          variants: variantsFor(remote),
         }
       : null,
   };

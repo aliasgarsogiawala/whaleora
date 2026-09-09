@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { ArrowUpRight, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import type { CSSProperties } from 'react';
@@ -40,6 +40,7 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | null>(null);
 
 const LOCAL_KEY = 'whaleora-cart';
+const matchesLocalLine = (line: CartStateLine, productId: string, variantId: string | null) => line.productId === productId && line.variantId === variantId;
 
 /** Local-bag maths, used only while Shopify is unreachable or unconfigured. */
 const localLine = (product: ShopProduct, quantity: number): CartStateLine => ({
@@ -111,9 +112,9 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     applyLocal((lines) => {
-      const exists = lines.find((line) => line.productId === product.id);
+      const exists = lines.find((line) => matchesLocalLine(line, product.id, variantId ?? null));
       return exists
-        ? lines.map((line) => line.productId === product.id ? { ...line, quantity: line.quantity + quantity } : line)
+        ? lines.map((line) => matchesLocalLine(line, product.id, variantId ?? null) ? { ...line, quantity: line.quantity + quantity } : line)
         : [...lines, localLine(product, quantity)];
     });
   }, [applyLocal, cart.connected]);
@@ -127,8 +128,8 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     applyLocal((lines) => quantity < 1
-      ? lines.filter((item) => item.productId !== line.productId)
-      : lines.map((item) => item.productId === line.productId ? { ...item, quantity } : item));
+      ? lines.filter((item) => !matchesLocalLine(item, line.productId, line.variantId))
+      : lines.map((item) => matchesLocalLine(item, line.productId, line.variantId) ? { ...item, quantity } : item));
   }, [applyLocal, cart.connected]);
 
   const remove = useCallback((line: CartStateLine) => {
@@ -139,7 +140,7 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
       });
       return;
     }
-    applyLocal((lines) => lines.filter((item) => item.productId !== line.productId));
+    applyLocal((lines) => lines.filter((item) => !matchesLocalLine(item, line.productId, line.variantId)));
   }, [applyLocal, cart.connected]);
 
   const value = useMemo<CartContextValue>(
@@ -249,12 +250,14 @@ export function Header() {
               aria-current={isCurrent(pathname, link.href) ? 'page' : undefined}
               onClick={() => setMenuOpen(false)}
             >
-              <small>0{index + 1}</small>{link.label}<span>↗</span>
+              <small>0{index + 1}</small>{link.label}<ArrowUpRight size={17} strokeWidth={1.5} aria-hidden="true" />
             </Link>
           ))}
         </nav>
-        <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop from ₹299 <span>→</span></Link>
-        <p>Prepared, not afraid.<br />Designed in India.</p>
+        <div className="mobile-menu-footer">
+          <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop from ₹299 <span>→</span></Link>
+          <p>Prepared, not afraid.<br />Designed in India.</p>
+        </div>
       </div>
     </>
   );
@@ -295,7 +298,7 @@ function CartDrawer() {
               const record = localRecord(line);
               // A Shopify-only line may carry no handle; then the title is plain text.
               const lineSlug = record?.slug ?? line.handle;
-              return <div className="cart-line" key={line.id ?? line.productId}>
+              return <div className="cart-line" key={line.id ?? line.variantId ?? line.productId}>
                 <Image src={record?.images[0] ?? '/products/survival-whistle-mockup.webp'} width={130} height={130} alt="" />
                 <div><small>{record?.category ?? 'Whaleora'}</small>{lineSlug ? <Link href={`/products/${lineSlug}`} onClick={() => setOpen(false)}>{line.title}</Link> : line.title}<strong>{formatPrice(line.unitPrice, line.currencyCode)}</strong><div className="quantity"><button onClick={() => update(line, line.quantity - 1)} disabled={pending} aria-label="Decrease quantity">−</button><span>{line.quantity}</span><button onClick={() => update(line, line.quantity + 1)} disabled={pending} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(line)} disabled={pending}>Remove</button></div>
               </div>;
@@ -308,11 +311,11 @@ function CartDrawer() {
   );
 }
 
-export function AddToCartButton({ product, quantity = 1, className = '' }: { product: ShopProduct; quantity?: number; className?: string }) {
+export function AddToCartButton({ product, quantity = 1, className = '', label = 'Add to bag' }: { product: ShopProduct; quantity?: number; className?: string; label?: string }) {
   const { add, pending } = useCart();
   const soldOut = product.shopify ? !product.shopify.availableForSale : false;
   if (soldOut) return <button className={`button button-primary ${className}`} disabled>Sold out</button>;
-  return <button className={`button button-primary ${className}`} onClick={() => add(product, quantity)} disabled={pending}>Add to bag <span>→</span></button>;
+  return <button className={`button button-primary ${className}`} onClick={() => add(product, quantity)} disabled={pending}>{pending ? 'Adding…' : label} <span>→</span></button>;
 }
 
 export function ProductCard({ product, index = 0 }: { product: ShopProduct; index?: number }) {

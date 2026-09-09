@@ -161,6 +161,12 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .mobile-menu.open .menu-cta { opacity: 1; transform: none; }
 .mobile-menu > p { position: absolute; bottom: 26px; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,.55); }
 
+/* Not found — the root layout still wraps this, so it only needs its own body. */
+.not-found { display: flex; flex-direction: column; align-items: flex-start; min-height: 56vh; }
+.not-found h1 { margin: 18px 0 0; max-width: 16ch; font-size: clamp(40px, 5.4vw, 82px); font-weight: 400; line-height: 1.02; letter-spacing: -.03em; }
+.not-found-lede { max-width: 54ch; margin: 26px 0 0; font-size: 16px; line-height: 1.7; color: rgba(16, 40, 68, .68); }
+.not-found-links { display: flex; flex-wrap: wrap; gap: clamp(20px, 3vw, 46px); margin: clamp(48px, 6vw, 78px) 0 0; padding: 26px 0 0; border-top: 1px solid var(--line); list-style: none; width: 100%; }
+
 /* Home editorial sections */
 .collection-section { background: var(--ivory); padding-bottom: clamp(56px, 6vw, 92px); }
 .section-heading { display: grid; grid-template-columns: 1fr minmax(240px, 420px); align-items: end; gap: 40px; margin-bottom: clamp(50px, 7vw, 90px); }

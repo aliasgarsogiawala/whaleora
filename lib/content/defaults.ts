@@ -2,7 +2,7 @@ import { reviewVideos } from '@/data/review-videos';
 import type { ContentDocument, ReviewContent } from './types';
 
 export const defaultContent: ReviewContent = {
-  settings: { writtenTitle: 'A few words from the everyday.', writtenSubtitle: '', videoTitle: 'A closer look.\nIn motion.', videoSubtitle: 'Scroll through the clips. Tap one to watch.', showWritten: true, showVideos: true, marqueeSeconds: 65 },
+  settings: { writtenTitle: 'A few words from the everyday.', writtenSubtitle: '', videoTitle: 'A closer look.\nIn motion.', videoSubtitle: 'Browse the clips. Tap a review to watch.', showWritten: true, showVideos: true, marqueeSeconds: 65 },
   videos: reviewVideos.map((video) => ({ ...video, visible: true, demo: true })),
   testimonials: [
     { quote: 'It lives next to my keys now. I don’t have to remember to pack it separately.', name: 'Aarohi S.', detail: 'Personal SOS Alarm' },

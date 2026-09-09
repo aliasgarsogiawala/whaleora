@@ -1,0 +1,39 @@
+/* Adapted from the supplied coverflow: same perspective, Whaleora colors and scale. */
+.coverflow-carousel { --coverflow-near: 240px; --coverflow-far: 420px; padding: 30px 0 44px; color: var(--ink); }
+.coverflow-label { margin: 0 0 22px; text-align: center; color: var(--terracotta); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.coverflow-stage { height: 420px; max-width: 1180px; margin: 0 auto 16px; perspective: 1400px; touch-action: pan-y pinch-zoom; }
+.coverflow-card { position: absolute; width: 280px; height: 380px; border-radius: 12px; overflow: hidden; background: var(--deep); color: var(--paper); border: 1px solid rgba(16,40,68,.12); transform: translateX(var(--slide-x)) scale(var(--slide-scale)) rotateY(var(--slide-rotation)); transform-origin: center; transition: transform 650ms cubic-bezier(.25,1,.5,1), opacity 650ms ease, box-shadow 650ms ease; box-shadow: 0 16px 28px -16px rgba(10,27,47,.32); }
+.coverflow-card.is-center { box-shadow: 0 22px 38px -20px rgba(10,27,47,.48); }
+.coverflow-card > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; }
+.coverflow-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,27,47,.15), transparent 25%, rgba(10,27,47,.38) 52%, rgba(10,27,47,.97)); pointer-events: none; }
+.coverflow-content { position: relative; height: 100%; z-index: 1; display: flex; flex-direction: column; padding: 18px 22px 24px; opacity: 0; transform: translateY(12px); transition: opacity 350ms ease, transform 500ms ease; pointer-events: none; }
+.coverflow-card.is-center .coverflow-content { opacity: 1; transform: none; pointer-events: auto; }
+.coverflow-tag { align-self: flex-end; padding: 6px 8px; background: var(--deep); color: var(--ivory); font-size: 9px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.coverflow-copy { margin-top: auto; text-align: center; }
+.coverflow-copy h3 { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: 28px; font-weight: 400; line-height: 1.12; letter-spacing: -.025em; color: var(--paper); }
+.coverflow-subtitle { display: block; margin-top: 9px; color: var(--sand); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.coverflow-copy p { margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: rgba(255,249,241,.8); }
+.coverflow-cta { margin-top: 17px; min-height: 44px; padding: 10px 17px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; border: 1px solid rgba(255,249,241,.4); border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 10px var(--font-sans), sans-serif; text-transform: uppercase; letter-spacing: .06em; cursor: pointer; }
+.coverflow-cta:hover { background: var(--ivory); }
+.coverflow-select { position: absolute; inset: 0; z-index: 2; border: 0; background: transparent; cursor: pointer; }
+.coverflow-controls { display: flex; align-items: center; justify-content: center; gap: 16px; max-width: min(90%, 700px); margin: auto; }
+.coverflow-arrow { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; cursor: pointer; color: var(--ink); }
+.coverflow-arrow:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+.coverflow-arrow:disabled { opacity: .3; cursor: default; }
+.coverflow-dots { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0; }
+.coverflow-dots button { display: grid; place-items: center; width: 26px; height: 44px; border: 0; background: none; cursor: pointer; }
+.coverflow-dots button span { width: 5px; height: 5px; border-radius: 99px; background: var(--ink); opacity: .22; transition: width 250ms ease, opacity 250ms ease; }
+.coverflow-dots button[aria-current] span { width: 20px; opacity: 1; background: var(--terracotta); }
+.coverflow-pause { min-height: 44px; min-width: 44px; padding: 0 4px; border: 0; background: none; color: var(--ink); font-size: 10px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+@media (max-width: 600px) {
+  .coverflow-carousel { --coverflow-near: 188px; --coverflow-far: 320px; padding: 20px 0 30px; }
+  .coverflow-stage { height: 355px; margin-bottom: 6px; }
+  .coverflow-card { width: 232px; height: 326px; border-radius: 10px; }
+  .coverflow-content { padding: 14px 17px 20px; }
+  .coverflow-copy h3 { font-size: 25px; }
+  .coverflow-controls { gap: 8px; max-width: calc(100% - 28px); }
+  .coverflow-dots button { width: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coverflow-card, .coverflow-content, .coverflow-dots button span { transition: none; }
+}

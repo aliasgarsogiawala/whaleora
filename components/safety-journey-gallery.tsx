@@ -1,38 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Play, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { RadialScrollGallery } from '@/components/ui/portfolio-and-image-gallery';
+import { CoverFlowCarousel } from '@/components/ui/3-d-coverflow-carousel';
 import type { ReviewContent, VideoReview } from '@/lib/content/types';
-
-function ReviewClip({ review, active, paused }: { review: VideoReview; active: boolean; paused: boolean }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    const video = ref.current;
-    if (!video) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let visible = false;
-    const sync = () => {
-      if (visible && !paused && !reduced.matches) {
-        if (!video.getAttribute('src')) video.src = review.video;
-        void video.play().catch(() => { /* Poster remains if autoplay is unavailable. */ });
-      } else video.pause();
-    };
-    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting && entry.intersectionRatio >= 0.4; sync(); }, { threshold: 0.4 });
-    observer.observe(video);
-    reduced.addEventListener('change', sync);
-    return () => { observer.disconnect(); reduced.removeEventListener('change', sync); video.pause(); };
-  }, [review.video, paused]);
-
-  return <article className={`journey-card review-card ${active ? 'is-active' : ''}`}>
-    <video ref={ref} poster={review.poster} muted loop playsInline preload="none" aria-hidden="true" />
-    <div className="journey-card-shade" />
-    <div className="review-card-top"><span>{review.demo ? 'Demo review' : 'Product review'}</span><span>{review.duration}</span></div>
-    <span className="review-play" aria-hidden="true"><Play size={21} fill="currentColor" strokeWidth={1} /></span>
-    <div className="journey-card-copy"><span>{review.product}</span><h3>{review.title}</h3><p>Watch the {review.demo ? 'sample clip' : 'review'} ↗</p></div>
-  </article>;
-}
 
 export function SafetyJourneyGallery({ items, settings }: { items: VideoReview[]; settings: ReviewContent['settings'] }) {
   const reviewVideos = items.filter((item) => item.visible);
@@ -72,20 +44,12 @@ export function SafetyJourneyGallery({ items, settings }: { items: VideoReview[]
         </div>
       </div>
 
-      <RadialScrollGallery
-        className="journey-wheel"
-        baseRadius={420}
-        mobileRadius={255}
-        visiblePercentage={54}
-        scrollDuration={1800}
-        startTrigger="center center"
-        onItemSelect={openReview}
-        itemLabels={reviewVideos.map((item) => `Play ${item.demo ? 'demo ' : ''}review: ${item.product} — ${item.title}`)}
-      >
-        {(hoveredIndex) => reviewVideos.map((item, index) => <ReviewClip key={item.id} review={item} active={hoveredIndex === index} paused={selected !== null} />)}
-      </RadialScrollGallery>
-
-      <div className="journey-instruction" aria-hidden="true"><span>Scroll to explore · Tap to play</span><i /></div>
+      <CoverFlowCarousel
+        sectionLabel=""
+        autoplay={selected === null}
+        items={reviewVideos.map((item) => ({ id: item.id, tag: `${item.demo ? 'Demo review' : 'Product review'} · ${item.duration}`, titleLine1: item.title, titleLine2: item.product, img: item.poster, ctaText: 'Watch review' }))}
+        onCtaClick={(item) => { const index = reviewVideos.findIndex((video) => video.id === item.id); if (index >= 0) openReview(index); }}
+      />
 
       <dialog ref={dialog} className="review-dialog" aria-labelledby="review-player-title" onClose={() => { player.current?.pause(); setSelected(null); }} onClick={(event) => { if (event.target === event.currentTarget) closeReview(); }}>
         {review && <div className="review-player-shell">

@@ -11,7 +11,7 @@ Content and uploads persist in `.whaleora/`, which is gitignored. Back up this d
 New items start hidden. Complete all required fields before saving, even for hidden items. Keep the demo checkbox enabled for fictional content. Real testimonials require permission from their authors.
 
 - **Save draft:** persists edits without changing the live site.
-- **Preview:** shows the current unsaved text and playable media. The live store retains its circular video gallery.
+- **Preview:** shows the current unsaved text and playable media. The live store displays video thumbnails in a horizontal 3D coverflow; Watch review opens the video player.
 - **Publish:** validates, saves and publishes the current edits after confirmation. Reload the storefront to see them.
 - **Reload saved draft:** available after an error; warns before discarding unsaved edits. Concurrent edits in another tab cannot silently overwrite newer saves.
 

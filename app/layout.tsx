@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Geist, Lora } from 'next/font/google';
-import { CommerceProvider, Footer, Header } from '@/components/commerce';
-import { MotionDirector } from '@/components/brand-motion';
+import { SiteFrame } from '@/components/site-frame';
 import './globals.css';
 import './card-refinements.css';
 import './review-videos.css';
+import './compact-scale.css';
 
 const display = Lora({ variable: '--font-display', subsets: ['latin'], weight: ['400', '500', '600'], style: ['normal', 'italic'], display: 'swap' });
 const sans = Geist({ variable: '--font-sans', subsets: ['latin'] });
@@ -28,5 +28,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body suppressHydrationWarning className={`${display.variable} ${sans.variable}`}><CommerceProvider><MotionDirector /><Header />{children}<Footer /></CommerceProvider></body></html>;
+  return <html lang="en"><body suppressHydrationWarning className={`${display.variable} ${sans.variable}`}><SiteFrame>{children}</SiteFrame></body></html>;
 }

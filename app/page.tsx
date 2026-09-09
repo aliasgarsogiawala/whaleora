@@ -5,9 +5,12 @@ import { SafetyJourneyGallery } from '@/components/safety-journey-gallery';
 import { TestimonialsMarquee } from '@/components/testimonials-marquee';
 import { Chooser, Objections, TrustBar } from '@/components/home-sections';
 import { getCatalog } from '@/lib/shopify/catalog';
+import { publishedContent } from '@/lib/content/store';
+
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const catalog = await getCatalog();
+  const [catalog, content] = await Promise.all([getCatalog(), publishedContent()]);
   return (
     <main>
       <section className="hero" data-hero-overlay>
@@ -76,8 +79,8 @@ export default async function Home() {
         </ol>
       </section>
 
-      <SafetyJourneyGallery />
-      <TestimonialsMarquee />
+      <SafetyJourneyGallery items={content.videos} settings={content.settings} />
+      <TestimonialsMarquee items={content.testimonials} settings={content.settings} />
 
       <div className="scenario-ticker" aria-hidden="true"><span>Campus</span><span>Late commute</span><span>Solo travel</span><span>Night shift</span><span>Everyday carry</span></div>
 

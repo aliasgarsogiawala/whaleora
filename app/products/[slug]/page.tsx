@@ -6,6 +6,7 @@ import { AddToCartButton, ProductCard } from '@/components/commerce';
 import { ProductGallery, ProductPurchase, ProductQuote, ProductReviewRail } from '@/components/product-detail';
 import { Headphones, PackageCheck, Truck } from 'lucide-react';
 import { publishedContent } from '@/lib/content/store';
+import { productReviews } from '@/lib/content/product-reviews';
 import { formatPrice } from '@/data/products';
 import { getCatalog, getCatalogProduct } from '@/lib/shopify/catalog';
 import './product-page.css';
@@ -36,20 +37,32 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const product = catalog.find((item) => item.slug === slug);
   if (!product) notFound();
   const related = catalog.filter((item) => item.id !== product.id).slice(0, 3);
-  const videos = content.settings.showVideos ? content.videos.filter((item) => item.visible && item.slug === slug) : [];
-  const quotes = content.settings.showWritten ? content.testimonials.filter((item) => item.visible && (item.detail === product.title || videos.some((video) => video.product === item.detail))) : [];
+  const { quotes, videos } = productReviews(content, product);
 
   return <main className="pdp-reference">
     <nav className="pdp-breadcrumb shell" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href="/products">Shop</Link><span>/</span><span aria-current="page">{product.title}</span></nav>
     <section className="pdp-layout shell">
       <div className="pdp-media-column"><ProductGallery key={product.id} product={product} /><ProductQuote items={quotes} /></div>
       <ProductPurchase key={product.id} product={product}>
+        {content.settings.showWritten && <a className="pdp-reviews-link" href="#product-reviews">Read product reviews ({quotes.length}) <span aria-hidden="true">↗</span></a>}
         <ProductReviewRail items={videos} />
         {related.length > 0 && <section className="pdp-pair-with"><h2>Pair it with</h2>{related.slice(0, 2).map((item) => <div className="pdp-pair-row" key={item.id}><Link href={`/products/${item.slug}`} className="pdp-pair-image"><Image src={item.images[0] || '/brand/whaleora-logo.svg'} alt={item.title} fill sizes="64px" /></Link><div><Link href={`/products/${item.slug}`}>{item.title}</Link><span>{formatPrice(item.price, item.currencyCode)}</span></div><AddToCartButton product={item} label="Add" /></div>)}</section>}
       </ProductPurchase>
     </section>
 
     <div className="pdp-service-strip"><div className="shell"><span><Truck size={22} strokeWidth={1.5} />Delivery across India</span><span><PackageCheck size={22} strokeWidth={1.5} />Free shipping over ₹1,499</span><span><Headphones size={22} strokeWidth={1.5} />Support from a real person</span></div></div>
+
+    {content.settings.showWritten && <section className="pdp-written-reviews shell pdp-section" id="product-reviews" aria-labelledby="product-reviews-title">
+      <div className="pdp-reviews-heading">
+        <div><p className="eyebrow dark">Reviews · {product.title}</p><h2 id="product-reviews-title">A few words from everyday life.</h2></div>
+        <span>{quotes.length} written {quotes.length === 1 ? 'review' : 'reviews'}</span>
+      </div>
+      {quotes.some((item) => item.demo) && <p className="pdp-reviews-disclosure">Reviews marked “Demo” are sample content, not customer feedback.</p>}
+      {quotes.length ? <div className="pdp-written-grid">{quotes.map((review) => <figure className="pdp-written-card" key={review.id}>
+        <blockquote>“{review.quote}”</blockquote>
+        <figcaption><span className="pdp-review-initials" aria-hidden="true">{review.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('')}</span><span><strong>{review.name}</strong><span>{product.title}</span></span>{review.demo && <small>Demo</small>}</figcaption>
+      </figure>)}</div> : <p className="pdp-reviews-empty">No written reviews for this product yet.</p>}
+    </section>}
 
     {product.howItWorks.length > 0 && <section className="pdp-how shell pdp-section" id="how-to-use"><div className="pdp-section-heading"><p className="eyebrow dark">Simple by design</p><h2>How to use it.</h2><p>Get familiar with it before you need it. Start with the instructions included with your product.</p></div><div className="pdp-how-layout"><div className="pdp-how-image"><Image src={product.images[1] || product.images[0] || '/brand/whaleora-logo.svg'} alt={`${product.title} up close`} fill sizes="(max-width: 800px) 90vw, 40vw" /></div><ol>{product.howItWorks.map((step, i) => <li key={step.title}><span>0{i + 1}</span><div><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol></div></section>}
 

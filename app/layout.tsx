@@ -5,6 +5,7 @@ import './globals.css';
 import './card-refinements.css';
 import './review-videos.css';
 import './compact-scale.css';
+import './faq-bot.css';
 
 const display = Lora({ variable: '--font-display', subsets: ['latin'], weight: ['400', '500', '600'], style: ['normal', 'italic'], display: 'swap' });
 const sans = Geist({ variable: '--font-sans', subsets: ['latin'] });

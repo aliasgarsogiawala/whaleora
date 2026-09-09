@@ -793,7 +793,7 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .faq-section h2 em { color: var(--terracotta); }
 .faq-section details { border-top: 1px solid var(--line); }
 .faq-section summary { padding: 24px 0; display: flex; justify-content: space-between; list-style: none; font-family: var(--font-display), serif; font-size: 25px; cursor: pointer; }
-.faq-section details p { max-width: 700px; margin-top: 0; padding-bottom: 22px; color: rgba(16,40,68,.65); line-height: 1.7; }
+.faq-section details p { max-width: 700px; margin-top: 0; padding-bottom: 22px; color: rgba(16,40,68,.65); line-height: 1.7; white-space: pre-line; }
 
 /* Responsive system */
 @media (max-width: 1100px) {
@@ -1321,7 +1321,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   @page { size: auto; margin: 14mm; }
   html, body { background: #fff !important; }
 
-  .announcement, .site-header, .mobile-menu, .cart-layer, .scroll-progress, .footer, .sticky-buy { display: none !important; }
+  .announcement, .site-header, .mobile-menu, .cart-layer, .scroll-progress, .footer, .sticky-buy, .faq-bot { display: none !important; }
   body > *:not(main) { display: none !important; }
   main > *:not(#emergency-card) { display: none !important; }
   #emergency-card { padding: 0 !important; background: #fff !important; color: #000 !important; }

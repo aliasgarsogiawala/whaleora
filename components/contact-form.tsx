@@ -1,14 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
-const faqs = [
-  ['Are these legal to carry?', 'Our current guidance is that Whaleora’s everyday tools are legal to carry in most jurisdictions in India. Rules genuinely do vary — pepper spray most of all — so check what applies where you live and where you’re travelling. We’d rather you check first than find out at a security desk.'],
-  ['How loud is 130dB, really?', 'Loud enough that people in the street look up, which is the entire point. For reference, it is in the range of a smoke alarm held at arm’s length. Our published spec is a 130dB dual-siren on the Personal SOS Alarm and 120dB on the Survival Whistle.'],
-  ['Can I take a safety kit on a flight?', 'The whistle, yes. Pepper spray is prohibited on effectively every airline — cabin and usually checked too — and the window breaker is a sharp tool that belongs in a car. Check your carrier’s list before you pack rather than at the counter.'],
-  ['Do the alarms need charging?', 'No. The SOS Alarm runs on a replaceable CR2032 coin cell, and one comes in the box. The whistle and the window breaker have no battery and no electronics at all, which is exactly why we sell them alongside the alarm.'],
-  ['Something arrived faulty. Now what?', 'Email hello@whaleora.com and tell us what it did. We’ll replace it — you don’t have to build a case for it first. Please get in touch before posting anything back so we can tell you where to send it.'],
-];
+import { featuredFaqs } from '@/lib/content/faq';
 
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -31,7 +24,7 @@ export function ContactForm() {
     </section>
     <section className="faq-section shell section-pad">
       <div><p className="eyebrow dark">Asked most often</p><h2>The questions people email us.</h2></div>
-      <div>{faqs.map(([question, answer]) => <details key={question}><summary>{question}<span>＋</span></summary><p>{answer}</p></details>)}</div>
+      <div>{featuredFaqs.map((item) => <details key={item.id}><summary>{item.question}<span>＋</span></summary><p>{item.answer}</p></details>)}</div>
     </section>
   </>;
 }

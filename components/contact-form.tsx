@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { whatsappHref } from '@/lib/content/contact';
 import { featuredFaqs } from '@/lib/content/faq';
 
 export function ContactForm() {
@@ -8,7 +9,7 @@ export function ContactForm() {
   return <>
     <section className="support-grid shell section-pad">
       <div className="support-options">
-        <article><span>01</span><h2>WhatsApp</h2><p>Fastest for a quick question, an order status, or working out which product suits you.</p><a href="https://wa.me/8169219734?text=Hi%20Whaleora!%20I%20have%20an%20inquiry.">Message us now ↗</a></article>
+        <article><span>01</span><h2>WhatsApp</h2><p>Fastest for a quick question, an order status, or working out which product suits you.</p><a href={whatsappHref('Hi Whaleora! I have an inquiry.')}>Message us now ↗</a></article>
         <article><span>02</span><h2>Orders &amp; products</h2><p>Anything about an order, a fault, a return, or a spec that isn’t on the page.</p><a href="mailto:hello@whaleora.com">hello@whaleora.com ↗</a></article>
         <article><span>03</span><h2>Partnerships &amp; workshops</h2><p>Campuses, workplaces, community groups, retail. Tell us roughly how many people and we’ll go from there.</p><a href="mailto:hello@whaleora.com?subject=Partnership%20enquiry">Start a partnership enquiry ↗</a></article>
       </div>

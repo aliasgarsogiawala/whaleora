@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { whatsappHref } from '@/lib/content/contact';
 
 export const metadata: Metadata = { title: 'Safety programmes for campuses & workplaces — Whaleora', description: 'Safety sessions that people remember, plus resources they keep. For universities, workplaces, community organisations and retail partners.' };
 
-const whatsapp = 'https://wa.me/8169219734?text=Hi%20Whaleora!%20I%20would%20like%20to%20explore%20institutional%20partnerships.';
+const whatsapp = whatsappHref('Hi Whaleora! I would like to explore institutional partnerships.');
 
 export default function InstitutionsPage() {
   return <main className="page-main institutions-page">

@@ -1,3 +1,5 @@
+import { whatsappHref } from './contact';
+
 export type FaqCategory =
   | 'choose'
   | 'alarm'
@@ -277,7 +279,7 @@ export const faqs: FaqEntry[] = [
     keywords: ['track', 'tracking', 'order status', 'where is', 'package', 'parcel', 'change address', 'cancel', 'missing'],
     followUps: ['orders-faulty', 'orders-returns', 'orders-contact'],
     links: [
-      { label: 'WhatsApp us', href: 'https://wa.me/8169219734?text=Hi%20Whaleora!%20I%20have%20a%20question%20about%20my%20order.' },
+      { label: 'WhatsApp us', href: whatsappHref('Hi Whaleora! I have a question about my order.') },
       { label: 'Email hello@whaleora.com', href: 'mailto:hello@whaleora.com' },
     ],
   },
@@ -289,7 +291,7 @@ export const faqs: FaqEntry[] = [
       'Checkout shows the methods available for your order — typically the usual Indian cards, UPI and net banking when Shopify checkout is connected. Taxes are included. We don’t add a subscription or a service fee on top of the product price.\n\nIf checkout isn’t completing, message us on WhatsApp and we’ll take the order there. Same prices.',
     keywords: ['payment', 'pay', 'upi', 'card', 'cod', 'cash on delivery', 'gpay', 'phonepe', 'emi', 'gst', 'invoice', 'bill'],
     followUps: ['orders-shipping', 'orders-contact', 'choose-prices'],
-    links: [{ label: 'WhatsApp to order', href: 'https://wa.me/8169219734?text=Hi%20Whaleora!%20I%27d%20like%20to%20place%20an%20order.' }],
+    links: [{ label: 'WhatsApp to order', href: whatsappHref("Hi Whaleora! I'd like to place an order.") }],
   },
   {
     id: 'orders-faulty',
@@ -302,7 +304,7 @@ export const faqs: FaqEntry[] = [
     followUps: ['orders-returns', 'orders-contact', 'care-test'],
     links: [
       { label: 'Email support', href: 'mailto:hello@whaleora.com?subject=Faulty%20item' },
-      { label: 'WhatsApp', href: 'https://wa.me/8169219734?text=Hi%20Whaleora!%20Something%20arrived%20faulty.' },
+      { label: 'WhatsApp', href: whatsappHref('Hi Whaleora! Something arrived faulty.') },
     ],
   },
   {
@@ -324,7 +326,7 @@ export const faqs: FaqEntry[] = [
     keywords: ['contact', 'whatsapp', 'email', 'phone', 'human', 'support', 'hello', 'thane', 'address', 'talk to', 'call'],
     followUps: ['partnerships-how', 'orders-faulty', 'brand-where'],
     links: [
-      { label: 'WhatsApp', href: 'https://wa.me/8169219734?text=Hi%20Whaleora!%20I%20have%20an%20inquiry.' },
+      { label: 'WhatsApp', href: whatsappHref('Hi Whaleora! I have an inquiry.') },
       { label: 'hello@whaleora.com', href: 'mailto:hello@whaleora.com' },
       { label: 'Contact page', href: '/contact' },
     ],
@@ -388,7 +390,7 @@ export const faqs: FaqEntry[] = [
     followUps: ['partnerships-retail', 'choose-student', 'orders-contact'],
     links: [
       { label: 'Partnerships', href: '/institutions' },
-      { label: 'WhatsApp partnerships', href: 'https://wa.me/8169219734?text=Hi%20Whaleora!%20I%20would%20like%20to%20explore%20institutional%20partnerships.' },
+      { label: 'WhatsApp partnerships', href: whatsappHref('Hi Whaleora! I would like to explore institutional partnerships.') },
     ],
   },
   {

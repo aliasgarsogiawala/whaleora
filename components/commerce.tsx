@@ -248,7 +248,7 @@ export function Header() {
     <>
       <div className={`announcement ${scrolled ? 'is-tucked' : ''}`}><span>Free shipping over ₹1,499 · Delivered across India</span></div>
       <header className={`site-header ${scrolled ? 'is-scrolled' : ''} ${overHero ? 'is-over-hero' : ''}`}>
-        <button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}><span /><span /></button>
+        <button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}><span /><span /><span /></button>
         <Link href="/" className="brand" aria-label="Whaleora home"><Image src="/brand/whaleora-logo.svg" width={186} height={48} alt="Whaleora" priority /></Link>
         <nav aria-label="Primary navigation">
           {NAV_LINKS.map((link) => (
@@ -258,7 +258,7 @@ export function Header() {
         <div className="header-actions">
           <Link href="/contact" className="contact-link" aria-current={isCurrent(pathname, '/contact') ? 'page' : undefined}>Contact</Link>
           <button className="cart-button" onClick={() => setOpen(true)} aria-label={`Open cart with ${count} items`}>
-            <ShoppingCart className="nav-cart-icon" size={20} strokeWidth={1.6} aria-hidden="true" />
+            <ShoppingCart className="nav-cart-icon" size={22} strokeWidth={1.7} aria-hidden="true" />
             {/* Keyed on the count so the badge replays its pop each time the bag changes. */}
             <span key={count} className="cart-count" data-empty={count === 0}>{count}</span>
           </button>
@@ -375,7 +375,6 @@ export function Footer() {
       <section className="community-signup"><p className="eyebrow">The monthly note</p><div><h2>One email a month. No fear-mongering.</h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">A checklist, a short read, and anything new we’ve made. Unsubscribe in one click.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} →</button></div></form></div></section>
       <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Prepared,<br />not afraid.</p><address>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => <Link href={href} key={label}>{label}</Link>)}</div>)}</div></section>
       <div className="footer-bottom"><span>© 2026 Whaleora</span><div><a href="mailto:hello@whaleora.com">hello@whaleora.com</a><a href="https://www.instagram.com/whaleora.safety">Instagram ↗</a><a href="https://www.linkedin.com/company/whaleora-safety/">LinkedIn ↗</a></div></div>
-      <div className="footer-word">WHALEORA</div>
     </footer>
   );
 }

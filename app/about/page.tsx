@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -65,7 +64,6 @@ export default function AboutPage() {
   return (
     <main className="page-main about-page">
       <section className="about-story-hero">
-        <div className="about-story-glow" aria-hidden="true" />
         <div className="about-story-hero-inner">
           <p className="eyebrow dark">About Whaleora</p>
           <h1>Safety shouldn&apos;t<br />feel <em>scary.</em></h1>
@@ -130,13 +128,16 @@ export default function AboutPage() {
         <div className="about-bleed">
           <div className="about-audience-heading" data-reveal>
             <h2 id="about-audience-title">Built for the walk home, the late shift, <em>the ordinary Tuesday.</em></h2>
-            <p>Safety isn&apos;t one situation. It is a hundred small ones, most of which never turn into a story. Whaleora is designed for those.</p>
+            <div>
+              <p>Safety isn&apos;t one situation. It is a hundred small ones, most of which never turn into a story. Whaleora is designed for those.</p>
+              <p className="audience-scroll-hint">Scroll →</p>
+            </div>
           </div>
         </div>
-        <div className="audience-strip">
+        <div className="audience-strip" role="list" aria-label="Who Whaleora is for. Scroll sideways.">
           {audiences.map((audience) => (
-            <article data-reveal key={audience.title}>
-              <Image src={audience.image} fill sizes="(max-width: 600px) 100vw, (max-width: 1100px) 34vw, 20vw" alt="" />
+            <article role="listitem" key={audience.title}>
+              <Image src={audience.image} fill sizes="(max-width: 700px) 78vw, 400px" alt="" />
               <small>{audience.kicker}</small>
               <h3>{audience.title}</h3>
               <p>{audience.text}</p>
@@ -175,17 +176,6 @@ export default function AboutPage() {
                 <p>{commitment.text}</p>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="about-cta">
-        <div className="shell">
-          <p>Four objects · ₹299 to ₹1,799</p>
-          <h2>Prepared,<br /><em>not afraid.</em></h2>
-          <div>
-            <Link href="/products" className="button button-light">Shop the collection <span>→</span></Link>
-            <Link href="/institutions" className="text-link">For campuses &amp; workplaces <span>↗</span></Link>
           </div>
         </div>
       </section>

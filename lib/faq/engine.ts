@@ -1,4 +1,5 @@
 import { faqById, faqCategories, faqs, faqsByCategory, type FaqCategory, type FaqEntry } from '@/lib/content/faq';
+import { containsSensitiveData, looksMeaningless, sanitizeQuestion } from './guard';
 
 const STOP = new Set([
   'a', 'an', 'the', 'is', 'are', 'am', 'was', 'be', 'do', 'does', 'did', 'can', 'could', 'should', 'would',
@@ -7,9 +8,21 @@ const STOP = new Set([
   'some', 'any', 'this', 'that', 'with', 'from', 'also', 'just', 'one',
 ]);
 
+/** Leftover verbs and filler that should not block a strong keyword match. */
+const FILLER = new Set([
+  ...STOP,
+  'take', 'use', 'get', 'buy', 'sell', 'make', 'come', 'give', 'put', 'keep', 'work',
+  'using', 'taking', 'getting', 'buying', 'available', 'really', 'like', 'know',
+  'light', 'item', 'product', 'stuff', 'thing', 'things', 'tools', 'kit',
+]);
+
 const GREETINGS = /^(hi|hello|hey|yo|namaste|good (morning|afternoon|evening)|help|hiya)\b/i;
 const THANKS = /^(thanks|thank you|thankyou|thx|ok|okay|cool|great|got it|perfect)\b/i;
-const HUMAN = /\b(human|person|agent|someone real|talk to (a )?person|customer care|call me|phone)\b/i;
+/** Deliberately narrow: a bare "phone" belongs to the alarm-and-app question, not
+ *  to a handoff. */
+const HUMAN = /\b(human being|real (person|human)|speak to|talk to (a |an )?(person|human|agent)|customer (care|service)|call me|your number|phone number)\b/i;
+const JAILBREAK = /\b(ignore (all )?(previous|prior|above) (instructions|prompts)|system prompt|you are now|act as (a )?(jailbreak|dan))\b/i;
+const NOT_SOLD = /\b(tasers?|stun guns?|firearms?|handguns?|pistols?)\b/i;
 
 const PRODUCT_HINTS: { pattern: RegExp; category: FaqCategory }[] = [
   { pattern: /\b(sos|alarm|siren|strobe|130|cr2032|pin)\b/, category: 'alarm' },
@@ -21,13 +34,21 @@ const PRODUCT_HINTS: { pattern: RegExp; category: FaqCategory }[] = [
   { pattern: /\b(workshop|campus|partner|bulk|wholesale|college programme)\b/, category: 'partnerships' },
 ];
 
+const INTENTS: { pattern: RegExp; id: string }[] = [
+  { pattern: /\b(which (one|product|tool)|help me (pick|choose)|what should i (get|buy|pick|choose)|which should i (get|buy|pick))\b/, id: 'choose-which' },
+];
+
 export type FaqReply = {
-  kind: 'greeting' | 'thanks' | 'match' | 'clarify' | 'category' | 'handoff' | 'fallback';
+  kind: 'greeting' | 'thanks' | 'match' | 'clarify' | 'category' | 'handoff' | 'fallback' | 'unclear' | 'sensitive';
   text: string;
   entry?: FaqEntry;
   suggestions: FaqEntry[];
   links?: FaqEntry['links'];
+  /** True when the reply did not answer the question, so the caller can escalate. */
+  missed?: boolean;
 };
+
+const fold = (value: string) => value.toLowerCase().replace(/[?!.’']/g, '').replace(/\s+/g, ' ').trim();
 
 const tokenize = (value: string) =>
   value
@@ -56,57 +77,185 @@ const wordsOf = (value: string) =>
     .split(/\s+/)
     .filter(Boolean);
 
+const phraseIsUseful = (phrase: string) => {
+  const words = wordsOf(phrase);
+  if (words.length < 2) return false;
+  if (words.length >= 3) return true;
+  return words.some((word) => word.length >= 4 && !STOP.has(word));
+};
+
+const keywordFitsToken = (keyword: string, token: string) => {
+  if (keyword === token) return 'exact' as const;
+  if (token.length >= 4 && keyword.length >= 4 && (keyword.startsWith(token) || token.startsWith(keyword))) {
+    return 'loose' as const;
+  }
+  return null;
+};
+
 const scoreEntry = (entry: FaqEntry, tokens: string[], raw: string, preferred?: FaqCategory | null) => {
   let score = 0;
+  let strong = 0;
+  const matched = new Set<string>();
   const question = entry.question.toLowerCase();
   const questionWords = new Set(wordsOf(entry.question));
-  const keywordBlob = entry.keywords.join(' ');
-  const hay = `${question} ${keywordBlob}`;
 
   for (const token of tokens) {
-    let hit = false;
     if (questionWords.has(token)) {
       score += 4;
-      hit = true;
-    } else if (question.includes(token)) {
+      strong += 1;
+      matched.add(token);
+    } else if (token.length >= 4 && question.includes(token)) {
       score += 2;
-      hit = true;
+      matched.add(token);
     }
-    if (entry.keywords.some((keyword) => keyword === token)) {
+
+    let bestFit: 'exact' | 'loose' | null = null;
+    for (const keyword of entry.keywords) {
+      const fit = keywordFitsToken(keyword, token);
+      if (fit === 'exact') {
+        bestFit = 'exact';
+        break;
+      }
+      if (fit && !bestFit) bestFit = fit;
+    }
+    if (bestFit === 'exact') {
       score += 5;
-      hit = true;
-    } else if (entry.keywords.some((keyword) => keyword.includes(token) || (token.length > 3 && token.includes(keyword)))) {
+      strong += 1;
+      matched.add(token);
+    } else if (bestFit === 'loose') {
       score += 3;
-      hit = true;
-    } else if (!hit && hay.includes(token)) {
-      score += 1;
+      matched.add(token);
     }
   }
 
-  if (raw.length > 10 && wordsOf(entry.question).join(' ').includes(raw.slice(0, 48))) score += 8;
+  if (raw.length > 10 && wordsOf(entry.question).join(' ').includes(raw.slice(0, 48))) {
+    score += 8;
+    strong += 1;
+  }
 
   for (const phrase of entry.keywords) {
-    if (phrase.includes(' ') && raw.includes(phrase)) score += 8;
+    if (phraseIsUseful(phrase) && raw.includes(phrase)) {
+      score += 8;
+      strong += 1;
+      for (const word of wordsOf(phrase)) {
+        if (!STOP.has(word)) matched.add(word);
+      }
+    }
   }
 
   if (preferred && entry.category === preferred) score += 2;
-  return score;
+  return { score, strong, matched };
 };
 
-const followUpsFor = (entry: FaqEntry) =>
-  entry.followUps.map((id) => faqById.get(id)).filter((item): item is FaqEntry => Boolean(item));
+const entriesFor = (...ids: string[]) =>
+  ids.map((id) => faqById.get(id)).filter((entry): entry is FaqEntry => Boolean(entry));
 
-export function replyToFaq(query: string, pathname = '/'): FaqReply {
-  const raw = query.trim().toLowerCase().replace(/\s+/g, ' ');
+const dedupe = (entries: FaqEntry[], limit: number) => {
+  const seen = new Set<string>();
+  const picked: FaqEntry[] = [];
+  for (const entry of entries) {
+    if (seen.has(entry.id)) continue;
+    seen.add(entry.id);
+    picked.push(entry);
+    if (picked.length === limit) break;
+  }
+  return picked;
+};
+
+/** A deliberate opening set: one per thing people actually arrive worrying about. */
+export const starterQuestions = entriesFor(
+  'choose-which',
+  'orders-shipping',
+  'legal-flight',
+  'pepper-legal',
+  'care-battery',
+  'orders-track',
+);
+
+export const topicPrompts = faqCategories;
+
+const contactEntry = () => faqById.get('orders-contact');
+
+const followUpsFor = (entry: FaqEntry) => entriesFor(...entry.followUps);
+
+const matchedReply = (entry: FaqEntry): FaqReply => ({
+  kind: 'match',
+  text: entry.answer,
+  entry,
+  suggestions: followUpsFor(entry),
+  links: entry.links,
+});
+
+function fallbackReply(nearMisses: FaqEntry[], misses: number): FaqReply {
+  const contact = contactEntry();
+
+  if (misses >= 1) {
+    return {
+      kind: 'fallback',
+      text:
+        'Still not something I can answer properly, and I’d rather not guess — especially on legal or order specifics.\n\nA person will get this right in a couple of minutes. WhatsApp is fastest; email if it needs a paper trail.',
+      suggestions: dedupe([...nearMisses, ...starterQuestions], 3),
+      links: contact?.links,
+      missed: true,
+    };
+  }
+
+  if (nearMisses.length >= 2) {
+    return {
+      kind: 'fallback',
+      text: 'I’m not confident I follow that one, so I won’t pretend. These come closest — or say it another way and I’ll try again.',
+      suggestions: dedupe(nearMisses, 3),
+      missed: true,
+    };
+  }
+
+  return {
+    kind: 'fallback',
+    text:
+      'I don’t have an answer for that, and I won’t invent one.\n\nWhat I do cover: choosing between the four tools, how each one works, orders and shipping, flights and local law, batteries and care, and campus or office sessions. Which of those is closest?',
+    suggestions: dedupe(starterQuestions, 4),
+    links: contact?.links,
+    missed: true,
+  };
+}
+
+export function replyToFaq(query: string, pathname = '/', misses = 0): FaqReply {
+  const raw = sanitizeQuestion(query).toLowerCase();
+
   if (!raw) {
-    return { kind: 'greeting', text: 'What do you want to know?', suggestions: faqs.filter((entry) => entry.featured).slice(0, 4) };
+    return { kind: 'greeting', text: 'What do you want to know?', suggestions: dedupe(starterQuestions, 4) };
+  }
+
+  if (containsSensitiveData(raw)) {
+    const contact = contactEntry();
+    return {
+      kind: 'sensitive',
+      text:
+        'Don’t type card numbers, OTPs or passwords in here — not to me, and not to anyone claiming to be us. Whaleora will never ask for them, and payment is handled entirely by Shopify at checkout.\n\nIf something about an order looks off, message us directly and we’ll check it.',
+      suggestions: entriesFor('orders-payment', 'orders-track'),
+      links: contact?.links,
+    };
+  }
+
+  if (JAILBREAK.test(raw)) {
+    return fallbackReply([], misses);
+  }
+
+  if (NOT_SOLD.test(raw)) {
+    return {
+      kind: 'fallback',
+      text:
+        'We don’t sell anything like that.\n\nWhaleora is four everyday tools: an SOS alarm, a whistle, pepper spray, and a window breaker. If that’s what you were looking for, I can help you pick.',
+      suggestions: dedupe(starterQuestions, 4),
+      missed: true,
+    };
   }
 
   if (GREETINGS.test(raw) && raw.split(' ').length < 5) {
     return {
       kind: 'greeting',
       text: 'Hi — ask about a product, a flight, a battery, shipping, or a campus session. Or pick a topic below.',
-      suggestions: faqs.filter((entry) => entry.featured).slice(0, 5),
+      suggestions: dedupe(starterQuestions, 5),
     };
   }
 
@@ -114,23 +263,45 @@ export function replyToFaq(query: string, pathname = '/'): FaqReply {
     return {
       kind: 'thanks',
       text: 'Glad that helped. If something still isn’t clear, ask it another way — or WhatsApp a person.',
-      suggestions: [faqById.get('orders-contact'), faqById.get('choose-which')].filter((item): item is FaqEntry => Boolean(item)),
-      links: faqById.get('orders-contact')?.links,
+      suggestions: entriesFor('orders-contact', 'choose-which'),
+      links: contactEntry()?.links,
     };
   }
 
   if (HUMAN.test(raw)) {
-    const contact = faqById.get('orders-contact')!;
-    return { kind: 'handoff', text: contact.answer, entry: contact, suggestions: followUpsFor(contact), links: contact.links };
+    const contact = contactEntry();
+    if (contact) {
+      return { kind: 'handoff', text: contact.answer, entry: contact, suggestions: followUpsFor(contact), links: contact.links };
+    }
   }
 
-  const categoryMatch = faqCategories.find((category) => raw === category.id || raw === category.label.toLowerCase() || raw === category.prompt.toLowerCase());
+  if (looksMeaningless(raw)) {
+    return {
+      kind: 'unclear',
+      text: 'That came through as stray characters rather than a question. Put it in words — or tap one of these.',
+      suggestions: dedupe(starterQuestions, 4),
+      missed: true,
+    };
+  }
+
+  const exact = faqs.find((entry) => fold(entry.question) === fold(raw));
+  if (exact) return matchedReply(exact);
+
+  for (const intent of INTENTS) {
+    if (intent.pattern.test(raw)) {
+      const entry = faqById.get(intent.id);
+      if (entry) return matchedReply(entry);
+    }
+  }
+
+  const categoryMatch = faqCategories.find(
+    (category) => raw === category.id || raw === category.label.toLowerCase() || fold(raw) === fold(category.prompt),
+  );
   if (categoryMatch) {
-    const items = faqsByCategory(categoryMatch.id);
     return {
       kind: 'category',
       text: `Here is what people usually ask about ${categoryMatch.label.toLowerCase()}. Tap one, or type your own question.`,
-      suggestions: items.slice(0, 6),
+      suggestions: faqsByCategory(categoryMatch.id).slice(0, 6),
     };
   }
 
@@ -140,26 +311,21 @@ export function replyToFaq(query: string, pathname = '/'): FaqReply {
     if (hint.pattern.test(raw)) preferred = hint.category;
   }
 
+  const leftoverOf = (matched: Set<string>) =>
+    tokens.filter((token) => !matched.has(token) && token.length >= 4 && !FILLER.has(token));
+
   const ranked = faqs
-    .map((entry) => ({ entry, score: scoreEntry(entry, tokens, raw, preferred) }))
-    .sort((a, b) => b.score - a.score);
+    .map((entry) => ({ entry, ...scoreEntry(entry, tokens, raw, preferred) }))
+    .sort((a, b) => leftoverOf(a.matched).length - leftoverOf(b.matched).length || b.score - a.score);
 
   const best = ranked[0];
   const second = ranked[1];
+  const leftover = best ? leftoverOf(best.matched) : tokens;
+  const confident = Boolean(best && best.score >= 5 && best.strong >= 1 && leftover.length === 0);
 
-  if (!best || best.score < 5) {
-    const contact = faqById.get('orders-contact')!;
-    return {
-      kind: 'fallback',
-      text: 'I don’t have a confident answer for that yet — and I’d rather not guess, especially on legal or order specifics. WhatsApp is fastest for a real person. Or try one of these.',
-      suggestions: [
-        faqById.get('choose-which')!,
-        faqById.get('orders-shipping')!,
-        faqById.get('legal-flight')!,
-        contact,
-      ],
-      links: contact.links,
-    };
+  if (!confident) {
+    const nearMisses = ranked.filter((item) => item.score >= 5 && item.strong >= 1).map((item) => item.entry);
+    return fallbackReply(nearMisses, misses);
   }
 
   if (second && best.score - second.score < 3 && second.score >= 8) {
@@ -170,14 +336,5 @@ export function replyToFaq(query: string, pathname = '/'): FaqReply {
     };
   }
 
-  return {
-    kind: 'match',
-    text: best.entry.answer,
-    entry: best.entry,
-    suggestions: followUpsFor(best.entry),
-    links: best.entry.links,
-  };
+  return matchedReply(best.entry);
 }
-
-export const starterQuestions = faqs.filter((entry) => entry.featured).slice(0, 6);
-export const topicPrompts = faqCategories;

@@ -7,6 +7,8 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { greetingText, type FaqEntry, type FaqLink } from '@/lib/content/faq';
 import { whatsappHref } from '@/lib/content/contact';
 import { replyToFaq, starterQuestions, topicPrompts } from '@/lib/faq/engine';
+import { MAX_QUESTION_LENGTH, redactSensitive, safeHref, sanitizeQuestion } from '@/lib/faq/guard';
+import { cooldownMessage, createRateLimiter, type RateLimiter } from '@/lib/faq/rate-limit';
 
 type ChatMessage = {
   id: string;
@@ -14,10 +16,16 @@ type ChatMessage = {
   text: string;
   links?: FaqLink[];
   suggestions?: FaqEntry[];
+  tone?: 'notice';
 };
 
 const WHATSAPP = whatsappHref('Hi Whaleora! I have an inquiry.');
 const delay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+/** The thread is the only place a message lives, so it stays bounded. */
+const MAX_HISTORY = 60;
+const trimHistory = (messages: ChatMessage[]) =>
+  messages.length > MAX_HISTORY ? messages.slice(messages.length - MAX_HISTORY) : messages;
 
 function WhatsAppIcon() {
   return (
@@ -45,20 +53,25 @@ function Answer({ text }: { text: string }) {
 }
 
 function LinkRow({ links, onNavigate }: { links?: FaqLink[]; onNavigate: () => void }) {
-  if (!links?.length) return null;
+  const safe = (links ?? []).flatMap((link) => {
+    const href = safeHref(link.href);
+    return href ? [{ ...link, href }] : [];
+  });
+  if (!safe.length) return null;
   return (
     <div className="faq-bot-links">
-      {links.map((link) =>
-        link.href.startsWith('/') ? (
+      {safe.map((link) => {
+        const external = /^https?:/.test(link.href);
+        return link.href.startsWith('/') ? (
           <Link key={link.href} href={link.href} onClick={onNavigate}>
             {link.label} <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden="true" />
           </Link>
         ) : (
-          <a key={link.href} href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel={link.href.startsWith('http') ? 'noreferrer' : undefined}>
+          <a key={link.href} href={link.href} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>
             {link.label} <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden="true" />
           </a>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }
@@ -77,6 +90,11 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
       ? [{ id: 'welcome', role: 'bot', text: greetingText, suggestions: starterQuestions }]
       : [],
   );
+  const [cooldown, setCooldown] = useState(0);
+  const [misses, setMisses] = useState(0);
+  const [lastQuestion, setLastQuestion] = useState('');
+  const limiterRef = useRef<RateLimiter | null>(null);
+  const seq = useRef(0);
 
   const onProduct = /^\/products\/[^/]+/.test(pathname);
   const hideWidget = variant === 'widget' && pathname === '/contact';
@@ -99,25 +117,52 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
     if (visible && variant === 'widget') inputRef.current?.focus();
   }, [visible, variant]);
 
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setInterval(() => setCooldown((seconds) => Math.max(0, seconds - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [cooldown]);
+
+  const push = (message: Omit<ChatMessage, 'id'>) => {
+    seq.current += 1;
+    const id = `m${seq.current}`;
+    setMessages((current) => trimHistory([...current, { ...message, id }]));
+  };
+
   const pushBot = async (query: string) => {
     setTyping(true);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!reduced) await delay(Math.min(900, 280 + query.length * 8));
-    const reply = replyToFaq(query, pathname);
-    setMessages((current) => [
-      ...current,
-      { id: `${Date.now()}-bot`, role: 'bot', text: reply.text, links: reply.links, suggestions: reply.suggestions },
-    ]);
+    const reply = replyToFaq(query, pathname, misses);
+    setMisses((count) => (reply.missed ? count + 1 : 0));
+    push({ role: 'bot', text: reply.text, links: reply.links, suggestions: reply.suggestions });
     setTyping(false);
   };
 
   const ask = (query: string) => {
-    const text = query.trim();
-    if (!text || typing) return;
+    const text = sanitizeQuestion(query);
+    if (!text || typing || cooldown > 0) return;
+
+    const limiter = (limiterRef.current ??= createRateLimiter());
+    const verdict = limiter();
+    if (!verdict.ok) {
+      setCooldown(Math.ceil(verdict.retryAfterMs / 1000));
+      push({ role: 'bot', tone: 'notice', text: cooldownMessage(verdict), links: verdict.scope === 'session' ? [{ label: 'WhatsApp a person', href: WHATSAPP }] : undefined });
+      return;
+    }
+
     setInput('');
-    setMessages((current) => [...current, { id: `${Date.now()}-user`, role: 'user', text }]);
+    setLastQuestion(redactSensitive(text));
+    push({ role: 'user', text: redactSensitive(text) });
     void pushBot(text);
   };
+
+  // Two misses in a row means the FAQ set genuinely does not cover this, so hand
+  // the shopper's own wording to a person rather than making them retype it.
+  const escalation =
+    misses >= 2 && !typing && lastQuestion
+      ? whatsappHref(`Hi Whaleora! The site assistant couldn’t answer this: "${lastQuestion}"`)
+      : null;
 
   const openWidget = () => {
     setOpen(true);
@@ -151,7 +196,7 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
 
       <div className="faq-bot-topics" aria-label="Browse topics">
         {topicPrompts.map((topic) => (
-          <button type="button" key={topic.id} onClick={() => ask(topic.prompt)}>
+          <button type="button" key={topic.id} onClick={() => ask(topic.prompt)} disabled={typing || cooldown > 0}>
             {topic.label}
           </button>
         ))}
@@ -164,7 +209,7 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
             <article key={message.id} className={`faq-bot-msg is-${message.role}`}>
               {message.role === 'bot' && <span className="faq-bot-avatar" aria-hidden="true">W</span>}
               <div className="faq-bot-msg-body">
-                <div className="faq-bot-bubble">
+                <div className={`faq-bot-bubble ${message.tone === 'notice' ? 'is-notice' : ''}`}>
                   <Answer text={message.text} />
                 </div>
                 <LinkRow links={message.links} onNavigate={() => variant === 'widget' && setOpen(false)} />
@@ -172,7 +217,7 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
                   <div className="faq-bot-chips">
                     <p>Related</p>
                     {suggestions.map((entry) => (
-                      <button type="button" key={entry.id} onClick={() => ask(entry.question)}>
+                      <button type="button" key={entry.id} onClick={() => ask(entry.question)} disabled={typing || cooldown > 0}>
                         {entry.question}
                       </button>
                     ))}
@@ -192,6 +237,21 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
             </div>
           </article>
         )}
+        {escalation && (
+          <article className="faq-bot-msg is-bot">
+            <span className="faq-bot-avatar" aria-hidden="true">W</span>
+            <div className="faq-bot-msg-body">
+              <div className="faq-bot-bubble is-notice">
+                <Answer text="I’ve missed twice now, so let’s not keep going in circles. This sends a person your question exactly as you typed it." />
+              </div>
+              <div className="faq-bot-links">
+                <a href={escalation} target="_blank" rel="noreferrer">
+                  Send it on WhatsApp <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden="true" />
+                </a>
+              </div>
+            </div>
+          </article>
+        )}
       </div>
 
       <form
@@ -206,18 +266,27 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
           id={inputId}
           ref={inputRef}
           value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask about shipping, flights, batteries…"
+          onChange={(event) => setInput(event.target.value.slice(0, MAX_QUESTION_LENGTH))}
+          placeholder={cooldown > 0 ? `Ready again in ${cooldown}s…` : 'Ask about shipping, flights, batteries…'}
           autoComplete="off"
-          maxLength={280}
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="send"
+          maxLength={MAX_QUESTION_LENGTH}
+          disabled={cooldown > 0}
+          aria-describedby={`${inputId}-hint`}
         />
-        <button type="submit" disabled={typing || !input.trim()} aria-label="Send question">
+        <button type="submit" disabled={typing || cooldown > 0 || !sanitizeQuestion(input)} aria-label="Send question">
           <Send size={16} strokeWidth={1.8} />
         </button>
       </form>
 
-      <p className="faq-bot-foot">
-        Need a person? <a href={WHATSAPP}>WhatsApp</a> or <a href="mailto:hello@whaleora.com">email</a>.
+      <p className="faq-bot-foot" id={`${inputId}-hint`}>
+        {cooldown > 0 ? (
+          <span className="faq-bot-cooldown">Taking a breath — ready again in {cooldown}s.</span>
+        ) : (
+          <>Never share card details or OTPs here. Need a person? <a href={WHATSAPP}>WhatsApp</a> or <a href="mailto:hello@whaleora.com">email</a>.</>
+        )}
       </p>
     </section>
   );

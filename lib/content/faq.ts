@@ -30,7 +30,7 @@ export const faqCategories: { id: FaqCategory; label: string; prompt: string }[]
   { id: 'alarm', label: 'SOS Alarm', prompt: 'How the 130dB alarm works' },
   { id: 'pepper', label: 'Pepper spray', prompt: 'Is pepper spray legal to carry?' },
   { id: 'whistle', label: 'Whistle', prompt: 'Tell me about the survival whistle' },
-  { id: 'window', label: 'Window breaker', prompt: 'How does the window breaker work?' },
+  { id: 'window', label: 'Window breaker', prompt: 'Tell me about the window breaker' },
   { id: 'orders', label: 'Orders', prompt: 'Shipping, returns and payments' },
   { id: 'legal', label: 'Travel & law', prompt: 'Can I take these on a flight?' },
   { id: 'care', label: 'Care', prompt: 'Battery, testing and storage' },
@@ -46,7 +46,7 @@ export const faqs: FaqEntry[] = [
     question: 'Which product should I buy?',
     answer:
       'Pick by the situation, not the catalogue.\n\nReach for the Personal SOS Alarm (₹1,799) when you need people nearby to look up right now — 130dB siren and a strobe on one pull. Take pepper spray (₹499) when someone is already close and you need distance. The Survival Whistle (₹299) is the fail-safe: no battery, 120dB, lives on a zipper. The window breaker (₹599) belongs in a car, not on a keyring.\n\nMost people start with the alarm and add the whistle. Tell me where you spend your days — campus, commute, travel, driving — and I’ll narrow it.',
-    keywords: ['which', 'choose', 'pick', 'recommend', 'best', 'right one', 'should i buy', 'starter', 'begin', 'first', 'kit', 'compare', 'difference', 'vs', 'versus', 'help me choose'],
+    keywords: ['which', 'choose', 'pick', 'recommend', 'best', 'right one', 'should i buy', 'should i get', 'which one', 'starter', 'begin', 'first', 'kit', 'compare', 'difference', 'vs', 'versus', 'help me choose'],
     followUps: ['choose-alarm-vs-whistle', 'choose-kit', 'alarm-how', 'orders-shipping'],
     links: [
       { label: 'Compare all four', href: '/products' },
@@ -148,7 +148,7 @@ export const faqs: FaqEntry[] = [
     question: 'How loud is 130dB, really?',
     answer:
       'Loud enough that people in the street look up, which is the entire point. For reference, it is in the range of a smoke alarm held at arm’s length.\n\nThe published spec is a 130dB dual-siren on the Personal SOS Alarm, plus a strobe so it is visible as well as audible. The Survival Whistle is 120dB — still very loud, from one breath and no battery.',
-    keywords: ['loud', '130', '130db', '120db', 'decibel', 'volume', 'noise', 'sound', 'smoke alarm', 'hear', 'how loud'],
+    keywords: ['loud', '130', '130db', '120db', 'decibel', 'volume', 'noise', 'sound', 'smoke alarm', 'hear', 'how loud', 'alarm', 'sos'],
     followUps: ['alarm-does-it-stop', 'whistle-how', 'care-test'],
     links: [{ label: 'Personal SOS Alarm', href: '/products/sos-alarm' }],
   },
@@ -168,7 +168,7 @@ export const faqs: FaqEntry[] = [
     question: 'How big is the SOS Alarm?',
     answer:
       '38 grams, impact-resistant polymer, compact keychain format. It is meant to live next to your keys, not in a drawer.\n\nIn the box: the alarm, a CR2032 battery, and a keychain attachment. Weather-resistant casing — rain on a commute is fine; it is not a dive watch.',
-    keywords: ['weight', 'size', '38g', '38 grams', 'small', 'keyring', 'keychain', 'compact', 'dimensions', 'weather', 'waterproof', 'rain'],
+    keywords: ['weight', 'size', 'heavy', 'how heavy', 'how big', '38g', '38 grams', 'small', 'keyring', 'keychain', 'compact', 'dimensions', 'weather-resistant', 'waterproof', 'rain'],
     followUps: ['care-battery', 'alarm-how', 'choose-kit'],
     links: [{ label: 'Personal SOS Alarm', href: '/products/sos-alarm' }],
   },
@@ -178,7 +178,7 @@ export const faqs: FaqEntry[] = [
     question: 'Does it need an app or Bluetooth?',
     answer:
       'No. No pairing, no firmware, no account, no subscription. Pull the pin; that is the entire interface.\n\nAnything you have to unlock or remember is one step too many when you actually need it. That is why we don’t make a “smart” version.',
-    keywords: ['app', 'bluetooth', 'wifi', 'pair', 'smartphone', 'gps', 'location', 'subscription', 'charge', 'usb', 'smart'],
+    keywords: ['app', 'bluetooth', 'wifi', 'pair', 'phone', 'smartphone', 'mobile', 'android', 'iphone', 'gps', 'location', 'subscription', 'charge', 'usb', 'smart'],
     followUps: ['care-battery', 'alarm-how', 'choose-cheap-alarm'],
   },
   {
@@ -266,7 +266,7 @@ export const faqs: FaqEntry[] = [
     question: 'How much is shipping, and where do you deliver?',
     answer:
       'Free shipping on orders over ₹1,499 across India. Below that, shipping charges and the delivery estimate for your pincode are shown at checkout. Taxes are included in the listed prices.\n\nWe ship from Maharashtra. We do not currently publish a single pan-India delivery day because it depends on your pincode — checkout is the honest number.',
-    keywords: ['shipping', 'delivery', 'free shipping', '1499', 'pincode', 'india', 'dispatch', 'how long', 'days', 'courier', 'deliver'],
+    keywords: ['shipping', 'delivery', 'deliver', 'free shipping', '1499', 'pincode', 'india', 'dispatch', 'how long', 'how long does delivery', 'days', 'courier'],
     followUps: ['orders-track', 'orders-payment', 'choose-prices'],
     links: [{ label: 'Shop the collection', href: '/products' }],
   },
@@ -300,7 +300,7 @@ export const faqs: FaqEntry[] = [
     question: 'Something arrived faulty. Now what?',
     answer:
       'Email hello@whaleora.com and tell us what it did. We’ll replace it — you don’t have to build a case for it first. Please get in touch before posting anything back so we can tell you where to send it.\n\nInclude your order name, a short description, and a photo if you have one. WhatsApp is fine for the first message.',
-    keywords: ['faulty', 'broken', 'defective', 'doesn’t work', 'not working', 'replace', 'warranty', 'damaged', 'wrong item'],
+    keywords: ['faulty', 'broken', 'defective', 'doesn’t work', 'not working', 'arrives broken', 'arrived broken', 'replace', 'warranty', 'damaged', 'wrong item'],
     followUps: ['orders-returns', 'orders-contact', 'care-test'],
     links: [
       { label: 'Warranty & claims', href: '/warranty' },
@@ -339,7 +339,7 @@ export const faqs: FaqEntry[] = [
     question: 'Can I take a safety kit on a flight?',
     answer:
       'The whistle, yes — it is a piece of aluminium.\n\nPepper spray is prohibited on effectively every airline, cabin and usually checked too. The window breaker is a sharp tool with a concealed blade; it belongs in a car, not a carry-on or checked bag. The SOS Alarm is an electronic device with a coin cell — most carriers allow it in cabin, but check your airline’s list rather than ours.\n\nWhen in doubt, put the spray and the breaker in the car you left at home, and take the whistle.',
-    keywords: ['flight', 'plane', 'airline', 'airport', 'cabin', 'checked bag', 'travel', 'tsa', 'security', 'aeroplane', 'airplane', 'carry on'],
+    keywords: ['flight', 'fly', 'flying', 'plane', 'airline', 'airport', 'cabin', 'checked bag', 'travel', 'tsa', 'security', 'aeroplane', 'airplane', 'carry on'],
     followUps: ['pepper-legal', 'window-where', 'whistle-how'],
     links: [{ label: 'Survival Whistle', href: '/products/whistle' }],
   },
@@ -423,7 +423,7 @@ export const faqs: FaqEntry[] = [
     question: 'Where are you based?',
     answer:
       'Sambhaji Nagar, Thane, Maharashtra — designed in India, shipped across India. Founder Sheuli started Whaleora after finding only two options: intimidating tactical gear, or a pretty keychain that didn’t work.\n\nInstagram is @whaleora.safety. Email is hello@whaleora.com.',
-    keywords: ['where', 'thane', 'mumbai', 'maharashtra', 'india', 'address', 'founded', 'sheuli', 'founder', 'instagram'],
+    keywords: ['where', 'based', 'located', 'thane', 'mumbai', 'maharashtra', 'india', 'address', 'founded', 'sheuli', 'founder', 'instagram'],
     followUps: ['brand-what', 'orders-contact', 'brand-hub'],
     links: [
       { label: 'About Whaleora', href: '/about' },

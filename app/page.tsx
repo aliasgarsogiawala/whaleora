@@ -15,7 +15,26 @@ export default async function Home() {
     <main>
       <section className="hero" data-hero-overlay>
         <div className="hero-media">
-          <Image src="/lifestyle/whaleora-hero-campaign.webp" alt="A woman carrying a small personal-safety keyring outside a Mumbai transit station at blue hour" fill priority sizes="100vw" />
+          {/* Pexels 35574649, Anupriya Datta — Mumbai commute at CST. Pexels License. */}
+          <video
+            className="hero-video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/lifestyle/hero-commute-poster.jpg"
+            aria-hidden="true"
+          >
+            <source src="/lifestyle/hero-commute.mp4" type="video/mp4" />
+          </video>
+          <Image
+            className="hero-still"
+            src="/lifestyle/whaleora-hero-campaign.webp"
+            alt="A woman carrying a small personal-safety keyring outside a Mumbai transit station at blue hour"
+            fill
+            sizes="100vw"
+          />
         </div>
         <div className="hero-scrim" aria-hidden="true" />
 

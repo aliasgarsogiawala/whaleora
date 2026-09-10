@@ -144,7 +144,8 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.faq-bot-topics button:hover { border-color: var(--terracotta); color: var(--terracotta); background: #fff; }
+.faq-bot-topics button:hover:not(:disabled) { border-color: var(--terracotta); color: var(--terracotta); background: #fff; }
+.faq-bot-topics button:disabled { opacity: .45; cursor: not-allowed; }
 
 .faq-bot-thread {
   flex: 1;
@@ -181,6 +182,12 @@
   border-radius: 16px 16px 4px 16px;
 }
 .faq-bot-bubble.is-typing { padding: 14px 16px; }
+.faq-bot-msg.is-bot .faq-bot-bubble.is-notice {
+  background: #fff6ec;
+  border-color: rgba(215, 103, 61, .38);
+  box-shadow: none;
+}
+.faq-bot-msg.is-bot .faq-bot-bubble.is-notice .faq-bot-answer p { color: #7a3517; }
 
 .faq-bot-avatar {
   flex: none;
@@ -244,10 +251,11 @@
   color: #9a3f1c;
   font-weight: 600;
 }
-.faq-bot-chips button:hover, .faq-bot-links a:hover {
+.faq-bot-chips button:hover:not(:disabled), .faq-bot-links a:hover {
   border-color: var(--terracotta);
   background: #fff9f1;
 }
+.faq-bot-chips button:disabled { opacity: .45; cursor: not-allowed; }
 
 .faq-bot-dots { display: flex; gap: 5px; }
 .faq-bot-dots i {
@@ -281,7 +289,7 @@
   outline: none;
 }
 .faq-bot-compose input::placeholder { color: rgba(16, 40, 68, .45); }
-.faq-bot-compose input:focus { border-color: var(--terracotta); box-shadow: 0 0 0 3px rgba(215, 103, 61, .16); }
+.faq-bot-compose input:disabled { background: #f7f1e8; color: rgba(16, 40, 68, .45); cursor: not-allowed; }
 .faq-bot-compose button {
   flex: none;
   display: grid;
@@ -313,6 +321,7 @@
   color: rgba(16, 40, 68, .62);
 }
 .faq-bot-foot a { color: #9a3f1c; font-weight: 600; border-bottom: 1px solid currentColor; }
+.faq-bot-cooldown { color: #9a3f1c; font-weight: 600; }
 
 .faq-bot.is-pdp .faq-bot-launcher,
 .faq-bot.is-pdp .faq-wa { bottom: max(18px, env(safe-area-inset-bottom)); }

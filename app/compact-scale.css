@@ -1,8 +1,8 @@
 /* A quieter storefront scale. Palette, content, and admin controls stay unchanged. */
-:root { --header-h: 72px; }
-.site-header.is-scrolled { height: 62px; }
-.brand img { width: 146px; }
-.site-header.is-scrolled .brand img { width: 136px; }
+:root { --header-h: 84px; }
+.site-header.is-scrolled { height: 74px; }
+.brand img { width: 176px; }
+.site-header.is-scrolled .brand img { width: 164px; }
 .section-pad { padding-block: clamp(60px, 7.5vw, 112px); }
 .eyebrow { margin-bottom: 16px; }
 .button { min-height: 48px; padding-inline: 22px; }
@@ -54,8 +54,8 @@
 .secondary-stories h3 { font-size: 31px; }
 .persona-grid a, .persona-grid button { min-height: 220px; padding-block: 24px; }
 .persona-grid h3 { font-size: 33px; }
-.partnership-strip, .about-cta, .scenarios, .workshop-cta, .institution-cta { padding-block: clamp(52px, 6.5vw, 94px); }
-.partnership-strip h2, .about-cta h2 { font-size: clamp(38px, 4.4vw, 68px); }
+.partnership-strip, .scenarios, .workshop-cta, .institution-cta { padding-block: clamp(52px, 6.5vw, 94px); }
+.partnership-strip h2 { font-size: clamp(38px, 4.4vw, 68px); }
 .partnership-strip > div > p:not(.eyebrow) { font-size: 16px; }
 .partnership-types { margin-block: 40px 32px; }
 .founder-story { min-height: 700px; }
@@ -114,11 +114,11 @@
 .founder-quote h2 { font-size: clamp(28px, 3vw, 44px); }
 .founder-pages article { min-height: 0; padding-block: clamp(32px, 3.6vw, 52px); }
 .founder-pages article > p { font-size: clamp(20px, 1.65vw, 26px); }
-.about-audience { padding-block: clamp(52px, 6vw, 88px); }
+.about-audience { padding-block: clamp(44px, 5vw, 72px) 0; }
 .about-audience-heading h2 { font-size: clamp(25px, 2.7vw, 40px); }
-.audience-strip article { min-height: min(38svh, 300px); }
-.audience-strip h3 { font-size: clamp(19px, 1.5vw, 24px); }
-.why-chapter { min-height: 0; }
+.audience-strip article { min-height: min(68svh, 560px); }
+.audience-strip h3 { font-size: clamp(26px, 2.2vw, 36px); }
+.why-chapter { min-height: min(72svh, 640px); }
 .why-chapter-inner { padding-block: clamp(56px, 7vw, 100px); }
 .why-chapter h2 { font-size: clamp(32px, 3.7vw, 56px); }
 .why-chapter-copy { padding-top: 32px; }
@@ -128,8 +128,8 @@
 .confidence-heading h2 { font-size: clamp(30px, 3.4vw, 50px); }
 .commitment-stories article { min-height: 280px; }
 .commitment-stories h3 { font-size: clamp(26px, 2.6vw, 36px); }
-.about-cta { padding-block: clamp(58px, 7vw, 96px); }
-.about-cta h2 { font-size: clamp(34px, 3.8vw, 56px); }
+.about-cta { padding-block: clamp(28px, 3.2vw, 40px); }
+.about-cta h2 { font-size: clamp(26px, 2.6vw, 38px); }
 .guide-card { min-height: 365px; padding: 26px; }
 .guide-card h2 { font-size: 34px; padding-top: 32px; }
 .approach, .collaboration { gap: clamp(30px, 4vw, 58px); }
@@ -147,16 +147,20 @@
 .support-options h2 { font-size: 29px; }
 
 /* Footer */
-.community-signup { padding-block: clamp(56px, 6.5vw, 100px); }
-.community-signup h2 { font-size: clamp(29px, 3.3vw, 50px); }
-.community-signup input { font-size: 17px; }
-.footer-main { padding-block: 56px; gap: 48px; }
-.footer-brand > p { font-size: 27px; margin-block: 26px; }
-.footer-brand img { width: 160px; }
-.footer-word { font-size: clamp(60px, 10vw, 154px); }
+.community-signup { padding-block: clamp(28px, 3.4vw, 44px); }
+.community-signup .eyebrow { margin-bottom: 8px; }
+.community-signup h2 { font-size: clamp(24px, 2.4vw, 34px); }
+.community-signup input { font-size: 16px; padding-block: 12px; }
+.community-signup label { margin-bottom: 12px; }
+.footer-main { padding-block: clamp(32px, 3.8vw, 44px); gap: 36px; }
+.footer-brand > p { font-size: 24px; margin-block: 18px; }
+.footer-brand img { width: 148px; }
+.footer-links h3 { margin-bottom: 14px; }
+.footer-links a { margin: 8px 0; }
+.footer-word { font-size: clamp(36px, 6.2vw, 84px); }
 
 @media (max-width: 900px) {
-  :root { --header-h: 66px; }
+  :root { --header-h: 72px; }
   .site-header { height: var(--header-h); }
   .story-image { min-height: 60vw; }
   .story-copy, .founder-copy { padding: 56px 6vw; }
@@ -165,9 +169,9 @@
   .journey-heading { gap: 24px; }
 }
 @media (max-width: 600px) {
-  :root { --header-h: 62px; }
-  .site-header.is-scrolled { height: 58px; }
-  .brand img, .site-header.is-scrolled .brand img { width: 124px; }
+  :root { --header-h: 68px; }
+  .site-header.is-scrolled { height: 64px; }
+  .brand img, .site-header.is-scrolled .brand img { width: 138px; }
   .section-pad { padding-block: 56px; }
   .section-heading { margin-bottom: 28px; }
   .hero { min-height: calc(84svh - var(--announce-h)); }
@@ -215,9 +219,9 @@
   .track-grid h2 { margin: 14px 0 12px; font-size: 28px; }
   .collaboration li { grid-template-columns: 34px 1fr; padding: 15px 0; }
   .institution-cta .text-link { margin-left: 0; }
-  .community-signup, .footer-main { padding-block: 48px; }
+  .community-signup, .footer-main { padding-block: 28px; }
   .community-signup input { font-size: 16px; min-width: 0; }
-  .footer-word { font-size: 19vw; }
+  .footer-word { font-size: 12vw; }
   /* This file loads last, so its unscoped rules were quietly beating the phone
      sizes set in globals.css. These restate the ones that were being lost. */
   .section-number { font-size: 48px; }

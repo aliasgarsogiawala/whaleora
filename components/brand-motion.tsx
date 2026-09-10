@@ -12,6 +12,10 @@ export function MotionDirector() {
 
     if (reduced) {
       reveals.forEach((element) => element.classList.add('is-visible'));
+      document.querySelectorAll<HTMLVideoElement>('.hero-video').forEach((video) => {
+        video.pause();
+        video.removeAttribute('autoplay');
+      });
       return;
     }
 

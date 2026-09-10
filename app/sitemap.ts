@@ -3,7 +3,7 @@ import { getCatalog } from '@/lib/shopify/catalog';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://whaleora.com';
-  const routes = ['', '/products', '/about', '/safety-hub', '/institutions', '/contact'];
+  const routes = ['', '/products', '/about', '/safety-hub', '/institutions', '/contact', '/warranty'];
   const catalog = await getCatalog();
   return [
     ...routes.map((route) => ({ url: `${base}${route}`, lastModified: new Date(), changeFrequency: route === '' ? 'weekly' as const : 'monthly' as const, priority: route === '' ? 1 : .8 })),

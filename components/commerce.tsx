@@ -10,6 +10,7 @@ import { addToCartAction, getCartAction, removeCartLineAction, updateCartLineAct
 import type { CatalogProduct } from '@/lib/shopify/catalog';
 import type { CartState, CartStateLine } from '@/lib/shopify/types';
 import { whatsappHref } from '@/lib/content/contact';
+import { burstConfetti } from '@/lib/confetti';
 import { formatPrice, products } from '@/data/products';
 
 /** Product as rendered by the shop: local editorial plus whatever Shopify knows. */
@@ -98,11 +99,34 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
     } catch { /* device storage may be unavailable */ }
   }, [cart, ready]);
 
+  // Confetti should come from wherever the shopper actually acted, so track the
+  // pointer and drop it on keydown, which leaves the focused button as the origin.
+  const lastPointer = useRef<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    const remember = (event: PointerEvent) => { lastPointer.current = { x: event.clientX, y: event.clientY }; };
+    const forget = () => { lastPointer.current = null; };
+    window.addEventListener('pointerdown', remember);
+    window.addEventListener('keydown', forget);
+    return () => {
+      window.removeEventListener('pointerdown', remember);
+      window.removeEventListener('keydown', forget);
+    };
+  }, []);
+
+  const celebrate = useCallback(() => {
+    const point = lastPointer.current;
+    if (point) return burstConfetti(point.x, point.y);
+    const rect = (document.activeElement as HTMLElement | null)?.getBoundingClientRect();
+    if (rect?.width) return burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return burstConfetti(window.innerWidth / 2, window.innerHeight / 3);
+  }, []);
+
   const applyLocal = useCallback((next: (lines: CartStateLine[]) => CartStateLine[]) => {
     setCart((current) => recalculate(next(current.lines)));
   }, []);
 
   const add = useCallback((product: ShopProduct, quantity = 1) => {
+    celebrate();
     setOpen(true);
     const variantId = product.shopify?.variantId;
     if (cart.connected && variantId) {
@@ -118,7 +142,7 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
         ? lines.map((line) => matchesLocalLine(line, product.id, variantId ?? null) ? { ...line, quantity: line.quantity + quantity } : line)
         : [...lines, localLine(product, quantity)];
     });
-  }, [applyLocal, cart.connected]);
+  }, [applyLocal, cart.connected, celebrate]);
 
   const update = useCallback((line: CartStateLine, quantity: number) => {
     if (cart.connected && line.id) {
@@ -222,7 +246,7 @@ export function Header() {
 
   return (
     <>
-      <div className="announcement"><span>Free shipping over ₹1,499 · Delivered across India</span></div>
+      <div className={`announcement ${scrolled ? 'is-tucked' : ''}`}><span>Free shipping over ₹1,499 · Delivered across India</span></div>
       <header className={`site-header ${scrolled ? 'is-scrolled' : ''} ${overHero ? 'is-over-hero' : ''}`}>
         <button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}><span /><span /></button>
         <Link href="/" className="brand" aria-label="Whaleora home"><Image src="/brand/whaleora-logo.svg" width={186} height={48} alt="Whaleora" priority /></Link>
@@ -240,6 +264,9 @@ export function Header() {
           </button>
         </div>
       </header>
+      {/* The bar is fixed, so this holds its place in the flow and keeps the
+          announcement tucking away from shifting the page. */}
+      <div className="site-top-spacer" aria-hidden="true" />
       <div ref={menuRef} className={`mobile-menu ${menuOpen ? 'open' : ''}`} role="dialog" aria-modal={menuOpen || undefined} aria-label="Navigation menu" aria-hidden={!menuOpen} inert={!menuOpen}>
         <button className="menu-close" onClick={() => setMenuOpen(false)} aria-label="Close menu"><span /><span /></button>
         <nav>
@@ -341,7 +368,7 @@ export function Footer() {
   const groups = useMemo(() => [
     { title: 'Shop', links: [['Shop all', '/products'], ['SOS Alarm', '/products/sos-alarm'], ['Pepper Spray', '/products/pepperspray']] },
     { title: 'Explore', links: [['Our story', '/about'], ['Safety Hub', '/safety-hub'], ['Partnerships', '/institutions']] },
-    { title: 'Support', links: [['Contact & FAQ', '/contact'], ['Shipping', '/contact'], ['Returns', '/contact']] },
+    { title: 'Support', links: [['Contact & FAQ', '/contact'], ['Warranty', '/warranty'], ['Shipping', '/contact'], ['Returns', '/contact']] },
   ], []);
   return (
     <footer className="footer">

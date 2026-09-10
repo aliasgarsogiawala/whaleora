@@ -7,7 +7,9 @@ import './review-videos.css';
 import './compact-scale.css';
 import './faq-bot.css';
 
-const display = Lora({ variable: '--font-display', subsets: ['latin'], weight: ['400', '500', '600'], style: ['normal', 'italic'], display: 'swap' });
+// Lora ships as a variable font: omitting `weight` gives the full 400–700 axis
+// in one file, which is what whaleora.vercel.app serves.
+const display = Lora({ variable: '--font-display', subsets: ['latin'], style: ['normal', 'italic'], display: 'swap' });
 const sans = Geist({ variable: '--font-sans', subsets: ['latin'] });
 
 export const metadata: Metadata = {

@@ -105,14 +105,19 @@
 }
 .faq-bot-close {
   flex: none;
+  display: grid;
+  place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(255, 255, 255, .28);
+  border: 1px solid rgba(255, 255, 255, .34);
   border-radius: 50%;
-  background: transparent;
+  background: rgba(255, 255, 255, .12);
   color: #fff;
   cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
 }
+.faq-bot-close:hover { background: rgba(255, 255, 255, .24); border-color: rgba(255, 255, 255, .6); }
+.faq-bot-close:focus-visible { outline: 2px solid var(--sand); outline-offset: 2px; }
 
 .faq-bot-topics {
   display: flex;
@@ -279,6 +284,8 @@
 .faq-bot-compose input:focus { border-color: var(--terracotta); box-shadow: 0 0 0 3px rgba(215, 103, 61, .16); }
 .faq-bot-compose button {
   flex: none;
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
   border: 0;
@@ -286,8 +293,15 @@
   background: var(--terracotta);
   color: #fff;
   cursor: pointer;
+  transition: background .2s ease, color .2s ease;
 }
-.faq-bot-compose button:disabled { opacity: .4; cursor: not-allowed; }
+.faq-bot-compose button:hover:not(:disabled) { background: #c25a33; }
+.faq-bot-compose button:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
+.faq-bot-compose button:disabled {
+  background: rgba(16, 40, 68, .07);
+  color: rgba(16, 40, 68, .4);
+  cursor: not-allowed;
+}
 
 .faq-bot-foot {
   margin: 0;

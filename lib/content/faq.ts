@@ -303,6 +303,7 @@ export const faqs: FaqEntry[] = [
     keywords: ['faulty', 'broken', 'defective', 'doesn’t work', 'not working', 'replace', 'warranty', 'damaged', 'wrong item'],
     followUps: ['orders-returns', 'orders-contact', 'care-test'],
     links: [
+      { label: 'Warranty & claims', href: '/warranty' },
       { label: 'Email support', href: 'mailto:hello@whaleora.com?subject=Faulty%20item' },
       { label: 'WhatsApp', href: whatsappHref('Hi Whaleora! Something arrived faulty.') },
     ],

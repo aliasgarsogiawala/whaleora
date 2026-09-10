@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,6 +14,47 @@ const founderStory = [
   "Whaleora isn't just about products. It's about creating a future where feeling prepared is part of everyday life. Thank you for being a part of that journey.",
 ] as const;
 
+const heroMeta = [
+  { value: 'Four', label: 'Everyday objects' },
+  { value: '₹299', label: 'Where it starts' },
+  { value: 'Mumbai', label: 'Designed in India' },
+] as const;
+
+const ticker = ['Designed in India', 'Calm by default', 'Carry it daily', 'Built to be used once', 'No fear marketing'] as const;
+
+const audiences = [
+  {
+    title: 'Students',
+    kicker: 'Campus',
+    text: 'Late library nights and long walks back to the hostel gate.',
+    image: '/stock/journey-campus.webp',
+  },
+  {
+    title: 'Commuters',
+    kicker: 'Daily travel',
+    text: 'Packed locals, last-mile autos and platforms after dark.',
+    image: '/stock/journey-train.webp',
+  },
+  {
+    title: 'Working late',
+    kicker: 'After hours',
+    text: 'Shifts that end when the streets have already emptied out.',
+    image: '/stock/journey-work.webp',
+  },
+  {
+    title: 'Travellers',
+    kicker: 'Away from home',
+    text: 'New cities, unfamiliar routes and rooms you have never slept in.',
+    image: '/stock/journey-travel.webp',
+  },
+  {
+    title: 'Parents',
+    kicker: 'For someone else',
+    text: 'The quiet reassurance of knowing they are carrying something.',
+    image: '/stock/journey-night.webp',
+  },
+] as const;
+
 const commitments = [
   { label: 'Vision', text: 'A world where every person moves through life with the quiet confidence of knowing they are safe.' },
   { label: 'Mission', text: 'To make personal safety simple, reliable and accessible through thoughtfully designed products, education and partnerships.' },
@@ -24,18 +66,46 @@ export default function AboutPage() {
     <main className="page-main about-page">
       <section className="about-story-hero">
         <div className="about-story-glow" aria-hidden="true" />
-        <div className="shell about-story-hero-inner">
+        <div className="about-story-hero-inner">
           <p className="eyebrow dark">About Whaleora</p>
           <h1>Safety shouldn&apos;t<br />feel <em>scary.</em></h1>
           <p>We believe personal safety should feel calm, intuitive and accessible—not intimidating.</p>
+          <ul className="about-hero-meta">
+            {heroMeta.map((item) => (
+              <li key={item.label}>
+                <b>{item.value}</b>
+                {item.label}
+              </li>
+            ))}
+          </ul>
           <span className="about-scroll-cue" aria-hidden="true"><i /></span>
         </div>
+        <figure className="about-hero-figure">
+          <Image
+            src="/lifestyle/whaleora-hero-campaign.webp"
+            fill
+            priority
+            sizes="(max-width: 900px) 100vw, 49vw"
+            alt="A Whaleora safety alarm carried on an everyday bag"
+          />
+          <figcaption>Made for ordinary days, not worst-case posters</figcaption>
+        </figure>
       </section>
+
+      <div className="about-ticker" aria-hidden="true">
+        {[0, 1].map((pass) => (
+          <p key={pass}>
+            {ticker.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </p>
+        ))}
+      </div>
 
       <section className="founder-chapter" aria-labelledby="founder-story-title">
         <div className="founder-chapter-visual">
           <div className="founder-chapter-image">
-            <Image src="/founder/sheuli-founder.webp" fill priority sizes="(max-width: 900px) 100vw, 48vw" alt="Sheuli, founder of Whaleora" />
+            <Image src="/founder/sheuli-founder.webp" fill sizes="(max-width: 900px) 100vw, 48vw" alt="Sheuli, founder of Whaleora" />
           </div>
           <div className="founder-image-wash" />
           <p>Sheuli<br /><span>Founder, Whaleora</span></p>
@@ -56,6 +126,25 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <section className="about-audience" aria-labelledby="about-audience-title">
+        <div className="about-bleed">
+          <div className="about-audience-heading" data-reveal>
+            <h2 id="about-audience-title">Built for the walk home, the late shift, <em>the ordinary Tuesday.</em></h2>
+            <p>Safety isn&apos;t one situation. It is a hundred small ones, most of which never turn into a story. Whaleora is designed for those.</p>
+          </div>
+        </div>
+        <div className="audience-strip">
+          {audiences.map((audience) => (
+            <article data-reveal key={audience.title}>
+              <Image src={audience.image} fill sizes="(max-width: 600px) 100vw, (max-width: 1100px) 34vw, 20vw" alt="" />
+              <small>{audience.kicker}</small>
+              <h3>{audience.title}</h3>
+              <p>{audience.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="why-chapter">
         <div className="why-chapter-image" aria-hidden="true">
           <Image src="/lifestyle/mumbai-commute-hero.webp" fill sizes="100vw" alt="" />
@@ -73,8 +162,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="confidence-chapter section-pad">
-        <div className="shell">
+      <section className="confidence-chapter">
+        <div className="about-bleed">
           <div className="confidence-heading" data-reveal>
             <h2>Safety isn&apos;t panic.<br /><em>Safety is confidence.</em></h2>
           </div>
@@ -86,6 +175,17 @@ export default function AboutPage() {
                 <p>{commitment.text}</p>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="about-cta">
+        <div className="shell">
+          <p>Four objects · ₹299 to ₹1,799</p>
+          <h2>Prepared,<br /><em>not afraid.</em></h2>
+          <div>
+            <Link href="/products" className="button button-light">Shop the collection <span>→</span></Link>
+            <Link href="/institutions" className="text-link">For campuses &amp; workplaces <span>↗</span></Link>
           </div>
         </div>
       </section>

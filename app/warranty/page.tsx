@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { formatPrice } from '@/data/products';
 import { getCatalog } from '@/lib/shopify/catalog';
 import { whatsappHref } from '@/lib/content/contact';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 const WARRANTY_MONTHS = 12;
 
@@ -56,9 +57,9 @@ export default async function WarrantyPage() {
             inconvenience, so we would rather replace it than debate it.
           </p>
           <div className="warranty-hero-actions">
-            <Link href="/contact" className="button button-primary">Start a claim <span>→</span></Link>
+            <Link href="/contact" className="button button-primary">Start a claim <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
             <a className="arrow-link" href={whatsappHref('Hi Whaleora! I need to make a warranty claim.')} target="_blank" rel="noreferrer">
-              WhatsApp us <span>↗</span>
+              WhatsApp us <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span>
             </a>
           </div>
         </div>
@@ -80,7 +81,7 @@ export default async function WarrantyPage() {
                 <span>{WARRANTY_MONTHS} months</span>
                 <h3>{sosAlarm.title}</h3>
                 <p>{formatPrice(sosAlarm.price)}</p>
-                <Link href={`/products/${sosAlarm.slug}`} className="arrow-link">View product <span>→</span></Link>
+                <Link href={`/products/${sosAlarm.slug}`} className="arrow-link">View product <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
               </article>
             )}
           </div>
@@ -138,8 +139,8 @@ export default async function WarrantyPage() {
               Lost the email? Message us with the phone number or address you ordered with and we will find it.
             </p>
             <div className="warranty-card-actions">
-              <Link href="/contact" className="button button-light">Contact support <span>→</span></Link>
-              <Link href="/products" className="text-link">Shop the collection <span>↗</span></Link>
+              <Link href="/contact" className="button button-light">Contact support <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
+              <Link href="/products" className="text-link">Shop the collection <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></Link>
             </div>
           </div>
         </div>

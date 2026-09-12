@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, ShoppingCart } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
 import { useConvexAuth, useQuery } from 'convex/react';
@@ -301,7 +301,7 @@ export function Header() {
           ))}
         </nav>
         <div className="mobile-menu-footer">
-          <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop from ₹299 <span>→</span></Link>
+          <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop from ₹299 <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
           <p>Prepared, not afraid.<br />Designed in India.</p>
         </div>
       </div>
@@ -336,7 +336,7 @@ function CartDrawer() {
       <aside className="cart-drawer" aria-label="Shopping bag" aria-busy={pending}>
         <div className="cart-head"><div><small>Your selection</small><h2>Shopping bag <sup>{cart.totalQuantity}</sup></h2></div><button onClick={() => setOpen(false)} aria-label="Close cart">×</button></div>
         {lines.length === 0 ? (
-          <div className="empty-cart"><span>○</span><h3>Nothing in here yet.</h3><p>Four objects, starting at ₹299. Most people begin with the alarm.</p><Link href="/products" onClick={() => setOpen(false)} className="button button-primary">Browse all four →</Link></div>
+          <div className="empty-cart"><span>○</span><h3>Nothing in here yet.</h3><p>Four objects, starting at ₹299. Most people begin with the alarm.</p><Link href="/products" onClick={() => setOpen(false)} className="button button-primary">Browse all four <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link></div>
         ) : (
           <>
             <div className="shipping-progress"><div><span style={{ width: `${Math.min(100, subtotal / FREE_SHIPPING_THRESHOLD * 100)}%` }} /></div><p>{shippingGap ? `${formatPrice(shippingGap, currencyCode)} away from free shipping.` : 'You have unlocked free shipping.'}</p></div>
@@ -349,7 +349,7 @@ function CartDrawer() {
                 <div><small>{record?.category ?? 'Whaleora'}</small>{lineSlug ? <Link href={`/products/${lineSlug}`} onClick={() => setOpen(false)}>{line.title}</Link> : line.title}<strong>{formatPrice(line.unitPrice, line.currencyCode)}</strong><div className="quantity"><button onClick={() => update(line, line.quantity - 1)} disabled={pending} aria-label="Decrease quantity">−</button><span>{line.quantity}</span><button onClick={() => update(line, line.quantity + 1)} disabled={pending} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(line)} disabled={pending}>Remove</button></div>
               </div>;
             })}</div>
-            <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p><button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span>→</span></button>{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href={whatsappHref("Hi Whaleora! I'd like to place an order.")}>WhatsApp</a> or email hello@whaleora.com.</p>}</div>
+            <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p><button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href={whatsappHref("Hi Whaleora! I'd like to place an order.")}>WhatsApp</a> or email hello@whaleora.com.</p>}</div>
           </>
         )}
       </aside>
@@ -361,7 +361,7 @@ export function AddToCartButton({ product, quantity = 1, className = '', label =
   const { add, pending } = useCart();
   const soldOut = product.shopify ? !product.shopify.availableForSale : false;
   if (soldOut) return <button className={`button button-primary ${className}`} disabled>Sold out</button>;
-  return <button className={`button button-primary ${className}`} onClick={() => add(product, quantity)} disabled={pending}>{pending ? 'Adding…' : label} <span>→</span></button>;
+  return <button className={`button button-primary ${className}`} onClick={() => add(product, quantity)} disabled={pending}>{pending ? 'Adding…' : label} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>;
 }
 
 export function ProductCard({ product, index = 0 }: { product: ShopProduct; index?: number }) {
@@ -372,7 +372,7 @@ export function ProductCard({ product, index = 0 }: { product: ShopProduct; inde
       <Link href={`/products/${product.slug}`} className="product-visual">
         <small>0{index + 1} · {product.category}</small>
         <Image src={product.slug === 'pepperspray' ? '/products/pepper-spray-product.webp' : product.images[0]} width={700} height={700} alt={product.title} sizes="(max-width: 1100px) 50vw, 25vw" />
-        <span>View object ↗</span>
+        <span className="product-card-cue">View object <ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" /></span>
       </Link>
       <div className="product-meta"><div><Link href={`/products/${product.slug}`}>{product.title}</Link><small>{product.shortDescription}</small></div><strong>{formatPrice(product.price, product.currencyCode)}</strong></div>
       <button className="quick-add" onClick={() => add(product)} disabled={soldOut || pending} aria-label={`Add ${product.title} to bag`}>{soldOut ? 'Sold out' : 'Add to bag'} <span>{soldOut ? '—' : '＋'}</span></button>
@@ -420,7 +420,7 @@ export function Footer() {
   ], []);
   return (
     <footer className="footer">
-      <section className="community-signup"><p className="eyebrow">The monthly note</p><div><h2>One email a month. No fear-mongering.</h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">A checklist, a short read, and anything new we’ve made. Unsubscribe in one click.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} →</button></div></form></div></section>
+      <section className="community-signup"><p className="eyebrow">The monthly note</p><div><h2>One email a month. No fear-mongering.</h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">A checklist, a short read, and anything new we’ve made. Unsubscribe in one click.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button></div></form></div></section>
       <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Prepared,<br />not afraid.</p><address>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => <Link href={href} key={label}>{label}</Link>)}</div>)}</div></section>
       <div className="footer-bottom"><span>© 2026 Whaleora</span><div><a href="mailto:hello@whaleora.com">hello@whaleora.com</a><span className="footer-socials">{socials.map((social) => <a key={social.label} className="footer-social" href={social.href} aria-label={social.label} title={social.label} target="_blank" rel="noreferrer noopener">{social.icon}</a>)}</span></div></div>
     </footer>

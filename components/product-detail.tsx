@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, Check, Feather, Headphones, Minus, Package, Play, Plus, ShieldCheck, Truck, X, ZoomIn, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Feather, Headphones, Minus, Package, Play, Plus, ShieldCheck, Truck, X, Zap, ZoomIn } from 'lucide-react';
 import { AddToCartButton } from '@/components/commerce';
 import type { CatalogProduct } from '@/lib/shopify/catalog';
 import type { Testimonial, VideoReview } from '@/lib/content/types';

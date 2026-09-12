@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ProductCard, type ShopProduct } from '@/components/commerce';
+import { ArrowUpRight } from 'lucide-react';
 
 export function ProductsBrowser({ catalog }: { catalog: ShopProduct[] }) {
   const [category, setCategory] = useState('All');
@@ -31,7 +32,7 @@ export function ShopNote() {
     <section className="shop-note shell">
       <p>Still deciding?</p>
       <h2>Buy the one you’ll keep on you.</h2>
-      <span>The best safety tool is the boring one that’s already in your hand when you need it — not the impressive one in a drawer. If that’s the ₹299 whistle, buy the whistle.<Link href="/#chooser" className="shop-note-link">Compare all four ↗</Link></span>
+      <span>The best safety tool is the boring one that’s already in your hand when you need it — not the impressive one in a drawer. If that’s the ₹299 whistle, buy the whistle.<Link href="/#chooser" className="shop-note-link">Compare all four <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></Link></span>
     </section>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { whatsappHref } from '@/lib/content/contact';
 import { featuredFaqs } from '@/lib/content/faq';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -34,9 +35,9 @@ export function ContactForm() {
   return <>
     <section className="support-grid shell section-pad" id="enquiry">
       <div className="support-options">
-        <article><span>01</span><h2>WhatsApp</h2><p>Fastest for a quick question, an order status, or working out which product suits you.</p><a href={whatsappHref('Hi Whaleora! I have an inquiry.')}>Message us now ↗</a></article>
-        <article><span>02</span><h2>Orders &amp; products</h2><p>Anything about an order, a fault, a return, or a spec that isn’t on the page.</p><a href="mailto:hello@whaleora.com">hello@whaleora.com ↗</a></article>
-        <article><span>03</span><h2>Partnerships &amp; workshops</h2><p>Campuses, workplaces, community groups, retail. Tell us roughly how many people and we’ll go from there.</p><a href="mailto:hello@whaleora.com?subject=Partnership%20enquiry">Start a partnership enquiry ↗</a></article>
+        <article><span>01</span><h2>WhatsApp</h2><p>Fastest for a quick question, an order status, or working out which product suits you.</p><a href={whatsappHref('Hi Whaleora! I have an inquiry.')}>Message us now <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
+        <article><span>02</span><h2>Orders &amp; products</h2><p>Anything about an order, a fault, a return, or a spec that isn’t on the page.</p><a href="mailto:hello@whaleora.com">hello@whaleora.com <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
+        <article><span>03</span><h2>Partnerships &amp; workshops</h2><p>Campuses, workplaces, community groups, retail. Tell us roughly how many people and we’ll go from there.</p><a href="mailto:hello@whaleora.com?subject=Partnership%20enquiry">Start a partnership enquiry <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
       </div>
       <form className="contact-form" onSubmit={send}>
         <p className="eyebrow dark">Send an enquiry</p>
@@ -45,7 +46,7 @@ export function ContactForm() {
         <label>What’s this about?<select name="subject"><option>Product question</option><option>Order support</option><option>Something arrived faulty</option><option>Partnership</option><option>Workshop</option><option>Something else</option></select></label>
         <label>Your message<textarea name="message" rows={5} maxLength={2000} required /></label>
         <label className="visually-hidden" aria-hidden="true"><span>Company</span><input name="company" tabIndex={-1} autoComplete="off" /></label>
-        <button className="button button-primary" type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending…' : status === 'sent' ? 'Sent — thank you' : 'Send it'} <span>→</span></button>
+        <button className="button button-primary" type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending…' : status === 'sent' ? 'Sent — thank you' : 'Send it'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>
         {status === 'sent' && <p className="form-note" role="status">Thanks — it’s in the inbox at hello@whaleora.com. We usually reply within a working day.</p>}
         {status === 'error' && <p className="form-note form-note-error" role="alert">{error} You can also email hello@whaleora.com or message us on WhatsApp.</p>}
       </form>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 
 /**
  * The emergency contact card the Safety Hub has been promising as a tool.
@@ -252,7 +253,7 @@ export function EmergencyCard() {
             <div className="ec-controls">
               <p className="ec-print-note">Prints at wallet size (85.6 × 54 mm). Fold along the dotted line for a double-sided card.</p>
               <div className="ec-actions">
-                <button type="button" className="button button-primary" onClick={() => window.print()}>Print the card <span>→</span></button>
+                <button type="button" className="button button-primary" onClick={() => window.print()}>Print the card <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>
                 <button type="button" className="ec-clear" onClick={clear}>Clear</button>
               </div>
             </div>

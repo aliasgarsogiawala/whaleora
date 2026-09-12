@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ShopProduct } from '@/components/commerce';
 import { formatPrice } from '@/data/products';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 const trustPoints = [
   { figure: '130dB', label: 'Siren and strobe, on one pull' },
@@ -67,13 +68,13 @@ export function Chooser({ catalog }: { catalog: ShopProduct[] }) {
             <tr className="chooser-actions">
               <th scope="row"><span className="visually-hidden">Buy</span></th>
               {catalog.map((product) => (
-                <td key={product.id}><Link href={`/products/${product.slug}`} className="chooser-cta">View <span>→</span></Link></td>
+                <td key={product.id}><Link href={`/products/${product.slug}`} className="chooser-cta">View <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link></td>
               ))}
             </tr>
           </tbody>
         </table>
       </div>
-      <p className="chooser-hint" aria-hidden="true">Swipe to compare →</p>
+      <p className="chooser-hint" aria-hidden="true">Swipe to compare <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></p>
     </section>
   );
 }
@@ -108,7 +109,7 @@ export function Objections() {
         <p className="eyebrow dark">Before you buy</p>
         <h2>Fair questions, straight answers.</h2>
         <p className="objections-note">Including the ones that don’t help us sell anything.</p>
-        <Link href="/contact" className="arrow-link">Ask us something else <span>↗</span></Link>
+        <Link href="/contact" className="arrow-link">Ask us something else <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></Link>
       </div>
       <div className="objection-list">
         {objections.map((item, index) => (

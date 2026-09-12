@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { whatsappHref } from '@/lib/content/contact';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Safety programmes for campuses & workplaces — Whaleora', description: 'Safety sessions that people remember, plus resources they keep. For universities, workplaces, community organisations and retail partners.' };
 
@@ -46,7 +47,7 @@ export default function InstitutionsPage() {
         <h1>Not another slide deck<br />and a <em>signature sheet.</em></h1>
         <div>
           <p>Most safety sessions are attended once and forgotten by Friday. We run the session, leave resources people can go back to, and pick the products to fit the group — not the other way round.</p>
-          <a href={whatsapp} className="button button-primary">Talk to us on WhatsApp <span>↗</span></a>
+          <a href={whatsapp} className="button button-primary">Talk to us on WhatsApp <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></a>
         </div>
       </div>
       <figure className="institution-hero-visual">
@@ -79,7 +80,7 @@ export default function InstitutionsPage() {
               <small>{track.kicker}</small>
               <h2>{track.title}</h2>
               <p>{track.text}</p>
-              <a href={whatsapp}>Enquire on WhatsApp ↗</a>
+              <a href={whatsapp}>Enquire on WhatsApp <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a>
             </div>
           </article>
         ))}
@@ -99,8 +100,8 @@ export default function InstitutionsPage() {
     <section className="institution-cta"><div className="shell">
       <p>No deck required to start</p>
       <h2>Tell us who you’re trying to look after.</h2>
-      <a href={whatsapp} className="button button-light">Message us on WhatsApp →</a>
-      <Link href="/contact" className="text-link">Or email an enquiry ↗</Link>
+      <a href={whatsapp} className="button button-light">Message us on WhatsApp <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></a>
+      <Link href="/contact" className="text-link">Or email an enquiry <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></Link>
     </div></section>
   </main>;
 }

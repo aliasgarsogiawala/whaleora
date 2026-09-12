@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { api } from '@/convex/_generated/api';
 import { formatPrice } from '@/data/products';
 import { whatsappHref } from '@/lib/content/contact';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 const labelFor = (status: string | undefined) => {
   if (!status) return 'Processing';
@@ -98,7 +99,7 @@ function AccountAuth() {
             {mode === 'signUp' && <p className="form-note">Use the same email you will use at Shopify checkout, so your orders land here.</p>}
             {error && <p className="account-error" role="alert">{error}</p>}
             <button className="button button-primary" type="submit" disabled={busy}>
-              {busy ? 'One moment…' : mode === 'signIn' ? 'Sign in' : 'Create account'} <span>→</span>
+              {busy ? 'One moment…' : mode === 'signIn' ? 'Sign in' : 'Create account'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span>
             </button>
           </form>
         </div>
@@ -135,8 +136,8 @@ function AccountHome() {
             <h3>No orders on this email yet.</h3>
             <p>Place an order with {me?.email || 'this account'}, or message us with your order number if you checked out as a guest on a different address.</p>
             <div className="account-empty-actions">
-              <Link href="/products" className="button button-primary">Shop the collection <span>→</span></Link>
-              <a className="text-link" href={whatsappHref('Hi Whaleora! I have an order I’d like attached to my account.')}>WhatsApp us <span>↗</span></a>
+              <Link href="/products" className="button button-primary">Shop the collection <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
+              <a className="text-link" href={whatsappHref('Hi Whaleora! I have an order I’d like attached to my account.')}>WhatsApp us <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></a>
             </div>
           </div>
         ) : (
@@ -151,8 +152,8 @@ function AccountHome() {
                 <footer>
                   <b>{formatPrice(Number.parseFloat(order.total), order.currency)}</b>
                   <em>{labelFor(order.fulfillmentStatus || order.financialStatus)}</em>
-                  {order.trackingUrl ? <a href={order.trackingUrl} target="_blank" rel="noreferrer">Track parcel ↗</a> : null}
-                  {order.statusUrl && !order.trackingUrl ? <a href={order.statusUrl} target="_blank" rel="noreferrer">Order status ↗</a> : null}
+                  {order.trackingUrl ? <a href={order.trackingUrl} target="_blank" rel="noreferrer">Track parcel <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a> : null}
+                  {order.statusUrl && !order.trackingUrl ? <a href={order.statusUrl} target="_blank" rel="noreferrer">Order status <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a> : null}
                 </footer>
               </li>
             ))}

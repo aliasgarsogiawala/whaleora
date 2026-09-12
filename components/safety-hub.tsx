@@ -11,6 +11,7 @@ import {
   type HubChecklist,
   type HubProfile,
 } from '@/data/safety-hub';
+import { ArrowRight } from 'lucide-react';
 
 export type HubCatalogItem = {
   slug: string;
@@ -212,7 +213,7 @@ export function SafetyHubExplorer({ checklists, catalog }: { checklists: HubChec
                     <small>{tool.kind === 'checklist' ? 'Checklist' : 'Tool'}</small>
                     <strong>{copy.title}</strong>
                     <span>{copy.description}</span>
-                    <em>{copy.action} →</em>
+                    <em>{copy.action} <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></em>
                   </button>
                 );
               })}
@@ -264,7 +265,7 @@ export function SafetyHubExplorer({ checklists, catalog }: { checklists: HubChec
                     if (checklist) setSheet(checklist);
                   }}
                 >
-                  Open checklist <span aria-hidden="true">→</span>
+                  Open checklist <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span>
                 </button>
               ) : (
                 <span className="guide-soon">Publishing soon</span>
@@ -297,7 +298,7 @@ export function SafetyHubExplorer({ checklists, catalog }: { checklists: HubChec
             </ol>
             <div className="hub-sheet-actions">
               <button type="button" className="button button-primary" onClick={() => window.print()}>
-                Print this <span>→</span>
+                Print this <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span>
               </button>
               <button type="button" className="button button-outline" onClick={() => setSheet(null)}>
                 Close

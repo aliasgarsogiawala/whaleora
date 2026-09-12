@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'About Whaleora — Safety should not feel scary',
@@ -130,7 +131,7 @@ export default function AboutPage() {
             <h2 id="about-audience-title">Built for the walk home, the late shift, <em>the ordinary Tuesday.</em></h2>
             <div>
               <p>Safety isn&apos;t one situation. It is a hundred small ones, most of which never turn into a story. Whaleora is designed for those.</p>
-              <p className="audience-scroll-hint">Scroll →</p>
+              <p className="audience-scroll-hint">Scroll <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></p>
             </div>
           </div>
         </div>

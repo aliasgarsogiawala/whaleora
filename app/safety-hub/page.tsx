@@ -7,6 +7,7 @@ import { publishedContent } from '@/lib/content/store';
 import { getCatalog } from '@/lib/shopify/catalog';
 import { whatsappHref } from '@/lib/content/contact';
 import type { Metadata } from 'next';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Safety Hub — free guides & checklists | Whaleora',
@@ -83,7 +84,7 @@ export default async function SafetyHubPage() {
               <article key={item.title}>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
-                <Link href="/institutions">Learn more →</Link>
+                <Link href="/institutions">Learn more <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></Link>
               </article>
             ))}
           </div>
@@ -95,8 +96,8 @@ export default async function SafetyHubPage() {
           <p className="eyebrow">For campuses, workplaces &amp; communities</p>
           <h2>Want to organise a safety awareness session?</h2>
           <p>Collaborate with us to bring practical safety education to your institution or community. We run the session, leave the resources, and pick the tools to fit the group.</p>
-          <a href={partnerWhatsapp} className="button button-light">Partner with us on WhatsApp <span>↗</span></a>
-          <Link href="/institutions" className="text-link">See how partnerships work <span>↗</span></Link>
+          <a href={partnerWhatsapp} className="button button-light">Partner with us on WhatsApp <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></a>
+          <Link href="/institutions" className="text-link">See how partnerships work <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></Link>
         </div>
       </section>
     </main>

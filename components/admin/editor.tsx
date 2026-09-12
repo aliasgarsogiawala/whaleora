@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowDown, ArrowUp, ArrowUpRight, Check, ChevronRight, Film, ListChecks, LogOut, MessageSquare, Package, Plus, Settings2, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpRight, Check, ChevronRight, Film, ListChecks, LogOut, MessageSquare, Package, Plus, Settings2, Trash2 } from 'lucide-react';
 import type { ContentDocument, HubChecklistContent, ProductEditorial, ReviewContent, Testimonial, VideoReview } from '@/lib/content/types';
 import type { ShopifySnapshot } from '@/lib/shopify/catalog';
 import { validateContent } from '@/lib/content/types';
@@ -48,7 +48,7 @@ export function AdminLogin({ setup, configured }: { setup: boolean; configured: 
       {error && <p className="admin-error" role="alert">{error}</p>}
       <button className="admin-button primary" disabled={busy}>{busy ? 'One moment…' : setup ? 'Create password & enter' : 'Sign in'}<ChevronRight size={17} /></button>
     </form> : <p className="admin-error">Admin access needs configuration. Set ADMIN_PASSWORD and ADMIN_SESSION_SECRET on your server. See ADMIN.md in the project.</p>}
-    <Link href="/" className="admin-back">← Back to the store</Link>
+    <Link href="/" className="admin-back"><ArrowLeft size={15} strokeWidth={2} aria-hidden="true" /> Back to the store</Link>
   </div><div className="admin-login-note"><span>THE CONTENT STUDIO</span><p>Good stories.<br /><em>Thoughtfully told.</em></p><small>Products · Checklists · Reviews</small></div></main>;
 }
 

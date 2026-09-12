@@ -152,8 +152,8 @@ function AccountHome() {
                 <footer>
                   <b>{formatPrice(Number.parseFloat(order.total), order.currency)}</b>
                   <em>{labelFor(order.fulfillmentStatus || order.financialStatus)}</em>
-                  {order.trackingUrl ? <a href={order.trackingUrl} target="_blank" rel="noreferrer">Track parcel <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a> : null}
-                  {order.statusUrl && !order.trackingUrl ? <a href={order.statusUrl} target="_blank" rel="noreferrer">Order status <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a> : null}
+                  {order.trackingUrl ? <a href={order.trackingUrl} target="_blank" rel="noreferrer" className="icon-link">Track parcel <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a> : null}
+                  {order.statusUrl && !order.trackingUrl ? <a href={order.statusUrl} target="_blank" rel="noreferrer" className="icon-link">Order status <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a> : null}
                 </footer>
               </li>
             ))}

@@ -84,7 +84,7 @@ export default async function SafetyHubPage() {
               <article key={item.title}>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
-                <Link href="/institutions">Learn more <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></Link>
+                <Link href="/institutions" className="icon-link">Learn more <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></Link>
               </article>
             ))}
           </div>

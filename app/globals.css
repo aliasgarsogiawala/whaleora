@@ -93,6 +93,13 @@ a { color: inherit; text-decoration: none; }
 .button span, .text-link span, .arrow-link span, .chooser-cta span, .pdp-reviews-link span { display: inline-flex; align-items: center; }
 .button svg, .text-link svg, .arrow-link svg, .chooser-cta svg { flex: none; }
 .product-card-cue, .feature-story strong, .secondary-stories span { display: inline-flex; align-items: center; gap: 7px; }
+/* Any link carrying an inline icon. Inline anchors let the icon break onto its
+   own line; inline-flex keeps label and icon on one baseline. */
+.icon-link { display: inline-flex; align-items: center; gap: 7px; }
+.icon-link svg { flex: none; }
+/* Icons sitting inline in prose keep their own display, so nudge them onto the
+   optical centre of the line instead of the text baseline. */
+.chooser-hint svg, .pdp-compare-hint svg, .audience-scroll-hint svg, .track-grid svg { vertical-align: -.15em; }
 @media (max-width: 900px) {
   .site-header { grid-template-columns: 1fr auto; height: 72px; }
   .site-header nav { display: none; }
@@ -746,9 +753,9 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .track-grid small { color: var(--terracotta); font-size: var(--label-size); text-transform: uppercase; letter-spacing: var(--label-track); }
 .track-grid h2 { margin: 18px 0 14px; font-size: clamp(32px, 3.2vw, 48px); line-height: .98; font-weight: 400; }
 .track-grid p { max-width: 38ch; margin: 0 0 22px; color: rgba(16,40,68,.62); line-height: 1.7; }
-.track-grid a { margin-top: auto; font-size: var(--label-size); text-transform: uppercase; letter-spacing: .1em; font-weight: var(--label-weight); }
+.track-grid a { margin-top: auto; align-self: flex-start; }
 .track-grid article:hover .track-visual img { transform: scale(1.05); }
-.track-grid a:hover { color: var(--terracotta); }
+
 .collaboration { display: grid; grid-template-columns: 1fr 1fr; gap: 90px; }
 .collaboration h2 { margin: 0; max-width: 15ch; font-size: clamp(32px, 3.6vw, 54px); font-weight: 400; line-height: 1.04; letter-spacing: -.025em; }
 .collaboration h2 em { color: var(--terracotta); }
@@ -1593,7 +1600,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .guide-open:hover span { transform: translateY(3px); }
 .featured-guide .guide-soon { margin-top: 8px; }
 
-.shop-note-link { display: block; margin-top: 16px; font-size: var(--label-size); font-weight: var(--label-weight); letter-spacing: .1em; text-transform: uppercase; color: #efcdb1; }
+.shop-note-link { display: flex; width: fit-content; align-items: center; gap: 7px; margin-top: 16px; font-size: var(--label-size); font-weight: var(--label-weight); letter-spacing: .1em; text-transform: uppercase; color: #efcdb1; }
 .shop-note-link:hover { color: white; }
 
 .mission-grid h2 { font-size: clamp(26px, 2.1vw, 32px); line-height: 1.15; }

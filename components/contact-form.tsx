@@ -35,9 +35,9 @@ export function ContactForm() {
   return <>
     <section className="support-grid shell section-pad" id="enquiry">
       <div className="support-options">
-        <article><span>01</span><h2>WhatsApp</h2><p>Fastest for a quick question, an order status, or working out which product suits you.</p><a href={whatsappHref('Hi Whaleora! I have an inquiry.')}>Message us now <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
-        <article><span>02</span><h2>Orders &amp; products</h2><p>Anything about an order, a fault, a return, or a spec that isn’t on the page.</p><a href="mailto:hello@whaleora.com">hello@whaleora.com <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
-        <article><span>03</span><h2>Partnerships &amp; workshops</h2><p>Campuses, workplaces, community groups, retail. Tell us roughly how many people and we’ll go from there.</p><a href="mailto:hello@whaleora.com?subject=Partnership%20enquiry">Start a partnership enquiry <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
+        <article><span>01</span><h2>WhatsApp</h2><p>Fastest for a quick question, an order status, or working out which product suits you.</p><a href={whatsappHref('Hi Whaleora! I have an inquiry.')} className="icon-link">Message us now <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
+        <article><span>02</span><h2>Orders &amp; products</h2><p>Anything about an order, a fault, a return, or a spec that isn’t on the page.</p><a href="mailto:hello@whaleora.com" className="icon-link">hello@whaleora.com <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
+        <article><span>03</span><h2>Partnerships &amp; workshops</h2><p>Campuses, workplaces, community groups, retail. Tell us roughly how many people and we’ll go from there.</p><a href="mailto:hello@whaleora.com?subject=Partnership%20enquiry" className="icon-link">Start a partnership enquiry <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a></article>
       </div>
       <form className="contact-form" onSubmit={send}>
         <p className="eyebrow dark">Send an enquiry</p>

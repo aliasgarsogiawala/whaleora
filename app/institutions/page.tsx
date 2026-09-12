@@ -80,7 +80,7 @@ export default function InstitutionsPage() {
               <small>{track.kicker}</small>
               <h2>{track.title}</h2>
               <p>{track.text}</p>
-              <a href={whatsapp}>Enquire on WhatsApp <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a>
+              <a href={whatsapp} className="button button-outline">Enquire on WhatsApp <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></a>
             </div>
           </article>
         ))}

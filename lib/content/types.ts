@@ -1,11 +1,40 @@
 export type Testimonial = { id: string; quote: string; name: string; detail: string; row: 1 | 2; visible: boolean; demo: boolean };
 export type VideoReview = { id: string; title: string; product: string; slug: string; poster: string; video: string; duration: string; visible: boolean; demo: boolean };
+/**
+ * Admin-editable product copy. The first five fields have a Shopify equivalent,
+ * so they are *overrides*: blank (or null for price) means "use whatever the
+ * store says", and the bundled record in data/products.ts is the last resort.
+ * Everything below them exists only here.
+ */
+export type ProductEditorial = {
+  id: string;
+  title: string;
+  shortDescription: string;
+  longDescription: string;
+  images: string[];
+  price: number | null;
+  label: string;
+  features: string[];
+  specifications: { label: string; value: string }[];
+  howItWorks: { title: string; text: string }[];
+  scenarios: string[];
+  included: string[];
+  highlights: { value: string; label: string }[];
+  compare: { job: string; reachFor: string; power: string; carry: string; caveat: string };
+};
+export type HubChecklistContent = { id: string; title: string; description: string; items: string[] };
 export type ReviewContent = {
   testimonials: Testimonial[];
   videos: VideoReview[];
+  products: ProductEditorial[];
+  checklists: HubChecklistContent[];
+  habits: string[];
   settings: { writtenTitle: string; writtenSubtitle: string; videoTitle: string; videoSubtitle: string; showWritten: boolean; showVideos: boolean; marqueeSeconds: number };
 };
 export type ContentDocument = { revision: number; draft: ReviewContent; published: ReviewContent; updatedAt: string | null; publishedAt: string | null };
+
+/** Local catalogue IDs. Shopify extras are not editable here. */
+const PRODUCT_IDS = ['sos-alarm', 'pepper-spray', 'window-breaker', 'survival-whistle'] as const;
 
 export function validateContent(input: unknown): ReviewContent {
   const record = (value: unknown): Record<string, unknown> => {
@@ -25,6 +54,10 @@ export function validateContent(input: unknown): ReviewContent {
     throw new Error(`${label} must be a local path or an HTTPS media URL.`);
   };
   const list = (value: unknown) => { if (!Array.isArray(value) || value.length > 40) throw new Error('Each section supports up to 40 reviews.'); return value; };
+  const strings = (value: unknown, label: string, maxItems: number, maxLen: number, minItems = 1) => {
+    if (!Array.isArray(value) || value.length < minItems || value.length > maxItems) throw new Error(`${label} needs ${minItems}–${maxItems} entries.`);
+    return value.map((item, index) => text(item, `${label} ${index + 1}`, maxLen));
+  };
   const source = record(input);
   const settings = record(source.settings);
   const testimonials = list(source.testimonials).map((item): Testimonial => {
@@ -43,5 +76,97 @@ export function validateContent(input: unknown): ReviewContent {
   for (const entries of [testimonials, videos]) if (new Set(entries.map((item) => item.id)).size !== entries.length) throw new Error('Review IDs must be unique.');
   const seconds = settings.marqueeSeconds;
   if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 20 || seconds > 180) throw new Error('Marquee speed must be between 20 and 180 seconds.');
-  return { testimonials, videos, settings: { writtenTitle: text(settings.writtenTitle, 'Written reviews heading', 160), writtenSubtitle: text(settings.writtenSubtitle, 'Written reviews description', 300, false), videoTitle: text(settings.videoTitle, 'Video reviews heading', 160), videoSubtitle: text(settings.videoSubtitle, 'Video reviews description', 300, false), showWritten: flag(settings.showWritten), showVideos: flag(settings.showVideos), marqueeSeconds: seconds } };
+
+  const productIds = new Set<string>(PRODUCT_IDS);
+  const readProduct = (item: unknown): ProductEditorial => {
+    const entry = record(item);
+    const productId = id(entry.id);
+    if (!productIds.has(productId)) throw new Error(`Unknown product ${productId}.`);
+    const compare = record(entry.compare);
+    if (!Array.isArray(entry.specifications) || entry.specifications.length < 1 || entry.specifications.length > 10) throw new Error('Each product needs 1–10 specifications.');
+    if (!Array.isArray(entry.howItWorks) || entry.howItWorks.length < 1 || entry.howItWorks.length > 6) throw new Error('Each product needs 1–6 how-it-works steps.');
+    if (!Array.isArray(entry.highlights) || entry.highlights.length < 1 || entry.highlights.length > 3) throw new Error('Each product needs 1–3 highlights.');
+    // Overrides may be blank; that is how an editor hands the field back to Shopify.
+    if (entry.images !== undefined && (!Array.isArray(entry.images) || entry.images.length > 8)) throw new Error('A product takes up to 8 image URLs.');
+    const price = entry.price ?? null;
+    if (price !== null && (typeof price !== 'number' || !Number.isFinite(price) || price < 0 || price > 10_000_000)) throw new Error('Product price override must be a positive number, or blank to use Shopify.');
+    return {
+      id: productId,
+      title: text(entry.title, 'Product title', 80, false),
+      shortDescription: text(entry.shortDescription, 'Short description', 280, false),
+      longDescription: text(entry.longDescription, 'Long description', 1200, false),
+      images: Array.isArray(entry.images) ? entry.images.map((item, index) => media(item, `Product image ${index + 1}`)) : [],
+      price,
+      label: text(entry.label, 'Product label', 80, false),
+      features: strings(entry.features, 'Feature', 8, 80),
+      specifications: entry.specifications.map((spec): { label: string; value: string } => {
+        const row = record(spec);
+        return { label: text(row.label, 'Spec label', 60), value: text(row.value, 'Spec value', 120) };
+      }),
+      howItWorks: entry.howItWorks.map((step): { title: string; text: string } => {
+        const row = record(step);
+        return { title: text(row.title, 'Step title', 40), text: text(row.text, 'Step text', 240) };
+      }),
+      scenarios: strings(entry.scenarios, 'Scenario', 8, 40),
+      included: strings(entry.included, 'Included item', 8, 80),
+      highlights: entry.highlights.map((item): { value: string; label: string } => {
+        const row = record(item);
+        return { value: text(row.value, 'Highlight figure', 24), label: text(row.label, 'Highlight label', 40) };
+      }),
+      compare: {
+        job: text(compare.job, 'Compare job', 160),
+        reachFor: text(compare.reachFor, 'Compare reach-for', 220),
+        power: text(compare.power, 'Compare power', 160),
+        carry: text(compare.carry, 'Compare carry', 160),
+        caveat: text(compare.caveat, 'Compare caveat', 280),
+      },
+    };
+  };
+  let products: ProductEditorial[];
+  if (!Array.isArray(source.products)) products = [];
+  else {
+    const edited = new Map(source.products.map((item) => {
+      const next = readProduct(item);
+      return [next.id, next] as const;
+    }));
+    products = PRODUCT_IDS.flatMap((productId) => {
+      const item = edited.get(productId);
+      return item ? [item] : [];
+    });
+  }
+
+  let checklists: HubChecklistContent[];
+  if (!Array.isArray(source.checklists)) checklists = [];
+  else {
+    if (source.checklists.length < 1 || source.checklists.length > 24) throw new Error('Keep between 1 and 24 checklists.');
+    checklists = source.checklists.map((item): HubChecklistContent => {
+      const entry = record(item);
+      return {
+        id: id(entry.id),
+        title: text(entry.title, 'Checklist title', 80),
+        description: text(entry.description, 'Checklist description', 220),
+        items: strings(entry.items, 'Checklist item', 16, 180, 3),
+      };
+    });
+    if (new Set(checklists.map((item) => item.id)).size !== checklists.length) throw new Error('Checklist IDs must be unique.');
+  }
+
+  const habits = Array.isArray(source.habits) ? strings(source.habits, 'Habit', 12, 180, 6) : [];
+
+  return {
+    testimonials,
+    videos,
+    products,
+    checklists,
+    habits,
+    settings: {
+      writtenTitle: text(settings.writtenTitle, 'Written reviews heading', 160),
+      writtenSubtitle: text(settings.writtenSubtitle, 'Written reviews description', 300, false),
+      videoTitle: text(settings.videoTitle, 'Video reviews heading', 160),
+      videoSubtitle: text(settings.videoSubtitle, 'Video reviews description', 300, false),
+      showWritten: flag(settings.showWritten),
+      showVideos: flag(settings.showVideos),
+      marqueeSeconds: seconds,
+    },
+  };
 }

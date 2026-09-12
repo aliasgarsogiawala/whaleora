@@ -118,6 +118,16 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
   }, [visible, variant]);
 
   useEffect(() => {
+    if (variant !== 'widget' || !open) return;
+    const html = document.documentElement;
+    const previous = html.style.overflow;
+    html.style.overflow = 'hidden';
+    return () => {
+      html.style.overflow = previous;
+    };
+  }, [open, variant]);
+
+  useEffect(() => {
     if (cooldown <= 0) return;
     const timer = window.setInterval(() => setCooldown((seconds) => Math.max(0, seconds - 1)), 1000);
     return () => window.clearInterval(timer);
@@ -132,7 +142,7 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
   const pushBot = async (query: string) => {
     setTyping(true);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!reduced) await delay(Math.min(900, 280 + query.length * 8));
+    await delay(reduced ? 2000 : 2200 + Math.round(Math.random() * 800));
     const reply = replyToFaq(query, pathname, misses);
     setMisses((count) => (reply.missed ? count + 1 : 0));
     push({ role: 'bot', text: reply.text, links: reply.links, suggestions: reply.suggestions });
@@ -228,10 +238,11 @@ export function FaqBot({ variant = 'widget' }: { variant?: 'widget' | 'page' }) 
           );
         })}
         {typing && (
-          <article className="faq-bot-msg is-bot" aria-label="Assistant is typing">
+          <article className="faq-bot-msg is-bot" aria-label="Assistant is thinking">
             <span className="faq-bot-avatar" aria-hidden="true">W</span>
             <div className="faq-bot-msg-body">
               <div className="faq-bot-bubble is-typing">
+                <span className="faq-bot-thinking">Thinking</span>
                 <div className="faq-bot-dots"><i /><i /><i /></div>
               </div>
             </div>

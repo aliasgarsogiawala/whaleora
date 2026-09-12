@@ -1,14 +1,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { products, formatPrice } from '@/data/products';
+import { formatPrice } from '@/data/products';
+import { getCatalog } from '@/lib/shopify/catalog';
 import { whatsappHref } from '@/lib/content/contact';
 
 const WARRANTY_MONTHS = 12;
 
 export const metadata: Metadata = {
   title: 'Warranty — Whaleora',
-  description: `Every Whaleora object is covered for ${WARRANTY_MONTHS} months against manufacturing defects. Here is what that covers, what it does not, and how to claim without building a case first.`,
+  description: `The Personal SOS Alarm is covered for ${WARRANTY_MONTHS} months against manufacturing defects. Here is what that covers, what it does not, and how to claim without building a case first.`,
 };
 
 const covered = [
@@ -19,11 +20,10 @@ const covered = [
 ] as const;
 
 const notCovered = [
+  'The whistle, pepper spray and window breaker — they are not under this warranty.',
   'Ordinary wear — scuffs, scratches and faded print from living in a bag.',
   'Loss, theft, or damage from a drop, crush or vehicle accident.',
-  'Water damage on products not rated for immersion.',
-  'A pepper spray canister that has been discharged, or any tool used as intended in an emergency.',
-  'Anything opened, modified or repaired by someone other than us.',
+  'Water damage, or anything opened, modified or repaired by someone other than us.',
 ] as const;
 
 const steps = [
@@ -41,7 +41,9 @@ const steps = [
   },
 ] as const;
 
-export default function WarrantyPage() {
+export default async function WarrantyPage() {
+  const catalog = await getCatalog();
+  const sosAlarm = catalog.find((product) => product.slug === 'sos-alarm');
   return (
     <main className="page-main warranty-page">
       <section className="warranty-hero shell">
@@ -49,9 +51,9 @@ export default function WarrantyPage() {
           <p className="eyebrow dark">Warranty</p>
           <h1>Twelve months,<br /><em>no argument.</em></h1>
           <p>
-            Every object we sell is covered for {WARRANTY_MONTHS} months against manufacturing defects — the ₹299 whistle
-            on the same terms as the ₹1,799 alarm. A safety tool that fails is not a small inconvenience, so we
-            would rather replace it than debate it.
+            The Personal SOS Alarm is covered for {WARRANTY_MONTHS} months against manufacturing defects. The whistle,
+            pepper spray and window breaker are not under this warranty. A safety alarm that fails is not a small
+            inconvenience, so we would rather replace it than debate it.
           </p>
           <div className="warranty-hero-actions">
             <Link href="/contact" className="button button-primary">Start a claim <span>→</span></Link>
@@ -69,18 +71,18 @@ export default function WarrantyPage() {
       <section className="warranty-coverage section-pad">
         <div className="shell">
           <div className="section-heading">
-            <h2>Same cover on <em>all four.</em></h2>
-            <p>No tiered plans, no extended warranty to buy at checkout. The term starts on the day your order is delivered.</p>
+            <h2>Covered: the <em>SOS Alarm.</em></h2>
+            <p>No extended warranty to buy at checkout. The term starts on the day your order is delivered. Other products in the collection are not covered.</p>
           </div>
           <div className="warranty-grid">
-            {products.map((product) => (
-              <article key={product.slug}>
+            {sosAlarm && (
+              <article>
                 <span>{WARRANTY_MONTHS} months</span>
-                <h3>{product.title}</h3>
-                <p>{formatPrice(product.price)}</p>
-                <Link href={`/products/${product.slug}`} className="arrow-link">View product <span>→</span></Link>
+                <h3>{sosAlarm.title}</h3>
+                <p>{formatPrice(sosAlarm.price)}</p>
+                <Link href={`/products/${sosAlarm.slug}`} className="arrow-link">View product <span>→</span></Link>
               </article>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -128,9 +130,9 @@ export default function WarrantyPage() {
           </div>
           <div className="warranty-card-copy">
             <p>
-              There is no card to register and nothing to keep in a drawer. Your order confirmation email is the
-              warranty card — it carries the order number, the date and the products, which is everything we need
-              to look you up.
+              There is no card to register and nothing to keep in a drawer. If you bought the Personal SOS Alarm,
+              your order confirmation email is the warranty card — order number, date and the alarm, which is
+              everything we need to look you up.
             </p>
             <p>
               Lost the email? Message us with the phone number or address you ordered with and we will find it.

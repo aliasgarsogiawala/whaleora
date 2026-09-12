@@ -2,7 +2,7 @@ import 'server-only';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { initialDocument } from './defaults';
+import { hydrateContent, initialDocument } from './defaults';
 import { validateContent, type ContentDocument, type ReviewContent } from './types';
 
 export const dataDirectory = () => resolve(process.env.CONTENT_DATA_DIR || '.whaleora');
@@ -27,7 +27,7 @@ export async function readDocument(): Promise<ContentDocument> {
   if (!raw) return initialDocument();
   const document = JSON.parse(raw) as ContentDocument;
   if (!Number.isInteger(document.revision) || document.revision < 0) throw new Error('Content revision is invalid.');
-  return { ...document, draft: validateContent(document.draft), published: validateContent(document.published) };
+  return { ...document, draft: hydrateContent(validateContent(document.draft)), published: hydrateContent(validateContent(document.published)) };
 }
 
 export async function publishedContent(): Promise<ReviewContent> {
@@ -44,7 +44,8 @@ export async function saveDocument(content: ReviewContent, revision: number, pub
     const current = await readDocument();
     if (current.revision !== revision) throw new ConflictError();
     const now = new Date().toISOString();
-    const next: ContentDocument = { revision: revision + 1, draft: content, published: publish ? content : current.published, updatedAt: now, publishedAt: publish ? now : current.publishedAt };
+    const stored = hydrateContent(content);
+    const next: ContentDocument = { revision: revision + 1, draft: stored, published: publish ? stored : current.published, updatedAt: now, publishedAt: publish ? now : current.publishedAt };
     if (usesRedis()) {
       const script = "local old=redis.call('GET',KEYS[1]); local rev=0; if old then rev=cjson.decode(old).revision end; if rev~=tonumber(ARGV[1]) then return 0 end; redis.call('SET',KEYS[1],ARGV[2]); return 1";
       if (await redis<number>(['EVAL', script, 1, key(), revision, JSON.stringify(next)]) !== 1) throw new ConflictError();

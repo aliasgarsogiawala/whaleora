@@ -1,10 +1,10 @@
 # Whaleora content studio
 
-Open `/admin` to edit written testimonials, video reviews, media, ordering, visibility, headings and marquee speed. The original storefront palette is unchanged.
+Open `/admin` to edit product copy, Safety Hub checklists and habits, written testimonials, video reviews, media, ordering, visibility, headings and marquee speed. Prices, photos and SKUs stay in Shopify. The original storefront palette is unchanged.
 
 ## Local development
 
-Run `npm run dev`, visit `http://localhost:3000/admin`, and create your own password (12+ characters). First-time setup is only available on a local development hostname. There is no default password. Credentials are scrypt-hashed; the browser receives an eight-hour HttpOnly session cookie.
+Run `npm run dev`, visit `http://localhost:3000/admin`, and sign in with `ADMIN_PASSWORD` from `.env.local` (or create a password of 8+ characters if that is unset). First-time setup is only available on a local development hostname. Credentials are scrypt-hashed; the browser receives an eight-hour HttpOnly session cookie.
 
 Content and uploads persist in `.whaleora/`, which is gitignored. Back up this directory. `CONTENT_DATA_DIR` can point to another private persistent directory. Do not put it inside `public/`. Local storage is intended for a single server process; use Redis for multi-instance hosting.
 
@@ -22,7 +22,7 @@ Local uploads accept MP4 videos up to 30 MB and JPG/PNG/WebP thumbnails up to 5 
 Set these server-only environment variables before deployment:
 
 ```text
-ADMIN_PASSWORD=<a unique long password, at least 12 characters>
+ADMIN_PASSWORD=<a unique password, at least 8 characters>
 ADMIN_SESSION_SECRET=<random secret, at least 32 characters>
 ADMIN_ORIGIN=https://your-store-domain.example
 UPSTASH_REDIS_REST_URL=<Upstash Redis REST endpoint>

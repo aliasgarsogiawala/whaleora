@@ -48,11 +48,6 @@ export default async function Home() {
               <Link href="/products/sos-alarm" className="text-link">Start with the SOS Alarm <span>↗</span></Link>
             </div>
           </div>
-          <ul className="hero-rail">
-            <li>Free shipping over ₹1,499</li>
-            <li>Ships across India</li>
-            <li>Replaceable battery — no subscription</li>
-          </ul>
         </div>
       </section>
 
@@ -133,7 +128,7 @@ export default async function Home() {
       <section className="partnership-strip" data-reveal>
         <div className="shell">
           <p className="eyebrow">For campuses, workplaces & communities</p>
-          <h2>Safety training people<br /><em>actually remember.</em></h2>
+          <h2>Safety training people <em>actually remember.</em></h2>
           <p>Most safety sessions are a slide deck and a signature sheet. We run the session, leave the resources behind, and fit the products to the group — not the other way round.</p>
           <div className="partnership-types"><span>Universities & campuses</span><span>Corporate wellness</span><span>Community programmes</span><span>Retail & distribution</span></div>
           <Link href="/institutions" className="button button-light">See how partnerships work <span>→</span></Link>

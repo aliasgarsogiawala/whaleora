@@ -4,9 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import type { CSSProperties } from 'react';
-import { addToCartAction, getCartAction, removeCartLineAction, updateCartLineAction } from '@/app/actions/cart';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
+import { useConvexAuth, useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { AccountLink } from '@/components/account-link';
+import { addToCartAction, getCartAction, removeCartLineAction, setCartBuyerEmailAction, updateCartLineAction } from '@/app/actions/cart';
 import type { CatalogProduct } from '@/lib/shopify/catalog';
 import type { CartState, CartStateLine } from '@/lib/shopify/types';
 import { whatsappHref } from '@/lib/content/contact';
@@ -173,7 +175,22 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
     [cart, pending, open, add, update, remove],
   );
 
-  return <CartContext.Provider value={value}>{children}<CartDrawer /></CartContext.Provider>;
+  return <CartContext.Provider value={value}>{children}<CartIdentitySync cartId={cart.connected ? cart.id : null} /><CartDrawer /></CartContext.Provider>;
+}
+
+function CartIdentitySync({ cartId }: { cartId: string | null }) {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) return null;
+  return <CartIdentitySyncReady cartId={cartId} />;
+}
+
+function CartIdentitySyncReady({ cartId }: { cartId: string | null }) {
+  const { isAuthenticated } = useConvexAuth();
+  const me = useQuery(api.users.current, isAuthenticated ? {} : 'skip');
+  useEffect(() => {
+    if (!cartId || !me?.email) return;
+    void setCartBuyerEmailAction(me.email);
+  }, [cartId, me?.email]);
+  return null;
 }
 
 export function useCart() {
@@ -189,7 +206,7 @@ const NAV_LINKS = [
   { href: '/institutions', label: 'Partnerships' },
 ];
 
-const MENU_LINKS = [...NAV_LINKS, { href: '/contact', label: 'Contact' }];
+const MENU_LINKS = [...NAV_LINKS, { href: '/account', label: 'Account' }, { href: '/contact', label: 'Contact' }];
 
 /** A link is current on its own page and on anything nested beneath it. */
 const isCurrent = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -226,14 +243,14 @@ export function Header() {
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const menuRef = useOverlayFocus(menuOpen, closeMenu);
   const [scrolled, setScrolled] = useState(false);
-  // On a page with a full-bleed hero the header sits on the photograph until
-  // the hero has scrolled past, so the image runs the full height of the frame.
-  const [overHero, setOverHero] = useState(false);
-  useEffect(() => {
+  // Only the home hero is meant to run under the bar. Everywhere else the
+  // header keeps a solid paper surface so photos never show through on scroll.
+  const [overHero, setOverHero] = useState(pathname === '/');
+  useLayoutEffect(() => {
     const hero = document.querySelector<HTMLElement>('[data-hero-overlay]');
     const onScroll = () => {
       setScrolled(window.scrollY > 30);
-      setOverHero(hero ? hero.getBoundingClientRect().bottom > 120 : false);
+      setOverHero(Boolean(hero && hero.getBoundingClientRect().bottom > 120));
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -257,6 +274,7 @@ export function Header() {
         </nav>
         <div className="header-actions">
           <Link href="/contact" className="contact-link" aria-current={isCurrent(pathname, '/contact') ? 'page' : undefined}>Contact</Link>
+          <AccountLink />
           <button className="cart-button" onClick={() => setOpen(true)} aria-label={`Open cart with ${count} items`}>
             <ShoppingCart className="nav-cart-icon" size={22} strokeWidth={1.7} aria-hidden="true" />
             {/* Keyed on the count so the badge replays its pop each time the bag changes. */}
@@ -362,19 +380,49 @@ export function ProductCard({ product, index = 0 }: { product: ShopProduct; inde
   );
 }
 
+/** Footer social marks, drawn inline: lucide ships no brand glyphs. */
+const socialIcon = { viewBox: '0 0 24 24', width: 17, height: 17, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
+
+const socials = [
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/whaleora.safety',
+    icon: (
+      <svg {...socialIcon}>
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.1" cy="6.9" r="1.05" fill="currentColor" stroke="none" />
+      </svg>
+    ),
+  },
+  {
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/company/whaleora-safety/',
+    icon: (
+      <svg {...socialIcon}>
+        <rect x="3" y="3" width="18" height="18" rx="4.5" />
+        <circle cx="7.6" cy="7.6" r="1.05" fill="currentColor" stroke="none" />
+        <path d="M7.6 10.5v6.3" />
+        <path d="M11.6 16.8v-6.3" />
+        <path d="M11.6 13.6a2.6 2.6 0 0 1 5.2 0v3.2" />
+      </svg>
+    ),
+  },
+];
+
 export function Footer() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const groups = useMemo(() => [
     { title: 'Shop', links: [['Shop all', '/products'], ['SOS Alarm', '/products/sos-alarm'], ['Pepper Spray', '/products/pepperspray']] },
     { title: 'Explore', links: [['Our story', '/about'], ['Safety Hub', '/safety-hub'], ['Partnerships', '/institutions']] },
-    { title: 'Support', links: [['Contact & FAQ', '/contact'], ['Warranty', '/warranty'], ['Shipping', '/contact'], ['Returns', '/contact']] },
+    { title: 'Support', links: [['Account', '/account'], ['Contact & FAQ', '/contact'], ['Warranty', '/warranty'], ['Shipping', '/contact'], ['Returns', '/contact']] },
   ], []);
   return (
     <footer className="footer">
       <section className="community-signup"><p className="eyebrow">The monthly note</p><div><h2>One email a month. No fear-mongering.</h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">A checklist, a short read, and anything new we’ve made. Unsubscribe in one click.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} →</button></div></form></div></section>
       <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Prepared,<br />not afraid.</p><address>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => <Link href={href} key={label}>{label}</Link>)}</div>)}</div></section>
-      <div className="footer-bottom"><span>© 2026 Whaleora</span><div><a href="mailto:hello@whaleora.com">hello@whaleora.com</a><a href="https://www.instagram.com/whaleora.safety">Instagram ↗</a><a href="https://www.linkedin.com/company/whaleora-safety/">LinkedIn ↗</a></div></div>
+      <div className="footer-bottom"><span>© 2026 Whaleora</span><div><a href="mailto:hello@whaleora.com">hello@whaleora.com</a><span className="footer-socials">{socials.map((social) => <a key={social.label} className="footer-social" href={social.href} aria-label={social.label} title={social.label} target="_blank" rel="noreferrer noopener">{social.icon}</a>)}</span></div></div>
     </footer>
   );
 }

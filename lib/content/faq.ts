@@ -410,7 +410,7 @@ export const faqs: FaqEntry[] = [
     question: 'What is Whaleora?',
     answer:
       'Personal safety tools that fit on a keyring. A 130dB SOS alarm, a 120dB whistle, pepper spray and a car window breaker. Honest specs, ₹299 to ₹1,799, designed so they feel like something you’d actually carry — not tactical gear, not a novelty charm.\n\nFounded by Sheuli in Mumbai. The line is “prepared, not afraid.” We also give away guides on the Safety Hub because a product on its own was never the point.',
-    keywords: ['whaleora', 'about', 'brand', 'what is', 'company', 'who are you', 'mission', 'story'],
+    keywords: ['whaleora', 'about', 'brand', 'what is', 'company', 'mission', 'story'],
     followUps: ['brand-where', 'brand-hub', 'choose-which'],
     links: [
       { label: 'Our story', href: '/about' },

@@ -60,26 +60,28 @@ const Mark = ({ light = false }: { light?: boolean }) => (
   // A plain img, not next/image: this element is printed, and print jobs are
   // more predictable without the optimiser's srcset in the way.
   // eslint-disable-next-line @next/next/no-img-element
-  <img src="/brand/whaleora-logo.svg" alt="" aria-hidden="true" className={`ec-mark ${light ? 'is-light' : ''}`} />
+  <img src="/brand/whaleora-fin.svg" alt="" aria-hidden="true" className={`ec-mark ${light ? 'is-light' : ''}`} />
 );
+
+const show = (value: string, fallback: string) => value.trim() || fallback;
+const faded = (value: string) => (value.trim() ? '' : 'is-placeholder');
 
 /** One physical face of the card. Shared by the on-screen preview and print. */
 function CardFront({ data }: { data: CardData }) {
-  const show = (value: string, fallback: string) => value.trim() || fallback;
-  const faded = (value: string) => (value.trim() ? '' : 'is-placeholder');
+  const blood = data.blood && data.blood !== 'Not known' ? data.blood : '';
 
   return (
     <div className="ec-face ec-front">
-      <div className="ec-face-top">
-        <span className="ec-kicker">In an emergency</span>
+      <header className="ec-stripe">
+        <span>In case of emergency</span>
         <Mark />
-      </div>
+      </header>
 
       <div className="ec-identity">
         <p className={`ec-name ${faded(data.name)}`}>{show(data.name, sample.name)}</p>
-        {data.blood && data.blood !== 'Not known'
-          ? <span className="ec-blood" aria-label={`Blood group ${data.blood}`}>{data.blood}</span>
-          : null}
+        <span className={`ec-blood ${blood ? '' : 'is-empty'}`} aria-label={blood ? `Blood group ${blood}` : 'Blood group not set'}>
+          {blood || 'Blood'}
+        </span>
       </div>
 
       <p className={`ec-notes ${faded(data.notes)}`}>{show(data.notes, sample.notes)}</p>
@@ -88,14 +90,14 @@ function CardFront({ data }: { data: CardData }) {
         <span className="ec-kicker">Please call</span>
         <ul>
           <li>
+            <b className={faded(data.contactOnePhone)}>{show(data.contactOnePhone, sample.contactOnePhone)}</b>
             <strong className={faded(data.contactOneName)}>{show(data.contactOneName, sample.contactOneName)}</strong>
             <small className={faded(data.contactOneRelation)}>{show(data.contactOneRelation, sample.contactOneRelation)}</small>
-            <b className={faded(data.contactOnePhone)}>{show(data.contactOnePhone, sample.contactOnePhone)}</b>
           </li>
           <li>
+            <b className={faded(data.contactTwoPhone)}>{show(data.contactTwoPhone, sample.contactTwoPhone)}</b>
             <strong className={faded(data.contactTwoName)}>{show(data.contactTwoName, sample.contactTwoName)}</strong>
             <small className={faded(data.contactTwoRelation)}>{show(data.contactTwoRelation, sample.contactTwoRelation)}</small>
-            <b className={faded(data.contactTwoPhone)}>{show(data.contactTwoPhone, sample.contactTwoPhone)}</b>
           </li>
         </ul>
       </div>
@@ -107,10 +109,10 @@ function CardBack({ data }: { data: CardData }) {
   const [primary, ...rest] = emergencyNumbers;
   return (
     <div className="ec-face ec-back">
-      <div className="ec-face-top">
-        <span className="ec-kicker">Emergency numbers · India</span>
+      <header className="ec-stripe">
+        <span>Emergency numbers · India</span>
         <Mark light />
-      </div>
+      </header>
 
       <div className="ec-primary">
         <strong>{primary.number}</strong>
@@ -134,7 +136,6 @@ function CardBack({ data }: { data: CardData }) {
 export function EmergencyCard() {
   const formId = useId();
   const [data, setData] = useState<CardData>(blank);
-  const [side, setSide] = useState<'front' | 'back'>('front');
   const [restored, setRestored] = useState(false);
 
   // Restore after mount so the server and client first paint agree. Deferred
@@ -215,16 +216,16 @@ export function EmergencyCard() {
 
             <fieldset>
               <legend>Who to call</legend>
+              {field('contactOnePhone', 'First phone number', { type: 'tel', inputMode: 'tel' })}
               <div className="ec-row">
-                {field('contactOneName', 'First contact')}
+                {field('contactOneName', 'Name')}
                 {field('contactOneRelation', 'Relationship', { placeholder: 'Mother, flatmate…' })}
               </div>
-              {field('contactOnePhone', 'Phone number', { type: 'tel', inputMode: 'tel' })}
+              {field('contactTwoPhone', 'Second phone number', { type: 'tel', inputMode: 'tel' })}
               <div className="ec-row">
-                {field('contactTwoName', 'Second contact')}
-                {field('contactTwoRelation', 'Relationship' )}
+                {field('contactTwoName', 'Name')}
+                {field('contactTwoRelation', 'Relationship')}
               </div>
-              {field('contactTwoPhone', 'Phone number', { type: 'tel', inputMode: 'tel' })}
             </fieldset>
 
             <fieldset>
@@ -239,27 +240,22 @@ export function EmergencyCard() {
           </form>
 
           <div className="ec-preview">
-            <div className="ec-stage">
-              <div className="ec-card-shell">
-                <div className={`ec-card ${side === 'back' ? 'is-back' : ''}`}>
-                  <CardFront data={data} />
-                  <CardBack data={data} />
-                </div>
+            <div className="ec-deck">
+              <div className="ec-live" aria-label="Card front">
+                <CardFront data={data} />
+              </div>
+              <div className="ec-live" aria-label="Card back">
+                <CardBack data={data} />
               </div>
             </div>
 
             <div className="ec-controls">
-              <div className="ec-toggle" role="group" aria-label="Card side">
-                <button type="button" className={side === 'front' ? 'active' : ''} onClick={() => setSide('front')} aria-pressed={side === 'front'}>Front</button>
-                <button type="button" className={side === 'back' ? 'active' : ''} onClick={() => setSide('back')} aria-pressed={side === 'back'}>Back</button>
-              </div>
+              <p className="ec-print-note">Prints at wallet size (85.6 × 54 mm). Fold along the dotted line for a double-sided card.</p>
               <div className="ec-actions">
                 <button type="button" className="button button-primary" onClick={() => window.print()}>Print the card <span>→</span></button>
                 <button type="button" className="ec-clear" onClick={clear}>Clear</button>
               </div>
             </div>
-
-            <p className="ec-print-note">Prints at wallet size (85.6 × 54 mm). Fold along the dotted line for a double-sided card.</p>
           </div>
         </div>
 

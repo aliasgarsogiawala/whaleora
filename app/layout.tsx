@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Lora } from 'next/font/google';
+import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
+import { ConvexClientProvider } from '@/components/convex-provider';
 import { SiteFrame } from '@/components/site-frame';
 import './globals.css';
 import './card-refinements.css';
@@ -31,5 +33,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body suppressHydrationWarning className={`${display.variable} ${sans.variable}`}><SiteFrame>{children}</SiteFrame></body></html>;
+  return (
+    <ConvexAuthNextjsServerProvider>
+      <html lang="en">
+        <body suppressHydrationWarning className={`${display.variable} ${sans.variable}`}>
+          <ConvexClientProvider>
+            <SiteFrame>{children}</SiteFrame>
+          </ConvexClientProvider>
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
+  );
 }

@@ -69,7 +69,8 @@ export function ProductPurchase({ product, children }: { product: CatalogProduct
   const purchase = useRef<HTMLDivElement>(null);
   const variants = product.shopify?.variants || [];
   const variant = variants.find((item) => item.id === variantId);
-  const chosen: CatalogProduct = variant && product.shopify ? { ...product, price: variant.price, currencyCode: variant.currencyCode, shopify: { ...product.shopify, variantId: variant.id, availableForSale: variant.availableForSale, compareAtPrice: variant.compareAtPrice } } : product;
+  // An admin price override stands for every variant; without one each variant carries its own Shopify price.
+  const chosen: CatalogProduct = variant && product.shopify ? { ...product, price: product.priceOverridden ? product.price : variant.price, currencyCode: variant.currencyCode, shopify: { ...product.shopify, variantId: variant.id, availableForSale: variant.availableForSale, compareAtPrice: variant.compareAtPrice } } : product;
   const total = chosen.price * quantity;
   const compareAt = chosen.shopify?.compareAtPrice;
   const onQuantity = (value: number) => { if (Number.isFinite(value)) setQuantity(Math.max(1, Math.min(10, Math.trunc(value)))); };

@@ -141,6 +141,7 @@
 .pdp-compare-scroll tbody th { font-size: 11px; font-weight: 500; }
 .pdp-compare-scroll td { font-size: 12px; line-height: 1.6; color: rgba(16,40,68,.7); }
 .pdp-compare-scroll .current { background: var(--ivory); }
+.pdp-compare-hint { display: none; }
 .pdp-faq-list { max-width: 840px; margin: auto; }
 .pdp-faq-list details { border-bottom: 1px solid var(--line); }
 .pdp-faq-list details:first-child { border-top: 1px solid var(--line); }
@@ -218,7 +219,56 @@
   .pdp-use-grid article { padding: 17px; min-height: 155px; }
   .pdp-use-grid h3 { font-size: 18px; }
   .pdp-use-grid p { font-size: 11px; }
+  .pdp-compare-scroll {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 0 0 8px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: 6.75rem;
+  }
+  .pdp-compare-scroll table {
+    min-width: 0;
+    width: max-content;
+    table-layout: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .pdp-compare-scroll th:first-child,
+  .pdp-compare-scroll tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    width: 6.75rem;
+    min-width: 6.75rem;
+    max-width: 6.75rem;
+    padding-left: 20px;
+    background: var(--paper, #fff);
+    box-shadow: 6px 0 10px -8px rgba(16, 40, 68, .35);
+    overflow-wrap: break-word;
+  }
+  .pdp-compare-scroll thead th:not(:first-child),
+  .pdp-compare-scroll td {
+    min-width: 10.5rem;
+    max-width: 13rem;
+    overflow-wrap: break-word;
+    scroll-snap-align: start;
+  }
   .pdp-compare-scroll th, .pdp-compare-scroll td { padding: 16px; }
+  .pdp-compare-scroll th:first-child,
+  .pdp-compare-scroll tbody th { padding-left: 20px; }
+  .pdp-comparison { padding-bottom: 108px; }
+  .pdp-compare-hint {
+    display: block;
+    margin: 14px 0 0;
+    font-size: var(--label-size);
+    font-weight: var(--label-weight);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--terracotta);
+  }
   .pdp-faq-list summary { font-size: 13px; padding-block: 19px; }
   .pdp-recommendations .product-grid { display: flex; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; gap: 18px; }
   .pdp-recommendations .product-card { flex: 0 0 72%; scroll-snap-align: start; }

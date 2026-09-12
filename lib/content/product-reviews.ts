@@ -4,9 +4,10 @@ import type { ReviewContent } from './types';
 const normalize = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
 
 /** Match current and original product names, independent of video visibility. */
-export function productReviews(content: ReviewContent, product: { slug: string; title: string }) {
+export function productReviews(content: ReviewContent, product: { slug: string; title: string; id?: string }) {
   const local = getProduct(product.slug);
-  const names = new Set([product.slug, product.title, local?.title || '',
+  const editorial = content.products?.find((item) => item.id === (product.id || local?.id));
+  const names = new Set([product.slug, product.title, local?.title || '', editorial?.title || '',
     ...(product.slug === 'windowbreaker' ? ['Window Breaker'] : []),
   ].filter(Boolean).map(normalize));
 

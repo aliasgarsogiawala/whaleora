@@ -52,7 +52,7 @@
 .guide-card > div { padding-bottom: 20px; border-bottom: 1px solid currentColor; }
 .guide-card h2 { margin-bottom: 18px; padding-top: 48px; line-height: 1.08; letter-spacing: -.025em; }
 .guide-card p { margin-top: 0; line-height: 1.7; }
-.guide-card .guide-open { margin-top: 14px; padding: 12px 0; border: 0; border-bottom: 1px solid currentColor; }
+.guide-card .guide-open { align-self: flex-start; margin-top: 14px; padding: 12px 0; border: 0; border-bottom: 1px solid currentColor; background: none; color: inherit; font: inherit; cursor: pointer; text-align: left; }
 .guide-card .guide-open:hover { background: transparent; color: inherit; }
 .editorial-grid { gap: 16px; }
 .feature-story, .secondary-stories a { border-radius: 3px; }
@@ -60,13 +60,11 @@
 .secondary-stories { gap: 16px; }
 .secondary-stories a { padding: 32px; }
 .secondary-stories h3 { line-height: 1.08; }
-.track-grid article { padding: clamp(28px, 3.5vw, 50px); }
 .track-grid h2 { line-height: 1.06; letter-spacing: -.025em; }
-.track-grid article > a { padding-top: 24px; }
 .contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { border-bottom-color: var(--terracotta); }
 .filters button { min-height: 44px; }
 .filters button.active { text-decoration: underline; text-underline-offset: 8px; text-decoration-thickness: 1px; }
-.chooser { overflow: clip; }
+.chooser { overflow: visible; }
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .product-visual { transform: perspective(1100px) rotateX(var(--depth-x, 0deg)) rotateY(var(--depth-y, 0deg)); }
@@ -79,7 +77,6 @@
   .product-meta { min-height: 125px; }
 }
 @media (max-width: 600px) {
-  .chooser-scroll { width: 100%; margin-inline: 0; padding-inline: 18px; }
   .product-grid { gap: 28px 14px; }
   .product-visual { aspect-ratio: .84; }
   .product-visual small { top: 12px; left: 10px; font-size: 8px; }
@@ -97,5 +94,5 @@
   .secondary-stories a { padding: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .product-visual, .product-card:hover .product-visual img, .guide-card:hover, .feature-story:hover { transform: none; }
+  .product-visual, .product-card:hover .product-visual img, .guide-card:hover, .feature-story:hover, .track-grid article:hover .track-visual img { transform: none; }
 }

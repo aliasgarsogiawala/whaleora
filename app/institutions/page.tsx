@@ -7,15 +7,46 @@ export const metadata: Metadata = { title: 'Safety programmes for campuses & wor
 
 const whatsapp = whatsappHref('Hi Whaleora! I would like to explore institutional partnerships.');
 
+const tracks = [
+  {
+    kicker: 'Students & faculty',
+    title: <>Universities<br />&amp; Campuses</>,
+    text: 'Orientation weeks, hostel blocks, late-running labs and the walk back from the library.',
+    image: '/stock/journey-campus.webp',
+    alt: 'Student walking through a sunlit campus',
+  },
+  {
+    kicker: 'Employee care',
+    title: <>Corporate<br />Wellness</>,
+    text: 'Night shifts, field roles, and the commute your policy doesn’t currently cover.',
+    image: '/stock/journey-work.webp',
+    alt: 'Professional leaving the office at the end of the day',
+  },
+  {
+    kicker: 'Collective action',
+    title: <>Community<br />Programmes</>,
+    text: 'Adaptable formats for NGOs, resident associations and local groups working on a budget.',
+    image: '/stock/journey-city.webp',
+    alt: 'People moving through a city neighbourhood',
+  },
+  {
+    kicker: 'Stockists',
+    title: <>Retail &amp;<br />Distribution</>,
+    text: 'For shops whose customers ask for this and currently get pointed elsewhere.',
+    image: '/lifestyle/sos-alarm-flatlay.webp',
+    alt: 'Whaleora safety tools laid out as they would sit in a shop',
+  },
+];
+
 export default function InstitutionsPage() {
   return <main className="page-main institutions-page">
     <section className="institution-hero"><div className="shell institution-hero-grid">
       <div className="institution-hero-copy">
-        <p className="eyebrow">Campuses · Workplaces · Communities</p>
+        <p className="eyebrow dark">Campuses · Workplaces · Communities</p>
         <h1>Not another slide deck<br />and a <em>signature sheet.</em></h1>
         <div>
           <p>Most safety sessions are attended once and forgotten by Friday. We run the session, leave resources people can go back to, and pick the products to fit the group — not the other way round.</p>
-          <a href={whatsapp} className="button button-light">Talk to us on WhatsApp <span>↗</span></a>
+          <a href={whatsapp} className="button button-primary">Talk to us on WhatsApp <span>↗</span></a>
         </div>
       </div>
       <figure className="institution-hero-visual">
@@ -39,10 +70,19 @@ export default function InstitutionsPage() {
     <section className="tracks section-pad"><div className="shell">
       <p className="eyebrow dark">Four ways we work together</p>
       <div className="track-grid">
-        <article><small>Students &amp; faculty</small><h2>Universities<br />&amp; Campuses</h2><p>Orientation weeks, hostel blocks, late-running labs and the walk back from the library.</p><a href={whatsapp}>Enquire on WhatsApp ↗</a></article>
-        <article><small>Employee care</small><h2>Corporate<br />Wellness</h2><p>Night shifts, field roles, and the commute your policy doesn’t currently cover.</p><a href={whatsapp}>Enquire on WhatsApp ↗</a></article>
-        <article><small>Collective action</small><h2>Community<br />Programmes</h2><p>Adaptable formats for NGOs, resident associations and local groups working on a budget.</p><a href={whatsapp}>Enquire on WhatsApp ↗</a></article>
-        <article><small>Stockists</small><h2>Retail &amp;<br />Distribution</h2><p>For shops whose customers ask for this and currently get pointed elsewhere.</p><a href={whatsapp}>Enquire on WhatsApp ↗</a></article>
+        {tracks.map((track) => (
+          <article key={track.kicker}>
+            <figure className="track-visual">
+              <Image src={track.image} alt={track.alt} fill sizes="(max-width: 900px) 100vw, 50vw" />
+            </figure>
+            <div className="track-copy">
+              <small>{track.kicker}</small>
+              <h2>{track.title}</h2>
+              <p>{track.text}</p>
+              <a href={whatsapp}>Enquire on WhatsApp ↗</a>
+            </div>
+          </article>
+        ))}
       </div>
     </div></section>
 

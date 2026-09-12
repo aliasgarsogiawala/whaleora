@@ -13,7 +13,7 @@ const digest = (value: string) => createHash('sha256').update(value).digest();
 const equal = (a: string, b: string) => timingSafeEqual(digest(a), digest(b));
 
 export async function credentials(): Promise<Credentials | null> {
-  if ((process.env.ADMIN_PASSWORD?.length ?? 0) >= 12 && (process.env.ADMIN_SESSION_SECRET?.length ?? 0) >= 32) {
+  if ((process.env.ADMIN_PASSWORD?.length ?? 0) >= 8 && (process.env.ADMIN_SESSION_SECRET?.length ?? 0) >= 32) {
     return { salt: 'environment', hash: digest(process.env.ADMIN_PASSWORD!).toString('hex'), secret: process.env.ADMIN_SESSION_SECRET! };
   }
   if (process.env.ADMIN_PASSWORD || process.env.ADMIN_SESSION_SECRET) return null;
@@ -24,7 +24,7 @@ export async function credentials(): Promise<Credentials | null> {
 
 export async function setupPassword(password: string) {
   if (process.env.NODE_ENV !== 'development' || await credentials()) throw new Error('Initial setup is unavailable.');
-  if (password.length < 12 || password.length > 200) throw new Error('Use a password between 12 and 200 characters.');
+  if (password.length < 8 || password.length > 200) throw new Error('Use a password between 8 and 200 characters.');
   const salt = randomBytes(16).toString('hex');
   const hash = (await scrypt(password, salt, 64) as Buffer).toString('hex');
   const config = { salt, hash, secret: randomBytes(48).toString('hex') };

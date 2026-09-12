@@ -1,0 +1,168 @@
+{% comment %}
+  Whaleora — Warranty card block
+  Paste this into your existing Order confirmation template,
+  just before the footer (search for class="row footer").
+
+  Also add the <style> rules from the comment at the bottom
+  into the template's existing <style> tag.
+
+  Subject line (optional, paste in the Subject field):
+  {{ name }} confirmed — keep this email, it's your warranty card
+{% endcomment %}
+
+{% if shipping_address.name != blank %}
+  {% assign warranty_name = shipping_address.name %}
+{% elsif billing_address.name != blank %}
+  {% assign warranty_name = billing_address.name %}
+{% elsif customer.name != blank %}
+  {% assign warranty_name = customer.name %}
+{% elsif customer.first_name != blank %}
+  {% assign warranty_name = customer.first_name %}
+{% else %}
+  {% assign warranty_name = "Customer" %}
+{% endif %}
+
+{% if shipping_address.phone != blank %}
+  {% assign warranty_phone = shipping_address.phone %}
+{% elsif billing_address.phone != blank %}
+  {% assign warranty_phone = billing_address.phone %}
+{% elsif customer.phone != blank %}
+  {% assign warranty_phone = customer.phone %}
+{% else %}
+  {% assign warranty_phone = "On file with this order" %}
+{% endif %}
+
+{% capture warranty_contact_address %}
+  {%- if shipping_address -%}
+    {{- shipping_address.address1 -}}
+    {%- if shipping_address.address2 != blank -%}, {{ shipping_address.address2 }}{%- endif -%}
+    {%- if shipping_address.city != blank -%}, {{ shipping_address.city }}{%- endif -%}
+    {%- if shipping_address.province != blank -%}, {{ shipping_address.province }}{%- endif -%}
+    {%- if shipping_address.zip != blank %} {{ shipping_address.zip }}{%- endif -%}
+  {%- elsif billing_address -%}
+    {{- billing_address.city -}}
+    {%- if billing_address.province != blank -%}, {{ billing_address.province }}{%- endif -%}
+  {%- else -%}
+    On file with this order
+  {%- endif -%}
+{% endcapture %}
+
+{% assign has_sos_warranty = false %}
+{% for line in line_items %}
+  {% assign warranty_haystack = line.title | downcase %}
+  {% if line.product %}
+    {% assign warranty_haystack = warranty_haystack | append: ' ' | append: line.product.title | downcase %}
+    {% assign warranty_haystack = warranty_haystack | append: ' ' | append: line.product.handle | downcase %}
+  {% endif %}
+  {% if warranty_haystack contains 'sos-alarm' or warranty_haystack contains 'sos alarm' or warranty_haystack contains 'personal sos' %}
+    {% assign has_sos_warranty = true %}
+  {% endif %}
+{% endfor %}
+
+{% capture warranty_models %}
+  {%- assign warranty_model_sep = "" -%}
+  {%- for line in line_items -%}
+    {%- assign warranty_haystack = line.title | downcase -%}
+    {%- if line.product -%}
+      {%- assign warranty_haystack = warranty_haystack | append: ' ' | append: line.product.title | downcase -%}
+      {%- assign warranty_haystack = warranty_haystack | append: ' ' | append: line.product.handle | downcase -%}
+    {%- endif -%}
+    {%- if warranty_haystack contains 'sos-alarm' or warranty_haystack contains 'sos alarm' or warranty_haystack contains 'personal sos' -%}
+      {{- warranty_model_sep -}}{{- line.quantity }} × {{ line.title -}}
+      {%- if line.sku != blank %} ({{ line.sku }}){%- endif -%}
+      {%- assign warranty_model_sep = "; " -%}
+    {%- endif -%}
+  {%- endfor -%}
+{% endcapture %}
+
+{% if has_sos_warranty %}
+<table class="row section" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+    <td class="section__cell" style="padding-top: 8px; padding-bottom: 8px;">
+      <center>
+        <table class="container" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px;">
+          <tr>
+            <td style="padding: 0 20px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="warranty-card" style="border: 2px solid #0F2643; background: #ffffff;">
+                <tr>
+                  <td style="padding: 28px 24px 12px;">
+                    <p style="margin: 0 0 4px; font-family: Arial, Helvetica, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #DA6D40;">
+                      4. Warranty card
+                    </p>
+                    <h3 style="margin: 0 0 10px; font-family: Georgia, 'Times New Roman', serif; font-size: 22px; line-height: 1.2; color: #0F2643;">
+                      Keep this carefully
+                    </h3>
+                    <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.55; color: #5F6F77;">
+                      Thank you for purchasing from Whaleora. This card is already filled from your order — there is nothing to register. It is your 12-month warranty on the Personal SOS Alarm only.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 24px 8px;">
+                    <table class="warranty-card__table" width="100%" cellspacing="0" cellpadding="0" border="1" style="border-collapse: collapse; border-color: #0F2643; width: 100%;">
+                      <tr>
+                        <td class="warranty-card__label" width="22%" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">User name</td>
+                        <td width="28%" style="padding: 10px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #0F2643; border: 1px solid #0F2643;">{{ warranty_name }}</td>
+                        <td class="warranty-card__label" width="22%" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">Contact address</td>
+                        <td width="28%" style="padding: 10px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.4; color: #0F2643; border: 1px solid #0F2643;">{{ warranty_contact_address | strip }}</td>
+                      </tr>
+                      <tr>
+                        <td class="warranty-card__label" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">Contact No.</td>
+                        <td style="padding: 10px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #0F2643; border: 1px solid #0F2643;">{{ warranty_phone }}</td>
+                        <td class="warranty-card__label" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">Purchase address</td>
+                        <td style="padding: 10px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #0F2643; border: 1px solid #0F2643;">Whaleora · whaleora.com</td>
+                      </tr>
+                      <tr>
+                        <td class="warranty-card__label" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">Model No.</td>
+                        <td style="padding: 10px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.4; color: #0F2643; border: 1px solid #0F2643;">{{ warranty_models | strip }}</td>
+                        <td class="warranty-card__label" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">Purchase date</td>
+                        <td style="padding: 10px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #0F2643; border: 1px solid #0F2643;">{{ created_at | date: "%d %B %Y" }}</td>
+                      </tr>
+                      <tr>
+                        <td class="warranty-card__label" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">Order</td>
+                        <td style="padding: 10px 12px; font-family: Georgia, 'Times New Roman', serif; font-size: 16px; color: #0F2643; border: 1px solid #0F2643;">{{ order_name }}</td>
+                        <td class="warranty-card__label" style="padding: 10px 12px; background: #FBECDB; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; color: #0F2643; border: 1px solid #0F2643;">Cover</td>
+                        <td style="padding: 10px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #0F2643; border: 1px solid #0F2643;">12 months from delivery — SOS Alarm only</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 22px 24px 10px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td valign="middle" style="font-family: Georgia, 'Times New Roman', serif; font-size: 22px; color: #0F2643; padding-right: 16px;">
+                          Certificate:
+                        </td>
+                        <td valign="middle" width="96" align="left">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="warranty-stamp" style="width: 84px; height: 84px; border: 3px solid #C41E3A; border-radius: 50%;">
+                            <tr>
+                              <td align="center" valign="middle" height="78" style="color: #C41E3A; font-family: Georgia, 'Times New Roman', serif; font-weight: 700; text-align: center; -webkit-transform: rotate(-16deg); transform: rotate(-16deg);">
+                                <div style="font-size: 10px; letter-spacing: 0.18em;">12 MO</div>
+                                <div style="font-size: 16px; letter-spacing: 0.12em; padding-top: 2px;">PASS</div>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 24px 26px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.6; color: #5F6F77;">
+                    This warranty covers the Personal SOS Alarm only — not the whistle, pepper spray or window breaker.<br><br>
+                    Covers manufacturing defects: a siren or strobe that stops working on its own; a battery that will not hold charge; a pin, clip or housing that fails under everyday carry; an alarm that arrived faulty.<br><br>
+                    Does not cover ordinary wear, loss, theft, drops, water damage, or anything opened or repaired by someone else.<br><br>
+                    To claim: email <a href="mailto:hello@whaleora.com" style="color: #DA6D40;">hello@whaleora.com</a> or WhatsApp +91 81692 19734 with this order number. A photo helps; it is not required. Wait to hear from us before posting anything back.<br>
+                    Full terms: <a href="https://whaleora.com/warranty" style="color: #DA6D40;">whaleora.com/warranty</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>
+{% endif %}

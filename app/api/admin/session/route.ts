@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     if (!config || !await validPassword(data.password, config)) return json({ error: 'Incorrect password or admin is not configured.' }, 401);
     await startSession(config);
     return json({ ok: true });
-  } catch { return json({ error: 'Sign-in failed. For initial setup, use 12–200 characters. Otherwise check server configuration.' }, 400); }
+  } catch { return json({ error: 'Sign-in failed. For initial setup, use 8–200 characters. Otherwise check server configuration.' }, 400); }
 }
 
 export async function DELETE(request: Request) {

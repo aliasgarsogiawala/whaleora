@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowDown, ArrowUp, ArrowUpRight, Check, ChevronRight, Film, LogOut, MessageSquare, Plus, Settings2, Trash2 } from 'lucide-react';
-import type { ContentDocument, ReviewContent, Testimonial, VideoReview } from '@/lib/content/types';
+import { ArrowDown, ArrowUp, ArrowUpRight, Check, ChevronRight, Film, ListChecks, LogOut, MessageSquare, Package, Plus, Settings2, Trash2 } from 'lucide-react';
+import type { ContentDocument, HubChecklistContent, ProductEditorial, ReviewContent, Testimonial, VideoReview } from '@/lib/content/types';
+import type { ShopifySnapshot } from '@/lib/shopify/catalog';
 import { validateContent } from '@/lib/content/types';
 import { TestimonialsMarquee } from '@/components/testimonials-marquee';
 
@@ -13,6 +14,19 @@ async function request(url: string, method: string, payload?: unknown) {
   if (!response.ok) throw new Error(data.error || 'The request failed. Please try again.');
   return data;
 }
+
+const lines = (value: string) => value.split('\n').map((line) => line.trim()).filter(Boolean);
+const joinLines = (value: string[]) => value.join('\n');
+const splitPairs = (value: string) => value.split('\n').map((line) => {
+  const index = line.indexOf('|');
+  if (index < 0) return { left: line.trim(), right: '' };
+  return { left: line.slice(0, index).trim(), right: line.slice(index + 1).trim() };
+}).filter((row) => row.left || row.right);
+const joinPairs = (rows: { left: string; right: string }[]) => rows.map((row) => `${row.left} | ${row.right}`).join('\n');
+
+/** True when any Shopify-backed field on this product has been typed over. */
+const overridden = (item: ProductEditorial) =>
+  Boolean(item.title || item.shortDescription || item.longDescription || item.images.length || item.price !== null);
 
 export function AdminLogin({ setup, configured }: { setup: boolean; configured: boolean }) {
   const [busy, setBusy] = useState(false);
@@ -27,25 +41,32 @@ export function AdminLogin({ setup, configured }: { setup: boolean; configured: 
   return <main className="admin-login"><div className="admin-login-card">
     <Link href="/" className="admin-wordmark">whaleora<span>®</span></Link><p className="admin-kicker">Your content, in your hands.</p>
     <h1>{setup ? 'Make yourself at home.' : 'Welcome back.'}</h1>
-    <p>{setup ? 'Create an admin password to manage video reviews and written testimonials. Local setup only—you choose the password.' : 'Sign in to your content studio.'}</p>
+    <p>{setup ? 'Create an admin password to manage products, checklists and reviews. Local setup only—you choose the password.' : 'Sign in to your content studio.'}</p>
     {(configured || setup) ? <form onSubmit={submit}>
-      <Field label={setup ? 'Create password' : 'Password'}><input name="password" type="password" required minLength={setup ? 12 : 1} maxLength={200} autoComplete={setup ? 'new-password' : 'current-password'} autoFocus /></Field>
-      {setup && <Field label="Confirm password"><input name="confirm" type="password" required minLength={12} maxLength={200} autoComplete="new-password" /><small>At least 12 characters. Store it somewhere safe.</small></Field>}
+      <Field label={setup ? 'Create password' : 'Password'}><input name="password" type="password" required minLength={setup ? 8 : 1} maxLength={200} autoComplete={setup ? 'new-password' : 'current-password'} autoFocus /></Field>
+      {setup && <Field label="Confirm password"><input name="confirm" type="password" required minLength={8} maxLength={200} autoComplete="new-password" /><small>At least 8 characters. Store it somewhere safe.</small></Field>}
       {error && <p className="admin-error" role="alert">{error}</p>}
       <button className="admin-button primary" disabled={busy}>{busy ? 'One moment…' : setup ? 'Create password & enter' : 'Sign in'}<ChevronRight size={17} /></button>
     </form> : <p className="admin-error">Admin access needs configuration. Set ADMIN_PASSWORD and ADMIN_SESSION_SECRET on your server. See ADMIN.md in the project.</p>}
     <Link href="/" className="admin-back">← Back to the store</Link>
-  </div><div className="admin-login-note"><span>THE CONTENT STUDIO</span><p>Good stories.<br /><em>Thoughtfully told.</em></p><small>Video reviews · Written testimonials · Your voice</small></div></main>;
+  </div><div className="admin-login-note"><span>THE CONTENT STUDIO</span><p>Good stories.<br /><em>Thoughtfully told.</em></p><small>Products · Checklists · Reviews</small></div></main>;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="admin-field"><span>{label}</span>{children}</label>; }
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return <label className="admin-toggle"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><span>{label}</span></label>;
 }
-type Tab = 'testimonials' | 'videos' | 'settings' | 'preview';
-const tabs = [{ id: 'testimonials', label: 'Written testimonials', icon: MessageSquare }, { id: 'videos', label: 'Video reviews', icon: Film }, { id: 'settings', label: 'Section settings', icon: Settings2 }] as const;
+type Tab = 'testimonials' | 'videos' | 'products' | 'checklists' | 'settings' | 'preview';
+const tabs = [
+  { id: 'testimonials', label: 'Written testimonials', icon: MessageSquare },
+  { id: 'videos', label: 'Video reviews', icon: Film },
+  { id: 'products', label: 'Product details', icon: Package },
+  { id: 'checklists', label: 'Checklists', icon: ListChecks },
+  { id: 'settings', label: 'Section settings', icon: Settings2 },
+] as const;
+const listTabs = new Set<Tab>(['testimonials', 'videos', 'products', 'checklists']);
 
-export function AdminEditor({ initial, uploadsEnabled, canSave }: { initial: ContentDocument; uploadsEnabled: boolean; canSave: boolean }) {
+export function AdminEditor({ initial, shopify, uploadsEnabled, canSave }: { initial: ContentDocument; shopify: { connected: boolean; items: ShopifySnapshot[] }; uploadsEnabled: boolean; canSave: boolean }) {
   const [document, setDocument] = useState(initial);
   const [content, setContent] = useState(initial.draft);
   const [tab, setTab] = useState<Tab>('testimonials');
@@ -62,18 +83,36 @@ export function AdminEditor({ initial, uploadsEnabled, canSave }: { initial: Con
     window.addEventListener('beforeunload', guard);
     return () => window.removeEventListener('beforeunload', guard);
   }, [dirty]);
-  function navigate(next: Tab) { setTab(next); setSelectedId(next === 'testimonials' ? content.testimonials[0]?.id || '' : content.videos[0]?.id || ''); setNotice(''); }
+  function firstId(next: Tab, source: ReviewContent = content) {
+    if (next === 'testimonials') return source.testimonials[0]?.id || '';
+    if (next === 'videos') return source.videos[0]?.id || '';
+    if (next === 'products') return source.products[0]?.id || '';
+    if (next === 'checklists') return source.checklists[0]?.id || '';
+    return '';
+  }
+  function navigate(next: Tab) { setTab(next); setSelectedId(firstId(next)); setNotice(''); }
   function updateWritten(id: string, patch: Partial<Testimonial>) { setContent((value) => ({ ...value, testimonials: value.testimonials.map((item) => item.id === id ? { ...item, ...patch } : item) })); setNotice(''); }
   function updateVideo(id: string, patch: Partial<VideoReview>) { setContent((value) => ({ ...value, videos: value.videos.map((item) => item.id === id ? { ...item, ...patch } : item) })); setNotice(''); }
+  function updateProduct(id: string, patch: Partial<ProductEditorial>) { setContent((value) => ({ ...value, products: value.products.map((item) => item.id === id ? { ...item, ...patch } : item) })); setNotice(''); }
+  function updateChecklist(id: string, patch: Partial<HubChecklistContent>) {
+    setContent((value) => ({ ...value, checklists: value.checklists.map((item) => item.id === id ? { ...item, ...patch } : item) }));
+    if (patch.id) setSelectedId(patch.id);
+    setNotice('');
+  }
   function setting<K extends keyof ReviewContent['settings']>(key: K, value: ReviewContent['settings'][K]) { setContent((current) => ({ ...current, settings: { ...current.settings, [key]: value } })); setNotice(''); }
   function add() {
     const id = crypto.randomUUID();
     if (tab === 'testimonials') setContent((value) => ({ ...value, testimonials: [...value.testimonials, { id, quote: '', name: '', detail: '', row: 1, visible: false, demo: true }] }));
     if (tab === 'videos') setContent((value) => ({ ...value, videos: [...value.videos, { id, title: '', product: '', slug: 'sos-alarm', poster: '', video: '', duration: '0:08', visible: false, demo: true }] }));
+    if (tab === 'checklists') {
+      const checklistId = `checklist-${id.slice(0, 8)}`;
+      setContent((value) => ({ ...value, checklists: [...value.checklists, { id: checklistId, title: 'New checklist', description: 'When to use this list.', items: ['First item', 'Second item', 'Third item'] }] }));
+      setSelectedId(checklistId); setNotice(''); return;
+    }
     setSelectedId(id); setNotice('');
   }
   function reorder(direction: -1 | 1) {
-    if (tab !== 'testimonials' && tab !== 'videos') return;
+    if (tab !== 'testimonials' && tab !== 'videos' && tab !== 'checklists') return;
     setContent((value) => {
       const list = [...value[tab]]; const index = list.findIndex((item) => item.id === selectedId); const next = index + direction;
       if (index < 0 || next < 0 || next >= list.length) return value;
@@ -82,8 +121,9 @@ export function AdminEditor({ initial, uploadsEnabled, canSave }: { initial: Con
     });
   }
   function remove() {
-    if (tab !== 'testimonials' && tab !== 'videos') return;
-    if (!window.confirm('Remove this review from the draft? The live store changes only when you publish.')) return;
+    if (tab !== 'testimonials' && tab !== 'videos' && tab !== 'checklists') return;
+    if (tab === 'checklists' && content.checklists.length <= 1) return;
+    if (!window.confirm(tab === 'checklists' ? 'Remove this checklist from the draft? The live store changes only when you publish.' : 'Remove this review from the draft? The live store changes only when you publish.')) return;
     const list = content[tab].filter((item) => item.id !== selectedId);
     setContent((value) => ({ ...value, [tab]: list })); setSelectedId(list[0]?.id || '');
   }
@@ -91,7 +131,7 @@ export function AdminEditor({ initial, uploadsEnabled, canSave }: { initial: Con
     setError(''); setNotice('');
     try {
       const validated = validateContent(content);
-      if (publish && !window.confirm('Publish these reviews and section settings to the live storefront?')) return;
+      if (publish && !window.confirm('Publish these edits to the live storefront?')) return;
       setBusy(true);
       const saved: ContentDocument = await request('/api/admin/content', 'PUT', { content: validated, revision: document.revision, publish });
       setDocument(saved); setContent(saved.draft); setNotice(publish ? 'Published. Your storefront is up to date.' : 'Draft saved. The live store has not changed.');
@@ -100,7 +140,7 @@ export function AdminEditor({ initial, uploadsEnabled, canSave }: { initial: Con
   async function reload() {
     if (dirty && !window.confirm('Discard unsaved edits and load the latest saved draft?')) return;
     setBusy(true); setError('');
-    try { const latest = await request('/api/admin/content', 'GET'); setDocument(latest); setContent(latest.draft); setSelectedId(''); setNotice('Latest draft loaded.'); } catch (error) { setError((error as Error).message); } finally { setBusy(false); }
+    try { const latest = await request('/api/admin/content', 'GET'); setDocument(latest); setContent(latest.draft); setSelectedId(firstId(tab, latest.draft)); setNotice('Latest draft loaded.'); } catch (error) { setError((error as Error).message); } finally { setBusy(false); }
   }
   async function upload(file: File | undefined, key: 'poster' | 'video', id: string) {
     if (!file) return;
@@ -119,29 +159,46 @@ export function AdminEditor({ initial, uploadsEnabled, canSave }: { initial: Con
   }
   const written = content.testimonials.find((item) => item.id === selectedId);
   const video = content.videos.find((item) => item.id === selectedId);
-  const list = tab === 'testimonials' ? content.testimonials : content.videos;
+  const product = content.products.find((item) => item.id === selectedId);
+  const store = shopify.items.find((item) => item.id === selectedId);
+  // Shown under each override so an editor can see what they are replacing.
+  const storeHint = (value: string | number | null | undefined, whenEmpty: string) =>
+    (!shopify.connected ? 'Shopify is not connected, so this falls back to the built-in copy.'
+      : !store?.matched ? 'No matching product in Shopify, so this falls back to the built-in copy.'
+      : value === null || value === undefined || value === '' ? whenEmpty
+      : `Blank uses Shopify: ${String(value).slice(0, 90)}`);
+  const checklist = content.checklists.find((item) => item.id === selectedId);
+  const list = tab === 'testimonials' ? content.testimonials : tab === 'videos' ? content.videos : tab === 'products' ? content.products : tab === 'checklists' ? content.checklists : [];
   const index = list.findIndex((item) => item.id === selectedId);
   const locked = busy || uploading;
+  const summaries: Record<Tab, string> = {
+    testimonials: 'The small details that make a story feel personal.',
+    videos: 'A closer look, through your customers’ eyes.',
+    products: 'Shopify fills these in. Type over any of them only when you need to.',
+    checklists: 'Safety Hub lists people can open, print and take with them.',
+    settings: 'Set the rhythm of your review sections and the ten habits.',
+    preview: 'A preview of your current edits—not yet published.',
+  };
   return <div className="admin-app">
     <aside className="admin-sidebar"><Link href="/" target="_blank" className="admin-wordmark">whaleora<span>®</span></Link><p className="admin-kicker">Content studio</p>
       <nav aria-label="Admin sections">{tabs.map(({ id, label, icon: Icon }) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => navigate(id)}><Icon size={18} />{label}<span>{id === 'settings' ? '' : content[id].length}</span></button>)}</nav>
       <div className="admin-sidebar-bottom"><a href="/" target="_blank" rel="noreferrer">View storefront <ArrowUpRight size={16} /></a><button onClick={logout} disabled={locked}><LogOut size={16} /> Sign out</button><small>Only published changes<br />appear on your store.</small></div>
     </aside>
     <main className="admin-main">
-      <header className="admin-topbar"><div><span className="admin-kicker">Storefront / Reviews</span><h1>{tab === 'preview' ? 'Draft preview' : tabs.find((item) => item.id === tab)?.label}</h1></div><div className="admin-actions"><span className="admin-save-state">{dirty ? 'Unsaved changes' : unpublished ? 'Draft saved · not published' : 'All changes published'}</span><button className="admin-button" onClick={() => navigate(tab === 'preview' ? 'testimonials' : 'preview')}> {tab === 'preview' ? 'Back to editing' : 'Preview'}</button><button className="admin-button" onClick={() => save(false)} disabled={locked || !canSave || !dirty}>Save draft</button><button className="admin-button primary" onClick={() => save(true)} disabled={locked || !canSave || !unpublished}>{busy ? 'Saving…' : 'Publish'}<ArrowUpRight size={15} /></button></div></header>
+      <header className="admin-topbar"><div><span className="admin-kicker">Storefront / Content</span><h1>{tab === 'preview' ? 'Draft preview' : tabs.find((item) => item.id === tab)?.label}</h1></div><div className="admin-actions"><span className="admin-save-state">{dirty ? 'Unsaved changes' : unpublished ? 'Draft saved · not published' : 'All changes published'}</span><button className="admin-button" onClick={() => navigate(tab === 'preview' ? 'testimonials' : 'preview')}> {tab === 'preview' ? 'Back to editing' : 'Preview'}</button><button className="admin-button" onClick={() => save(false)} disabled={locked || !canSave || !dirty}>Save draft</button><button className="admin-button primary" onClick={() => save(true)} disabled={locked || !canSave || !unpublished}>{busy ? 'Saving…' : 'Publish'}<ArrowUpRight size={15} /></button></div></header>
       <div className="admin-body">
         {!canSave && <p className="admin-error">Connect Upstash Redis before saving on this hosted deployment. See ADMIN.md for configuration.</p>}
         {error && <div className="admin-error" role="alert">{error} <button onClick={reload} disabled={locked}>Reload saved draft</button></div>}
         {notice && <p className="admin-notice" role="status"><Check size={16} />{notice}</p>}
-        <div className="admin-summary"><p>{tab === 'testimonials' ? 'The small details that make a story feel personal.' : tab === 'videos' ? 'A closer look, through your customers’ eyes.' : tab === 'settings' ? 'Set the rhythm of your review sections.' : 'A preview of your current edits—not yet published.'}</p><span>{document.publishedAt ? `Last published ${document.publishedAt.slice(0, 10)}` : 'Using starter demo content'}</span></div>
-        {(tab === 'testimonials' || tab === 'videos') && <div className="admin-workspace">
-          <section className="admin-list"><div className="admin-list-heading"><span>{list.filter((item) => item.visible).length} visible / {list.length} total</span><button className="admin-button" onClick={add} disabled={locked || list.length >= 40}><Plus size={16} /> Add</button></div>
-            {list.map((item, i) => <button key={item.id} className={`admin-list-item ${selectedId === item.id ? 'selected' : ''}`} onClick={() => setSelectedId(item.id)}><span className="admin-number">{String(i + 1).padStart(2, '0')}</span><span><strong>{'quote' in item ? item.name || 'New testimonial' : item.title || 'New video review'}</strong><small>{'quote' in item ? item.quote || 'Add a quote to get started' : item.product || 'Add product details'}</small><em>{item.visible ? 'Visible' : 'Hidden'}{item.demo ? ' · Demo' : ''}{'row' in item ? ` · Row ${item.row}` : ''}</em></span><ChevronRight size={16} /></button>)}
-            {!list.length && <p className="admin-empty">No reviews yet. Add your first one.</p>}
+        <div className="admin-summary"><p>{summaries[tab]}</p><span>{document.publishedAt ? `Last published ${document.publishedAt.slice(0, 10)}` : 'Using starter demo content'}</span></div>
+        {listTabs.has(tab) && <div className="admin-workspace">
+          <section className="admin-list"><div className="admin-list-heading"><span>{tab === 'testimonials' || tab === 'videos' ? `${list.filter((item) => 'visible' in item && item.visible).length} visible / ${list.length} total` : `${list.length} ${tab}`}</span>{tab !== 'products' && <button className="admin-button" onClick={add} disabled={locked || list.length >= (tab === 'checklists' ? 24 : 40)}><Plus size={16} /> Add</button>}</div>
+            {list.map((item, i) => <button key={item.id} className={`admin-list-item ${selectedId === item.id ? 'selected' : ''}`} onClick={() => setSelectedId(item.id)}><span className="admin-number">{String(i + 1).padStart(2, '0')}</span><span><strong>{tab === 'testimonials' && 'name' in item ? item.name || 'New testimonial' : tab === 'products' ? ('title' in item && item.title) || shopify.items.find((entry) => entry.id === item.id)?.title || item.id : 'title' in item ? item.title || 'Untitled' : item.id}</strong><small>{tab === 'testimonials' && 'quote' in item ? item.quote || 'Add a quote to get started' : tab === 'videos' && 'product' in item ? item.product || 'Add product details' : tab === 'products' && 'shortDescription' in item ? (item.shortDescription || shopify.items.find((entry) => entry.id === item.id)?.description.split('\n')[0] || 'From Shopify') : 'description' in item ? item.description : ''}</small><em>{'visible' in item ? `${item.visible ? 'Visible' : 'Hidden'}${item.demo ? ' · Demo' : ''}${'row' in item ? ` · Row ${item.row}` : ''}` : tab === 'products' ? (overridden(item as ProductEditorial) ? 'Overridden' : 'From Shopify') : `${'items' in item ? item.items.length : 0} items`}</em></span><ChevronRight size={16} /></button>)}
+            {!list.length && <p className="admin-empty">Nothing here yet.</p>}
           </section>
-          <section className="admin-editor-panel" aria-label="Review editor">
-            {((tab === 'testimonials' && written) || (tab === 'videos' && video)) ? <>
-              <div className="admin-panel-heading"><h2>{tab === 'testimonials' ? 'Edit testimonial' : 'Edit video review'}</h2><div><button className="admin-icon" aria-label="Move review up" disabled={index <= 0 || locked} onClick={() => reorder(-1)}><ArrowUp size={17} /></button><button className="admin-icon" aria-label="Move review down" disabled={index >= list.length - 1 || locked} onClick={() => reorder(1)}><ArrowDown size={17} /></button><button className="admin-icon danger" aria-label="Delete review" onClick={remove} disabled={locked}><Trash2 size={17} /></button></div></div>
+          <section className="admin-editor-panel" aria-label="Content editor">
+            {((tab === 'testimonials' && written) || (tab === 'videos' && video) || (tab === 'products' && product) || (tab === 'checklists' && checklist)) ? <>
+              <div className="admin-panel-heading"><h2>{tab === 'testimonials' ? 'Edit testimonial' : tab === 'videos' ? 'Edit video review' : tab === 'products' ? 'Edit product copy' : 'Edit checklist'}</h2><div>{tab !== 'products' && <><button className="admin-icon" aria-label="Move up" disabled={index <= 0 || locked} onClick={() => reorder(-1)}><ArrowUp size={17} /></button><button className="admin-icon" aria-label="Move down" disabled={index >= list.length - 1 || locked} onClick={() => reorder(1)}><ArrowDown size={17} /></button>{tab !== 'checklists' || content.checklists.length > 1 ? <button className="admin-icon danger" aria-label="Delete" onClick={remove} disabled={locked}><Trash2 size={17} /></button> : null}</>}</div></div>
               <fieldset disabled={locked} className="admin-fields">
                 {tab === 'testimonials' && written && <>
                   <Field label="Quote"><textarea rows={5} maxLength={600} value={written.quote} onChange={(event) => updateWritten(written.id, { quote: event.target.value })} placeholder="Their experience, in their own words." /><small>{written.quote.length}/600 characters</small></Field>
@@ -158,14 +215,47 @@ export function AdminEditor({ initial, uploadsEnabled, canSave }: { initial: Con
                   <Toggle label="Visible on the storefront" checked={video.visible} onChange={(visible) => updateVideo(video.id, { visible })} /><Toggle label="Demo / sample video" checked={video.demo} onChange={(demo) => updateVideo(video.id, { demo })} />
                   {video.video && <video className="admin-video-preview" key={`${video.id}-${video.video}`} src={video.video} poster={video.poster} controls playsInline preload="metadata" aria-label="Review video preview" />}
                 </>}
-                <p className="admin-help">Only turn off the demo label for genuine customer content you have permission to use.</p>
+                {tab === 'products' && product && <>
+                  <div className={`admin-source-band ${shopify.connected && store?.matched ? 'is-live' : ''}`}>
+                    <strong>{!shopify.connected ? 'Shopify is not connected' : store?.matched ? 'Live from Shopify' : 'No match in Shopify'}</strong>
+                    <p>{!shopify.connected
+                      ? 'These five fields have nowhere to read from, so whatever you type here is what the store shows.'
+                      : store?.matched
+                        ? 'The five fields below come from Shopify and update here whenever they change there. Fill one in only to override it — clearing it hands the field back to Shopify.'
+                        : 'This product has no counterpart in the connected store, so the built-in copy is used until you override it here.'}</p>
+                  </div>
+                  <Field label="Title"><input maxLength={80} value={product.title} placeholder={store?.title || 'Using the built-in name'} onChange={(event) => updateProduct(product.id, { title: event.target.value })} /><small>{storeHint(store?.title, 'Shopify has no title for this product.')}</small></Field>
+                  <Field label="Short description"><textarea rows={3} maxLength={280} value={product.shortDescription} placeholder={store?.description.split('\n')[0] || 'Using the built-in summary'} onChange={(event) => updateProduct(product.id, { shortDescription: event.target.value })} /><small>{product.shortDescription.length}/280 · Cards and the Safety Hub. {storeHint(store?.description.split('\n')[0], 'Shopify has no description for this product.')}</small></Field>
+                  <Field label="Long description"><textarea rows={5} maxLength={1200} value={product.longDescription} placeholder={store?.description || 'Using the built-in description'} onChange={(event) => updateProduct(product.id, { longDescription: event.target.value })} /><small>{product.longDescription.length}/1200 · {storeHint(store?.description, 'Shopify has no description for this product.')}</small></Field>
+                  <Field label="Product photos"><textarea rows={4} value={joinLines(product.images)} placeholder={store?.images.join('\n') || 'Using the built-in photography'} onChange={(event) => updateProduct(product.id, { images: lines(event.target.value) })} /><small>One HTTPS URL or /local path per line, up to 8. {shopify.connected && store?.matched ? `Blank uses the ${store.images.length} photo${store.images.length === 1 ? '' : 's'} on the Shopify product.` : 'Blank uses the built-in photography.'}</small></Field>
+                  <Field label="Price override"><input type="number" min={0} step="0.01" value={product.price ?? ''} placeholder={store?.price != null ? String(store.price) : 'Using the built-in price'} onChange={(event) => updateProduct(product.id, { price: event.target.value === '' ? null : Number(event.target.value) })} /><small><b>Changes the displayed price only.</b> When Shopify is connected it still charges its own price at checkout, so a number here that disagrees with Shopify will show one price and bill another. Blank is the safe setting.</small></Field>
+                  <Field label="Label"><input maxLength={80} value={product.label} placeholder="Using the built-in label" onChange={(event) => updateProduct(product.id, { label: event.target.value })} /><small>Shopify has no equivalent. Blank uses the built-in label.</small></Field>
+                  <Field label="Features"><textarea rows={5} value={joinLines(product.features)} onChange={(event) => updateProduct(product.id, { features: lines(event.target.value) })} /><small>One per line. 1–8 items.</small></Field>
+                  <Field label="Specifications"><textarea rows={6} value={joinPairs(product.specifications.map((item) => ({ left: item.label, right: item.value })))} onChange={(event) => updateProduct(product.id, { specifications: splitPairs(event.target.value).map((row) => ({ label: row.left, value: row.right })) })} /><small>One per line as Label | Value. 1–10 rows.</small></Field>
+                  <Field label="How it works"><textarea rows={6} value={joinPairs(product.howItWorks.map((item) => ({ left: item.title, right: item.text })))} onChange={(event) => updateProduct(product.id, { howItWorks: splitPairs(event.target.value).map((row) => ({ title: row.left, text: row.right })) })} /><small>One per line as Title | Text. 1–6 steps.</small></Field>
+                  <Field label="Scenarios"><textarea rows={4} value={joinLines(product.scenarios)} onChange={(event) => updateProduct(product.id, { scenarios: lines(event.target.value) })} /><small>One per line. 1–8 short uses.</small></Field>
+                  <Field label="What’s included"><textarea rows={4} value={joinLines(product.included)} onChange={(event) => updateProduct(product.id, { included: lines(event.target.value) })} /><small>One per line. 1–8 items.</small></Field>
+                  <Field label="Highlights"><textarea rows={3} value={joinPairs(product.highlights.map((item) => ({ left: item.value, right: item.label })))} onChange={(event) => updateProduct(product.id, { highlights: splitPairs(event.target.value).map((row) => ({ value: row.left, label: row.right })) })} /><small>One per line as Figure | Label. 1–3 rows.</small></Field>
+                  <Field label="Compare · the job"><input maxLength={160} value={product.compare.job} onChange={(event) => updateProduct(product.id, { compare: { ...product.compare, job: event.target.value } })} /></Field>
+                  <Field label="Compare · reach for"><textarea rows={2} maxLength={220} value={product.compare.reachFor} onChange={(event) => updateProduct(product.id, { compare: { ...product.compare, reachFor: event.target.value } })} /></Field>
+                  <div className="admin-field-pair"><Field label="Compare · power"><input maxLength={160} value={product.compare.power} onChange={(event) => updateProduct(product.id, { compare: { ...product.compare, power: event.target.value } })} /></Field><Field label="Compare · carry"><input maxLength={160} value={product.compare.carry} onChange={(event) => updateProduct(product.id, { compare: { ...product.compare, carry: event.target.value } })} /></Field></div>
+                  <Field label="Compare · caveat"><textarea rows={3} maxLength={280} value={product.compare.caveat} onChange={(event) => updateProduct(product.id, { compare: { ...product.compare, caveat: event.target.value } })} /></Field>
+                  <p className="admin-help">Products are added and removed in Shopify, not here. Stock, variants and checkout always come from Shopify and cannot be overridden.</p>
+                </>}
+                {tab === 'checklists' && checklist && <>
+                  <div className="admin-field-pair"><Field label="Title"><input maxLength={80} value={checklist.title} onChange={(event) => updateChecklist(checklist.id, { title: event.target.value })} /></Field><Field label="ID"><input maxLength={80} value={checklist.id} onChange={(event) => { const next = event.target.value.trim(); if (!next) return; updateChecklist(checklist.id, { id: next }); }} /><small>Letters, numbers, hyphens. Used by Safety Hub profiles.</small></Field></div>
+                  <Field label="Description"><textarea rows={3} maxLength={220} value={checklist.description} onChange={(event) => updateChecklist(checklist.id, { description: event.target.value })} /></Field>
+                  <Field label="Items"><textarea rows={10} value={joinLines(checklist.items)} onChange={(event) => updateChecklist(checklist.id, { items: lines(event.target.value) })} /><small>One item per line. 3–16 items.</small></Field>
+                </>}
+                {(tab === 'testimonials' || tab === 'videos') && <p className="admin-help">Only turn off the demo label for genuine customer content you have permission to use.</p>}
               </fieldset>
-            </> : <div className="admin-empty"><MessageSquare size={26} /><h2>Room for another story.</h2><p>Select a review, or add a new one to get started.</p></div>}
+            </> : <div className="admin-empty"><MessageSquare size={26} /><h2>Room for another story.</h2><p>Select an item, or add a new one to get started.</p></div>}
           </section>
         </div>}
         {tab === 'settings' && <fieldset className="admin-settings admin-fields" disabled={locked}>
           <section><h2>Written testimonials</h2><Toggle label="Show testimonial marquee" checked={content.settings.showWritten} onChange={(value) => setting('showWritten', value)} /><Field label="Section heading"><input maxLength={160} value={content.settings.writtenTitle} onChange={(event) => setting('writtenTitle', event.target.value)} /></Field><Field label="Subtitle (optional)"><textarea maxLength={300} rows={2} value={content.settings.writtenSubtitle} onChange={(event) => setting('writtenSubtitle', event.target.value)} /></Field><Field label={`Scroll duration · ${content.settings.marqueeSeconds} seconds`}><input type="range" min={20} max={180} step={5} value={content.settings.marqueeSeconds} onChange={(event) => setting('marqueeSeconds', Number(event.target.value))} /><small>Higher is slower. The second row runs 10 seconds slower.</small></Field></section>
           <section><h2>Video reviews</h2><Toggle label="Show horizontal video carousel" checked={content.settings.showVideos} onChange={(value) => setting('showVideos', value)} /><Field label="Section heading"><textarea maxLength={160} rows={2} value={content.settings.videoTitle} onChange={(event) => setting('videoTitle', event.target.value)} /><small>Use a new line to split the heading.</small></Field><Field label="Subtitle (optional)"><textarea maxLength={300} rows={2} value={content.settings.videoSubtitle} onChange={(event) => setting('videoSubtitle', event.target.value)} /></Field></section>
+          <section className="admin-settings-wide"><h2>Safety Hub habits</h2><Field label="Everyday habits"><textarea rows={12} value={joinLines(content.habits)} onChange={(event) => setContent((current) => ({ ...current, habits: lines(event.target.value) }))} /><small>One habit per line. Keep 6–12. These appear under “Ten habits that take a minute each.”</small></Field></section>
         </fieldset>}
         {tab === 'preview' && <div className="admin-preview"><TestimonialsMarquee items={content.testimonials} settings={content.settings} />{!content.settings.showWritten && <p>Written testimonials are hidden.</p>}{content.settings.showVideos ? <section><h2 style={{ whiteSpace: 'pre-line' }}>{content.settings.videoTitle}</h2><p>{content.settings.videoSubtitle}</p><small>Media preview below. The storefront displays these in the horizontal coverflow carousel.</small><div className="admin-preview-videos">{content.videos.filter((item) => item.visible).map((item) => <article key={item.id}><video src={item.video} poster={item.poster} controls playsInline preload="none" /><h3>{item.title}</h3><p>{item.product} · {item.duration}{item.demo ? ' · Demo' : ''}</p></article>)}</div></section> : <p>Video reviews are hidden.</p>}</div>}
       </div>

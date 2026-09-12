@@ -1,4 +1,5 @@
 import { faqById, faqCategories, faqs, faqsByCategory, type FaqCategory, type FaqEntry } from '@/lib/content/faq';
+import { chatterReply } from './chatter';
 import { containsSensitiveData, looksMeaningless, sanitizeQuestion } from './guard';
 
 const STOP = new Set([
@@ -16,7 +17,7 @@ const FILLER = new Set([
   'light', 'item', 'product', 'stuff', 'thing', 'things', 'tools', 'kit',
 ]);
 
-const GREETINGS = /^(hi|hello|hey|yo|namaste|good (morning|afternoon|evening)|help|hiya)\b/i;
+const GREETINGS = /^(hi|hello|hey|yo|namaste|good (morning|afternoon|evening)|hiya|help)(\s+(there|whaleora|bot))?\s*[.!?]*$/i;
 const THANKS = /^(thanks|thank you|thankyou|thx|ok|okay|cool|great|got it|perfect)\b/i;
 /** Deliberately narrow: a bare "phone" belongs to the alarm-and-app question, not
  *  to a handoff. */
@@ -39,7 +40,7 @@ const INTENTS: { pattern: RegExp; id: string }[] = [
 ];
 
 export type FaqReply = {
-  kind: 'greeting' | 'thanks' | 'match' | 'clarify' | 'category' | 'handoff' | 'fallback' | 'unclear' | 'sensitive';
+  kind: 'greeting' | 'thanks' | 'chatter' | 'match' | 'clarify' | 'category' | 'handoff' | 'fallback' | 'unclear' | 'sensitive';
   text: string;
   entry?: FaqEntry;
   suggestions: FaqEntry[];
@@ -238,7 +239,17 @@ export function replyToFaq(query: string, pathname = '/', misses = 0): FaqReply 
   }
 
   if (JAILBREAK.test(raw)) {
-    return fallbackReply([], misses);
+    return {
+      kind: 'chatter',
+      text:
+        'Nice try. I’m a product FAQ, not a genie, and I don’t have a secret prompt to leak.\n\nI can help you pick a tool, check a flight, or hand you to a person. That’s the whole trick.',
+      suggestions: dedupe(starterQuestions, 3),
+    };
+  }
+
+  const chatter = chatterReply(raw);
+  if (chatter) {
+    return { kind: 'chatter', text: chatter.text, suggestions: chatter.suggestions, links: chatter.links };
   }
 
   if (NOT_SOLD.test(raw)) {

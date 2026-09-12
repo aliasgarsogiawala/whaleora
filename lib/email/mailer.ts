@@ -9,7 +9,7 @@ import nodemailer, { type Transporter } from 'nodemailer';
  * SMTP with the hello@ mailbox is already authorised and needs no new DNS.
  * Host and port stay configurable for any other provider.
  */
-export type Mail = { to: string; from: string; subject: string; text: string; replyTo?: string };
+export type Mail = { to: string; from: string; subject: string; text: string; html?: string; replyTo?: string };
 
 let transporter: Transporter | null = null;
 
@@ -41,7 +41,9 @@ export async function sendMail(mail: Mail) {
     from: mail.from,
     to: mail.to,
     subject: mail.subject,
+    // Both parts go out; every client picks the one it can render.
     text: mail.text,
+    ...(mail.html ? { html: mail.html } : {}),
     ...(mail.replyTo ? { replyTo: mail.replyTo } : {}),
   });
   return { id: info.messageId };

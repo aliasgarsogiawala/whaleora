@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { sendMail } from '@/lib/email/mailer';
+import { enquiryEmail } from '@/lib/email/templates';
 
 /**
  * The contact form posts here. The enquiry is sent over SMTP to ENQUIRY_TO
@@ -38,8 +39,7 @@ export async function POST(request: Request) {
       to: process.env.ENQUIRY_TO || 'hello@whaleora.com',
       from: process.env.ENQUIRY_FROM || 'Whaleora <hello@whaleora.com>',
       replyTo: email,
-      subject: `${subject} — ${name}`,
-      text: `${subject}\n\nFrom: ${name} <${email}>\n\n${message}\n`,
+      ...enquiryEmail({ name, email, subject, message }),
     });
   } catch (error) {
     console.error('[enquiry] send failed', error);

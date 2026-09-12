@@ -13,6 +13,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import nodemailer from 'nodemailer';
+import { enquiryEmail } from '../lib/email/templates.ts';
 
 /** Minimal .env reader so the check runs without extra dependencies. */
 function loadEnv() {
@@ -66,10 +67,16 @@ try {
 
 if (process.argv.includes('--send')) {
   try {
+    // The real template, so what lands in the inbox is what a customer's
+    // enquiry will look like.
     const info = await transporter.sendMail({
-      from, to, replyTo: 'test@example.com',
-      subject: 'Test enquiry — Whaleora contact form',
-      text: 'This is a test from npm run mail:check. If it arrived, the contact form works.\n',
+      from, to, replyTo: 'aliasgar@example.com',
+      ...enquiryEmail({
+        name: process.env.TEST_NAME || 'Aliasgar',
+        email: process.env.TEST_EMAIL || 'aliasgar@example.com',
+        subject: 'Product question',
+        message: 'Test from npm run mail:check.\n\nIf this landed in the hello@ inbox, the contact form delivers end to end. Hitting reply should address this message back to the sender rather than to the mailbox itself.',
+      }),
     });
     console.log(`  ✓ Sent. Message id ${info.messageId}`);
     console.log(`    Look in the ${to} inbox.`);

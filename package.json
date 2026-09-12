@@ -12,7 +12,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "shopify:check": "node scripts/shopify-check.mjs",
     "convex:dev": "convex dev",
-    "mail:check": "node scripts/mail-check.mjs"
+    "mail:check": "node --experimental-strip-types scripts/mail-check.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",

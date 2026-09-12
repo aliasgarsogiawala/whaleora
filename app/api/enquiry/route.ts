@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
-import { sendMail } from '@/lib/email/resend';
+import { sendMail } from '@/lib/email/mailer';
 
 /**
- * The contact form posts here. The enquiry is delivered through Resend to
- * ENQUIRY_TO (hello@whaleora.com), with Reply-To set to the person who wrote
- * it, so replying from the inbox goes straight back to them.
+ * The contact form posts here. The enquiry is sent over SMTP to ENQUIRY_TO
+ * (hello@whaleora.com), with Reply-To set to the person who wrote it, so
+ * replying from the inbox goes straight back to them.
  *
- * Needs RESEND_API_KEY and a Resend-verified domain matching ENQUIRY_FROM.
+ * Needs SMTP_USER and SMTP_PASSWORD for the sending mailbox. ENQUIRY_FROM must
+ * be an address that mailbox is allowed to send as — normally itself.
  */
 export const runtime = 'nodejs';
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
   try {
     await sendMail({
       to: process.env.ENQUIRY_TO || 'hello@whaleora.com',
-      from: process.env.ENQUIRY_FROM || 'Whaleora enquiries <enquiries@send.whaleora.com>',
+      from: process.env.ENQUIRY_FROM || 'Whaleora <hello@whaleora.com>',
       replyTo: email,
       subject: `${subject} — ${name}`,
       text: `${subject}\n\nFrom: ${name} <${email}>\n\n${message}\n`,

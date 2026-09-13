@@ -1,24 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { useConvexAuth, useQuery } from 'convex/react';
 import { usePathname } from 'next/navigation';
-import { api } from '@/convex/_generated/api';
+import { useSyncExternalStore } from 'react';
+
+/**
+ * Reads a marker cookie rather than the session itself — the session cookie is
+ * httpOnly and must stay that way. The marker holds no token, only whether one
+ * exists, so the worst case is a stale label until the next page load.
+ */
+const readMarker = () => document.cookie.split('; ').some((entry) => entry.startsWith('whaleora_signed_in='));
+
+/** The cookie changes only on navigation, which remounts this anyway. */
+const subscribe = () => () => {};
 
 export function AccountLink({ className = 'contact-link' }: { className?: string }) {
-  if (!process.env.NEXT_PUBLIC_CONVEX_URL) return null;
-  return <AccountLinkReady className={className} />;
-}
-
-function AccountLinkReady({ className }: { className: string }) {
   const pathname = usePathname() ?? '/';
-  const { isAuthenticated } = useConvexAuth();
-  const me = useQuery(api.users.current, isAuthenticated ? {} : 'skip');
+  // useSyncExternalStore, not an effect: the cookie is external state, and the
+  // server has no access to document, so it renders the signed-out label.
+  const signedIn = useSyncExternalStore(subscribe, readMarker, () => false);
+
   const current = pathname === '/account' || pathname.startsWith('/account/');
-  const label = isAuthenticated ? (me?.name?.split(' ')[0] || 'Account') : 'Sign in';
   return (
     <Link href="/account" className={className} aria-current={current ? 'page' : undefined}>
-      {label}
+      {signedIn ? 'Account' : 'Sign in'}
     </Link>
   );
 }

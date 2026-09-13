@@ -9,6 +9,8 @@ import { whatsappHref } from '@/lib/content/contact';
 import type { Metadata } from 'next';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Safety Hub — free guides & checklists | Whaleora',
   description: 'Practical personal-safety guides, checklists, emergency numbers and tools for commutes, campus life and travel. Free to read, no signup.',

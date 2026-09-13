@@ -6,16 +6,17 @@ import { ArrowRight, ArrowUpRight, Plus } from 'lucide-react';
 const trustPoints = [
   { figure: '130dB', label: 'Siren and strobe, on one pull' },
   { figure: '38g', label: 'The alarm, on your keyring' },
-  { figure: '₹299', label: 'Where the collection starts' },
+  { figure: null, label: 'Where the collection starts' },
   { figure: '₹1,499+', label: 'Free shipping across India' },
 ];
 
-export function TrustBar() {
+/** `from` is the live catalogue floor; the null figure above is its slot. */
+export function TrustBar({ from }: { from: string }) {
   return (
     <section className="trust-bar" aria-label="Whaleora at a glance">
       <dl className="shell">
         {trustPoints.map((point) => (
-          <div key={point.figure}><dt>{point.figure}</dt><dd>{point.label}</dd></div>
+          <div key={point.label}><dt>{point.figure ?? from}</dt><dd>{point.label}</dd></div>
         ))}
       </dl>
     </section>

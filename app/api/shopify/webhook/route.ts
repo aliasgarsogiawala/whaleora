@@ -36,11 +36,19 @@ export async function POST(request: Request) {
   }
   if (topic.startsWith('orders/')) {
     try {
-      await ingestOrder(JSON.parse(body) as Record<string, unknown>);
+      const result = await ingestOrder(JSON.parse(body) as Record<string, unknown>);
+      // An order with no email is dropped on purpose — there is nobody to show
+      // it to. Say so in the response, or a test notification looks like a
+      // success while nothing is stored.
+      if (result && result.ok === false) {
+        console.warn('[shopify] order not stored:', result.reason);
+        return Response.json({ ok: false, topic, stored: false, reason: result.reason });
+      }
     } catch (error) {
       console.error('[shopify] order ingest failed', error);
       return Response.json({ error: 'Order ingest failed' }, { status: 500 });
     }
+    return Response.json({ ok: true, topic, stored: true });
   }
   return Response.json({ ok: true, topic });
 }
@@ -52,7 +60,7 @@ function text(value: unknown) {
 function ingestOrder(payload: Record<string, unknown>) {
   const ingestSecret = process.env.ORDERS_INGEST_SECRET;
   const client = convexHttp();
-  if (!ingestSecret || !client) return Promise.resolve();
+  if (!ingestSecret || !client) return Promise.resolve({ ok: false as const, reason: 'convex-not-configured' });
   const fulfillments = Array.isArray(payload.fulfillments) ? payload.fulfillments : [];
   const fulfillment = fulfillments[0] as Record<string, unknown> | undefined;
   const items = Array.isArray(payload.line_items) ? payload.line_items : [];

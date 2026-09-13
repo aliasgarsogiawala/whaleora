@@ -214,6 +214,25 @@ export async function shopifySnapshots(): Promise<{ connected: boolean; items: S
   };
 }
 
+/**
+ * Price facts for copy that names real money — the hero range, "from ₹299",
+ * the SOS Alarm's buy button. These were hardcoded in JSX, so a Shopify price
+ * edit changed the product page and left the marketing copy contradicting it.
+ */
+export async function catalogPrices() {
+  const catalog = await getCatalog();
+  const prices = catalog.map((product) => product.price).filter((price) => Number.isFinite(price) && price > 0);
+  const currencyCode = catalog[0]?.currencyCode ?? 'INR';
+  const bySlug = new Map(catalog.map((product) => [product.slug, product] as const));
+  return {
+    currencyCode,
+    min: prices.length ? Math.min(...prices) : 0,
+    max: prices.length ? Math.max(...prices) : 0,
+    priceFor: (slug: string) => bySlug.get(slug)?.price ?? 0,
+    titleFor: (slug: string) => bySlug.get(slug)?.title ?? '',
+  };
+}
+
 export async function getCatalogProduct(slug: string): Promise<CatalogProduct | undefined> {
   const catalog = await getCatalog();
   return catalog.find((product) => product.slug === slug);

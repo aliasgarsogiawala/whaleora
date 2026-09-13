@@ -1,6 +1,6 @@
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
+import { mutation } from './_generated/server';
 
 const lineItem = v.object({
   title: v.string(),
@@ -10,21 +10,6 @@ const lineItem = v.object({
 
 export const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
-export const mine = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return [];
-    const user = await ctx.db.get(userId);
-    const email = user?.email ? normalizeEmail(user.email) : '';
-    if (!email) return [];
-    return await ctx.db
-      .query('orders')
-      .withIndex('by_email', (q) => q.eq('emailNormalized', email))
-      .order('desc')
-      .take(50);
-  },
-});
 
 export const ingestShopifyOrder = mutation({
   args: {

@@ -17,17 +17,17 @@ const sans = Geist({ variable: '--font-sans', subsets: ['latin'] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://whaleora.com'),
   title: 'Whaleora — Personal safety tools that fit on a keyring',
-  description: 'A 130dB SOS alarm, a 120dB whistle, pepper spray and a car window breaker. Honest specs, ₹299 to ₹1,799, free shipping over ₹1,499 across India.',
+  description: 'A 130dB SOS alarm, a 120dB whistle, pepper spray and a car window breaker. Honest specs and free shipping over ₹1,499 across India.',
   openGraph: {
     title: 'Whaleora — Personal safety tools that fit on a keyring',
-    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects, ₹299 to ₹1,799.',
+    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects for the way you actually move.',
     images: [{ url: '/og.png', width: 1536, height: 1024, alt: 'Whaleora personal safety objects' }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Whaleora — Personal safety tools that fit on a keyring',
-    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects, ₹299 to ₹1,799.',
+    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects for the way you actually move.',
     images: ['/og.png'],
   },
 };

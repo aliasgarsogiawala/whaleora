@@ -2,6 +2,8 @@ import Image from 'next/image';
 import { ProductsBrowser, ShopNote } from '@/components/products-browser';
 import { getCatalog } from '@/lib/shopify/catalog';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProductsPage() {
   const catalog = await getCatalog();
 

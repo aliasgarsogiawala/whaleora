@@ -23,3 +23,14 @@ export async function currentAccountEmail() {
     return null;
   }
 }
+
+/** Published customer reviews for one product. Empty when Convex is unset. */
+export async function approvedReviews(productHandle: string) {
+  const url = convexUrl();
+  if (!url) return [];
+  try {
+    return await fetchQuery(api.reviews.approved, { productHandle }, { url });
+  } catch {
+    return [];
+  }
+}

@@ -4,14 +4,16 @@ import { ProductCard } from '@/components/commerce';
 import { SafetyJourneyGallery } from '@/components/safety-journey-gallery';
 import { TestimonialsMarquee } from '@/components/testimonials-marquee';
 import { Chooser, Objections, TrustBar } from '@/components/home-sections';
-import { getCatalog } from '@/lib/shopify/catalog';
+import { catalogPrices, getCatalog } from '@/lib/shopify/catalog';
 import { publishedContent } from '@/lib/content/store';
+import { formatPrice } from '@/data/products';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const [catalog, content] = await Promise.all([getCatalog(), publishedContent()]);
+  const [catalog, content, prices] = await Promise.all([getCatalog(), publishedContent(), catalogPrices()]);
+  const alarm = { title: prices.titleFor('sos-alarm'), price: formatPrice(prices.priceFor('sos-alarm'), prices.currencyCode) };
   return (
     <main>
       <section className="hero" data-hero-overlay>
@@ -41,7 +43,7 @@ export default async function Home() {
 
         <div className="hero-inner shell">
           <div className="hero-copy">
-            <p className="eyebrow hero-eyebrow">Four objects · ₹299 to ₹1,799</p>
+            <p className="eyebrow hero-eyebrow">{catalog.length} objects · {formatPrice(prices.min, prices.currencyCode)} to {formatPrice(prices.max, prices.currencyCode)}</p>
             <h1>Small enough to forget.<br /><em>Loud enough to matter.</em></h1>
             <p className="hero-intro">A 130dB alarm, a 120dB whistle, a pepper spray and a car window breaker. Each one does a single job, needs no app, and lives on your keyring.</p>
             <div className="hero-actions">
@@ -52,7 +54,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <TrustBar />
+      <TrustBar from={formatPrice(prices.min, prices.currencyCode)} />
 
       <section className="collection-section section-pad" data-reveal>
         <div className="shell section-heading">
@@ -71,11 +73,11 @@ export default async function Home() {
       <section className="story-split" data-reveal>
         <div className="story-image"><Image src="/lifestyle/sos-alarm-flatlay.webp" alt="Whaleora personal alarm in an everyday flat-lay composition" fill sizes="(max-width: 800px) 100vw, 50vw" /></div>
         <div className="story-copy">
-          <p className="eyebrow">Personal SOS Alarm · ₹1,799</p>
+          <p className="eyebrow">{alarm.title} · {alarm.price}</p>
           <h2>One pull. No app, no pairing, no charging.</h2>
           <p>Pull the pin and it does two things at once — a 130dB dual-siren and a strobe. Push the pin back in and it stops. That’s the entire interface, and it’s deliberate: anything you have to unlock or remember is one step too many.</p>
           <dl><div><dt>130dB</dt><dd>Dual siren + strobe</dd></div><div><dt>38g</dt><dd>Sits on a keyring</dd></div><div><dt>CR2032</dt><dd>Swap it yourself</dd></div></dl>
-          <Link href="/products/sos-alarm" className="button button-light">Buy the SOS Alarm — ₹1,799 <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
+          <Link href="/products/sos-alarm" className="button button-light">Buy the {alarm.title} — {alarm.price} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
         </div>
       </section>
 

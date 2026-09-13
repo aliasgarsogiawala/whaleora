@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { handleToProductId } from '@/lib/shopify/catalog';
 import { addLine, createCart, fetchCart, removeLine, setBuyerEmail, updateLine } from '@/lib/shopify/cart';
-import { currentAccountEmail } from '@/lib/convex';
+import { currentCustomerEmail } from '@/lib/shopify/customer';
 import { isShopifyConfigured } from '@/lib/shopify/client';
 import type { CartState, ShopifyCart } from '@/lib/shopify/types';
 
@@ -93,7 +93,7 @@ export async function addToCartAction(variantId: string, quantity = 1): Promise<
   return guard(async () => {
     const cartId = await readCartId();
     let cart = cartId ? await fetchCart(cartId) : null;
-    cart = cart ? await addLine(cart.id, variantId, quantity) : await createCart(variantId, quantity, await currentAccountEmail());
+    cart = cart ? await addLine(cart.id, variantId, quantity) : await createCart(variantId, quantity, await currentCustomerEmail());
     await writeCartId(cart.id);
     return toCartState(cart);
   });

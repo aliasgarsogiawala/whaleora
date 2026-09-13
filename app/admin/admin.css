@@ -107,3 +107,21 @@
 @media(max-width: 850px) { .admin-sidebar { width: 190px; padding: 24px 16px; } .admin-main { margin-left: 190px; } .admin-workspace, .admin-settings { grid-template-columns: 1fr; } .admin-list { max-height: 350px; overflow-y: auto; } .admin-preview-videos { grid-template-columns: repeat(2, minmax(0, 1fr)); } .admin-login-note { padding: 10%; } .admin-login-note p { font-size: 36px; } }
 @media(max-width: 600px) { .admin-sidebar { position: static; width: 100%; padding: 16px; border-right: 0; border-bottom: 1px solid #dedbd3; } .admin-sidebar .admin-wordmark { font-size: 25px; } .admin-sidebar > .admin-kicker { display: none; } .admin-sidebar nav { margin: 16px 0 0; display: flex; overflow-x: auto; gap: 4px; } .admin-sidebar nav button { white-space: nowrap; font-size: 10px; padding: 9px 8px; gap: 6px; } .admin-sidebar nav button svg { width: 14px; } .admin-sidebar-bottom { padding: 12px 0 0; display: flex; gap: 25px; } .admin-sidebar-bottom small { display: none; } .admin-main { margin-left: 0; } .admin-topbar, .admin-body { padding: 20px 16px; } .admin-topbar h1 { font-size: 27px; } .admin-save-state { width: 100%; margin-bottom: 5px; } .admin-button { padding: 9px 12px; } .admin-fields, .admin-panel-heading { padding: 20px 18px; } .admin-login { grid-template-columns: 1fr; } .admin-login-card { padding: 40px 26px; } .admin-login-card > .admin-kicker { margin-top: 50px; } .admin-login-note { display: none; } .admin-preview-videos { grid-template-columns: 1fr; } }
 @media(max-width: 600px) { .admin-sidebar nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; } .admin-sidebar nav button { flex-direction: column; text-align: center; white-space: normal; justify-content: center; line-height: 1.4; } .admin-sidebar nav button span { display: none; } .admin-list { max-height: 255px; } }
+
+/* Customer review moderation queue. */
+.admin-reviews { display: grid; gap: 14px; }
+.admin-review { padding: 18px 20px; border: 1px solid #e3ddd2; border-radius: 6px; background: #fff; }
+.admin-review header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.admin-review header strong { font-size: 14px; }
+.admin-review header em { margin-left: 8px; padding: 2px 7px; border-radius: 999px; background: #eaf1e8; color: #4c6647; font-size: 9px; font-style: normal; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+.admin-review header small { display: block; margin-top: 3px; font-size: 11px; color: #8a8174; }
+.admin-review-rating { flex: none; color: #d7673d; font-size: 13px; letter-spacing: 2px; }
+.admin-review-rating i { color: #ddd6c9; font-style: normal; }
+.admin-review p { margin: 12px 0 14px; font-size: 13px; line-height: 1.7; color: #4a463f; }
+.admin-review footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid #efe9df; }
+.admin-review footer a { font-size: 11px; color: #8a8174; }
+.admin-review footer div { display: flex; gap: 8px; }
+.admin-review footer .admin-button { display: inline-flex; align-items: center; gap: 6px; }
+.admin-review-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.admin-review-tabs button { padding: 8px 14px; border: 1px solid #e3ddd2; border-radius: 999px; background: #fff; cursor: pointer; font-size: 11px; font-weight: 600; letter-spacing: .05em; color: #6f675c; }
+.admin-review-tabs button.active { background: #0a1b2f; border-color: #0a1b2f; color: #fff; }

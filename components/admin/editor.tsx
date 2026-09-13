@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpRight, Check, ChevronRight, Film, ListChecks, LogOut, MessageSquare, Package, Plus, Settings2, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpRight, Check, ChevronRight, Film, ListChecks, LogOut, MessageSquare, Package, Plus, Settings2, Star, Trash2, X } from 'lucide-react';
 import type { ContentDocument, HubChecklistContent, ProductEditorial, ReviewContent, Testimonial, VideoReview } from '@/lib/content/types';
 import type { ShopifySnapshot } from '@/lib/shopify/catalog';
 import { validateContent } from '@/lib/content/types';
@@ -56,12 +56,16 @@ function Field({ label, children }: { label: string; children: ReactNode }) { re
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return <label className="admin-toggle"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><span>{label}</span></label>;
 }
-type Tab = 'testimonials' | 'videos' | 'products' | 'checklists' | 'settings' | 'preview';
+type Tab = 'testimonials' | 'videos' | 'products' | 'checklists' | 'customer' | 'settings' | 'preview';
+
+type PendingReview = { id: string; productHandle: string; rating: number; name: string; email: string; body: string; status: string; heldReason?: string; verifiedBuyer: boolean; submittedAt: string };
+type ReviewView = 'held' | 'published' | 'removed';
 const tabs = [
   { id: 'testimonials', label: 'Written testimonials', icon: MessageSquare },
   { id: 'videos', label: 'Video reviews', icon: Film },
   { id: 'products', label: 'Product details', icon: Package },
   { id: 'checklists', label: 'Checklists', icon: ListChecks },
+  { id: 'customer', label: 'Customer reviews', icon: Star },
   { id: 'settings', label: 'Section settings', icon: Settings2 },
 ] as const;
 const listTabs = new Set<Tab>(['testimonials', 'videos', 'products', 'checklists']);
@@ -73,6 +77,33 @@ export function AdminEditor({ initial, shopify, uploadsEnabled, canSave }: { ini
   const [selectedId, setSelectedId] = useState(initial.draft.testimonials[0]?.id || '');
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pendingReviews, setPendingReviews] = useState<PendingReview[] | null>(null);
+  const [reviewView, setReviewView] = useState<ReviewView>('held');
+  const [heldCount, setHeldCount] = useState<number | null>(null);
+  const [reviewError, setReviewError] = useState('');
+
+  const loadReviews = useCallback(async (view: ReviewView = 'held') => {
+    setReviewError('');
+    setPendingReviews(null);
+    try {
+      const data = await request(`/api/admin/reviews?status=${view}`, 'GET');
+      const rows = data.reviews as PendingReview[];
+      setPendingReviews(rows);
+      if (view === 'held') setHeldCount(rows.length);
+    } catch (problem) {
+      setPendingReviews([]);
+      setReviewError((problem as Error).message);
+    }
+  }, []);
+
+  async function moderate(id: string, status: 'published' | 'removed') {
+    setPendingReviews((current) => current?.filter((item) => item.id !== id) ?? current);
+    if (reviewView === 'held') setHeldCount((count) => (count === null ? count : Math.max(0, count - 1)));
+    try { await request('/api/admin/reviews', 'POST', { id, status }); }
+    catch (problem) { setReviewError((problem as Error).message); void loadReviews(reviewView); }
+  }
+
+  function showReviews(view: ReviewView) { setReviewView(view); void loadReviews(view); }
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const dirty = JSON.stringify(content) !== JSON.stringify(document.draft);
@@ -90,7 +121,7 @@ export function AdminEditor({ initial, shopify, uploadsEnabled, canSave }: { ini
     if (next === 'checklists') return source.checklists[0]?.id || '';
     return '';
   }
-  function navigate(next: Tab) { setTab(next); setSelectedId(firstId(next)); setNotice(''); }
+  function navigate(next: Tab) { setTab(next); setSelectedId(firstId(next)); setNotice(''); if (next === 'customer') showReviews('held'); }
   function updateWritten(id: string, patch: Partial<Testimonial>) { setContent((value) => ({ ...value, testimonials: value.testimonials.map((item) => item.id === id ? { ...item, ...patch } : item) })); setNotice(''); }
   function updateVideo(id: string, patch: Partial<VideoReview>) { setContent((value) => ({ ...value, videos: value.videos.map((item) => item.id === id ? { ...item, ...patch } : item) })); setNotice(''); }
   function updateProduct(id: string, patch: Partial<ProductEditorial>) { setContent((value) => ({ ...value, products: value.products.map((item) => item.id === id ? { ...item, ...patch } : item) })); setNotice(''); }
@@ -176,12 +207,13 @@ export function AdminEditor({ initial, shopify, uploadsEnabled, canSave }: { ini
     videos: 'A closer look, through your customers’ eyes.',
     products: 'Shopify fills these in. Type over any of them only when you need to.',
     checklists: 'Safety Hub lists people can open, print and take with them.',
+    customer: 'Reviews publish as written. Only ones caught by the abuse and spam filter wait here — and you can take any published review down.',
     settings: 'Set the rhythm of your review sections and the ten habits.',
     preview: 'A preview of your current edits—not yet published.',
   };
   return <div className="admin-app">
     <aside className="admin-sidebar"><Link href="/" target="_blank" className="admin-wordmark">whaleora<span>®</span></Link><p className="admin-kicker">Content studio</p>
-      <nav aria-label="Admin sections">{tabs.map(({ id, label, icon: Icon }) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => navigate(id)}><Icon size={18} />{label}<span>{id === 'settings' ? '' : content[id].length}</span></button>)}</nav>
+      <nav aria-label="Admin sections">{tabs.map(({ id, label, icon: Icon }) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => navigate(id)}><Icon size={18} />{label}<span>{id === 'settings' ? '' : id === 'customer' ? (heldCount || '') : content[id].length}</span></button>)}</nav>
       <div className="admin-sidebar-bottom"><a href="/" target="_blank" rel="noreferrer">View storefront <ArrowUpRight size={16} /></a><button onClick={logout} disabled={locked}><LogOut size={16} /> Sign out</button><small>Only published changes<br />appear on your store.</small></div>
     </aside>
     <main className="admin-main">
@@ -252,6 +284,43 @@ export function AdminEditor({ initial, shopify, uploadsEnabled, canSave }: { ini
             </> : <div className="admin-empty"><MessageSquare size={26} /><h2>Room for another story.</h2><p>Select an item, or add a new one to get started.</p></div>}
           </section>
         </div>}
+        {tab === 'customer' && <section className="admin-reviews">
+          <div className="admin-review-tabs" role="tablist">
+            {([['held', 'Held by the filter'], ['published', 'Live on the store'], ['removed', 'Taken down']] as const).map(([view, label]) => (
+              <button key={view} role="tab" aria-selected={reviewView === view} className={reviewView === view ? 'active' : ''} onClick={() => showReviews(view)}>{label}</button>
+            ))}
+          </div>
+          {reviewError && <p className="admin-error" role="alert">{reviewError} <button onClick={() => void loadReviews(reviewView)}>Try again</button></p>}
+          {pendingReviews === null && <p className="admin-empty">Loading reviews…</p>}
+          {pendingReviews?.length === 0 && !reviewError && <div className="admin-empty"><Star size={26} />
+            <h2>{reviewView === 'held' ? 'Nothing held.' : reviewView === 'published' ? 'No reviews yet.' : 'Nothing taken down.'}</h2>
+            <p>{reviewView === 'held'
+              ? 'Reviews go live as written. Only ones tripping the abuse and spam filter wait here.'
+              : reviewView === 'published'
+                ? 'Reviews left on product pages appear here once someone writes one.'
+                : 'Reviews you take down are kept here, and can be put back.'}</p>
+          </div>}
+          {pendingReviews?.map((review) => (
+            <article key={review.id} className="admin-review">
+              <header>
+                <div>
+                  <strong>{review.name}</strong>
+                  {review.verifiedBuyer && <em>Verified buyer</em>}
+                  <small>{review.productHandle} · {review.submittedAt.slice(0, 10)}{review.heldReason ? ` · held for ${review.heldReason}` : ''}</small>
+                </div>
+                <span className="admin-review-rating" aria-label={`${review.rating} out of 5`}>{'★'.repeat(review.rating)}<i>{'★'.repeat(5 - review.rating)}</i></span>
+              </header>
+              <p>{review.body}</p>
+              <footer>
+                <a href={`mailto:${review.email}`}>{review.email}</a>
+                <div>
+                  {reviewView !== 'removed' && <button className="admin-button" onClick={() => void moderate(review.id, 'removed')}><X size={15} /> {reviewView === 'held' ? 'Reject' : 'Take down'}</button>}
+                  {reviewView !== 'published' && <button className="admin-button primary" onClick={() => void moderate(review.id, 'published')}><Check size={15} /> {reviewView === 'held' ? 'Publish' : 'Put back'}</button>}
+                </div>
+              </footer>
+            </article>
+          ))}
+        </section>}
         {tab === 'settings' && <fieldset className="admin-settings admin-fields" disabled={locked}>
           <section><h2>Written testimonials</h2><Toggle label="Show testimonial marquee" checked={content.settings.showWritten} onChange={(value) => setting('showWritten', value)} /><Field label="Section heading"><input maxLength={160} value={content.settings.writtenTitle} onChange={(event) => setting('writtenTitle', event.target.value)} /></Field><Field label="Subtitle (optional)"><textarea maxLength={300} rows={2} value={content.settings.writtenSubtitle} onChange={(event) => setting('writtenSubtitle', event.target.value)} /></Field><Field label={`Scroll duration · ${content.settings.marqueeSeconds} seconds`}><input type="range" min={20} max={180} step={5} value={content.settings.marqueeSeconds} onChange={(event) => setting('marqueeSeconds', Number(event.target.value))} /><small>Higher is slower. The second row runs 10 seconds slower.</small></Field></section>
           <section><h2>Video reviews</h2><Toggle label="Show horizontal video carousel" checked={content.settings.showVideos} onChange={(value) => setting('showVideos', value)} /><Field label="Section heading"><textarea maxLength={160} rows={2} value={content.settings.videoTitle} onChange={(event) => setting('videoTitle', event.target.value)} /><small>Use a new line to split the heading.</small></Field><Field label="Subtitle (optional)"><textarea maxLength={300} rows={2} value={content.settings.videoSubtitle} onChange={(event) => setting('videoSubtitle', event.target.value)} /></Field></section>

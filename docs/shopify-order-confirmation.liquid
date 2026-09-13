@@ -3875,7 +3875,7 @@
                     Covers manufacturing defects: a siren or strobe that stops working on its own; a battery that will not hold charge; a pin, clip or housing that fails under everyday carry; an alarm that arrived faulty.<br><br>
                     Does not cover ordinary wear, loss, theft, drops, water damage, or anything opened or repaired by someone else.<br><br>
                     To claim: email <a href="mailto:hello@whaleora.com" style="color: #DA6D40;">hello@whaleora.com</a> or WhatsApp +91 81692 19734 with this order number. A photo helps; it is not required. Wait to hear from us before posting anything back.<br>
-                    Full terms: <a href="https://whaleora.com/warranty" style="color: #DA6D40;">whaleora.com/warranty</a>
+                    Full terms: <a href="https://whaleora-three.vercel.app/warranty" style="color: #DA6D40;">Read the full warranty terms</a>
                   </td>
                 </tr>
               </table>
@@ -3910,10 +3910,16 @@
         </td>
       </tr>
     </table>
+  {%- comment -%}
+    Site base URL, in one place. Point this at whaleora.com once that domain
+    serves this storefront; today it serves a different, older site.
+  {%- endcomment -%}
+  {%- assign site_url = 'https://whaleora-three.vercel.app' -%}
+  {%- assign review_item = line_items.first -%}
   <div style="background-color: #FBECDB; padding: 30px; text-align: center; border-radius: 12px; margin-top: 40px;">
   <h3 style="color: #0F2643; font-family: serif; margin-top: 0; font-size: 18px;">How is your new gear?</h3>
   <p style="color: #5F6F77; font-size: 13px; margin-bottom: 20px;">We hope you love your safety essentials. Once your order arrives, let us know what you think!</p>
-  <a href="https://whaleora.com/review" style="background-color: #0F2643; color: white; padding: 12px 28px; text-decoration: none; border-radius: 9999px; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; display: inline-block;">
+  <a href="{% if review_item.product.handle %}{{ site_url }}/products/{{ review_item.product.handle }}#product-reviews{% else %}{{ site_url }}/products{% endif %}" style="background-color: #0F2643; color: white; padding: 12px 28px; text-decoration: none; border-radius: 9999px; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; display: inline-block;">
     Leave a Review
   </a>
 </div>

@@ -27,4 +27,23 @@ export default defineSchema({
   })
     .index('by_email', ['emailNormalized'])
     .index('by_shopify_id', ['shopifyId']),
+
+  reviews: defineTable({
+    productHandle: v.string(),
+    rating: v.number(),
+    name: v.string(),
+    email: v.string(),
+    emailNormalized: v.string(),
+    body: v.string(),
+    // Reviews publish on arrival. 'held' is only for the abuse/spam filter,
+    // 'removed' is an admin taking one down after the fact.
+    status: v.union(v.literal('published'), v.literal('held'), v.literal('removed')),
+    // Why the filter held it, for the admin to judge. Absent when published.
+    heldReason: v.optional(v.string()),
+    // True when this email has an order in the orders table.
+    verifiedBuyer: v.boolean(),
+    submittedAt: v.string(),
+  })
+    .index('by_product_status', ['productHandle', 'status'])
+    .index('by_status', ['status']),
 });

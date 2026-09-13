@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { ArrowRight } from 'lucide-react';
+import { catalogPrices } from '@/lib/shopify/catalog';
+import { formatPrice } from '@/data/products';
 
 export const metadata: Metadata = {
   title: 'About Whaleora — Safety should not feel scary',
@@ -16,7 +18,7 @@ const founderStory = [
 
 const heroMeta = [
   { value: 'Four', label: 'Everyday objects' },
-  { value: '₹299', label: 'Where it starts' },
+  { value: null, label: 'Where it starts' },
   { value: 'Mumbai', label: 'Designed in India' },
 ] as const;
 
@@ -61,7 +63,11 @@ const commitments = [
   { label: 'Promise', text: 'Safety you can trust, when it matters most.' },
 ] as const;
 
-export default function AboutPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function AboutPage() {
+  const prices = await catalogPrices();
+  const from = formatPrice(prices.min, prices.currencyCode);
   return (
     <main className="page-main about-page">
       <section className="about-story-hero">
@@ -72,7 +78,7 @@ export default function AboutPage() {
           <ul className="about-hero-meta">
             {heroMeta.map((item) => (
               <li key={item.label}>
-                <b>{item.value}</b>
+                <b>{item.value ?? from}</b>
                 {item.label}
               </li>
             ))}

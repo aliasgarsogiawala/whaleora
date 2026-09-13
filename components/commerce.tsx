@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Plus, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
-import { useConvexAuth, useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
 import { AccountLink } from '@/components/account-link';
 import { addToCartAction, getCartAction, removeCartLineAction, setCartBuyerEmailAction, updateCartLineAction } from '@/app/actions/cart';
 import type { CatalogProduct } from '@/lib/shopify/catalog';
@@ -218,23 +216,10 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
     [cart, pending, open, add, update, remove],
   );
 
-  return <CartContext.Provider value={value}>{children}<CartIdentitySync cartId={cart.connected ? cart.id : null} /><CartDrawer /></CartContext.Provider>;
+  return <CartContext.Provider value={value}>{children}<CartDrawer /></CartContext.Provider>;
 }
 
-function CartIdentitySync({ cartId }: { cartId: string | null }) {
-  if (!process.env.NEXT_PUBLIC_CONVEX_URL) return null;
-  return <CartIdentitySyncReady cartId={cartId} />;
-}
 
-function CartIdentitySyncReady({ cartId }: { cartId: string | null }) {
-  const { isAuthenticated } = useConvexAuth();
-  const me = useQuery(api.users.current, isAuthenticated ? {} : 'skip');
-  useEffect(() => {
-    if (!cartId || !me?.email) return;
-    void setCartBuyerEmailAction(me.email);
-  }, [cartId, me?.email]);
-  return null;
-}
 
 export function useCart() {
   const value = useContext(CartContext);
@@ -344,7 +329,7 @@ export function Header() {
           ))}
         </nav>
         <div className="mobile-menu-footer">
-          <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop from ₹299 <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
+          <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop the collection <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
           <p>Prepared, not afraid.<br />Designed in India.</p>
         </div>
       </div>
@@ -363,7 +348,6 @@ function CartDrawer() {
   const drawerRef = useOverlayFocus(open, closeCart);
   const [checkoutNote, setCheckoutNote] = useState(false);
   const [gate, setGate] = useState(false);
-  const { isAuthenticated, isLoading } = useConvexAuth();
   const { subtotal, currencyCode, lines } = cart;
   const shippingGap = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
@@ -377,7 +361,9 @@ function CartDrawer() {
   };
 
   const checkout = () => {
-    if (!isAuthenticated && !isLoading) {
+    let signedIn = false;
+    try { signedIn = document.cookie.split('; ').some((entry) => entry.startsWith('whaleora_signed_in=')); } catch { /* private mode */ }
+    if (!signedIn) {
       setGate(true);
       return;
     }
@@ -390,7 +376,7 @@ function CartDrawer() {
       <aside className="cart-drawer" aria-label="Shopping bag" aria-busy={pending}>
         <div className="cart-head"><div><small>Your selection</small><h2>Shopping bag <sup>{cart.totalQuantity}</sup></h2></div><button onClick={() => setOpen(false)} aria-label="Close cart">×</button></div>
         {lines.length === 0 ? (
-          <div className="empty-cart"><span>○</span><h3>Nothing in here yet.</h3><p>Four objects, starting at ₹299. Most people begin with the alarm.</p><Link href="/products" onClick={() => setOpen(false)} className="button button-primary">Browse all four <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link></div>
+          <div className="empty-cart"><span>○</span><h3>Nothing in here yet.</h3><p>Four objects, one job each. Most people begin with the alarm.</p><Link href="/products" onClick={() => setOpen(false)} className="button button-primary">Browse all four <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link></div>
         ) : (
           <>
             <div className="shipping-progress"><div><span style={{ width: `${Math.min(100, subtotal / FREE_SHIPPING_THRESHOLD * 100)}%` }} /></div><p>{shippingGap ? `${formatPrice(shippingGap, currencyCode)} away from free shipping.` : 'You have unlocked free shipping.'}</p></div>
@@ -405,8 +391,8 @@ function CartDrawer() {
             })}</div>
             <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p>
               {gate ? <div className="checkout-gate" role="group" aria-label="Sign in or continue as a guest">
-                <p><strong>Sign in first?</strong> Orders placed with your account email show up under Account, with tracking. You can also carry on without one.</p>
-                <Link href={`/account?next=checkout#sign-in`} className="button button-primary" onClick={() => setOpen(false)}>Sign in <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
+                <p><strong>Sign in first?</strong> Signing in links this order to your account, so it shows up under Account with tracking. You can also carry on without one.</p>
+                <a href="/api/auth/shopify/login?next=/account" className="button button-primary" onClick={() => setOpen(false)}>Sign in <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></a>
                 <button type="button" className="button button-outline" onClick={goToCheckout} disabled={pending}>Continue as guest <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>
                 <button type="button" className="checkout-gate-back" onClick={() => setGate(false)}>Back to bag</button>
               </div> : <button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>}{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href={whatsappHref("Hi Whaleora! I'd like to place an order.")}>WhatsApp</a> or email hello@whaleora.com.</p>}</div>

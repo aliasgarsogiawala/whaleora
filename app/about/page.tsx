@@ -167,7 +167,7 @@ export default function AboutPage() {
       <section className="confidence-chapter">
         <div className="about-bleed">
           <div className="confidence-heading" data-reveal>
-            <h2>Safety isn&apos;t panic.<br /><em>Safety is confidence.</em></h2>
+            <h2>Safety isn&apos;t panic. <em>Safety is confidence.</em></h2>
           </div>
           <div className="commitment-stories">
             {commitments.map((commitment, index) => (

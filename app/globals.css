@@ -1046,10 +1046,16 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
   .ec-print-note { max-width: none; }
 }
 
-.workshop-cta { padding: clamp(90px, 11vw, 160px) 0; background: var(--deep); color: white; }
+/* Terracotta, not deep. This is the last section before the footer, which is
+   also var(--deep), so the two ran together and read as one very long footer.
+   It also matches .partnership-strip, the identical partnership CTA on the
+   home page, and separates from the ivory .hub-programmes block above. */
+.workshop-cta { padding: clamp(90px, 11vw, 160px) 0; background: var(--terracotta); color: white; }
+/* --sand on terracotta is about 1.9:1, which is not legible at label size. */
+.workshop-cta .eyebrow { color: rgba(255,255,255,.92); }
 .workshop-cta h2 { margin: 0; max-width: 15ch; font-size: clamp(34px, 4vw, 62px); font-weight: 400; line-height: 1; letter-spacing: -.03em; }
 .workshop-cta h2 em { color: #efcdb1; }
-.workshop-cta p:not(.eyebrow) { max-width: 550px; color: rgba(255,255,255,.64); line-height: 1.7; }
+.workshop-cta p:not(.eyebrow) { max-width: 550px; color: rgba(255,255,255,.82); line-height: 1.7; }
 .workshop-cta .button { margin-top: 25px; }
 
 /* Contact */
@@ -1695,7 +1701,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .account-note { color: rgba(16,40,68,.6); text-align: center; }
 .account-empty { padding: 36px 0 8px; }
 .account-empty h3 { margin: 0 0 10px; font: 400 28px var(--font-display), serif; }
-.account-empty-actions { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 22px; }
+/* stretch, not center: the two buttons then share top and bottom edges
+   whatever their content does, instead of being centred against each
+   other and drifting apart if one of them is ever a pixel taller. */
+.account-empty-actions { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; margin-top: 22px; }
 .account-orders ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
 .account-orders li { padding: 22px 0; border-bottom: 1px solid var(--line); }
 .account-orders li header, .account-orders li footer { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; justify-content: space-between; }

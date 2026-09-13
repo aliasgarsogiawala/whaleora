@@ -40,9 +40,16 @@
 .story-copy > p:not(.eyebrow) { font-size: 15px; }
 .story-copy dl { margin-block: 26px; gap: 14px; }
 .story-copy dt { font-size: 25px; }
+/* "How the alarm works". The heading ran to three lines because .section-heading
+   caps it at 15ch; widening that as the type shrinks buys two lines instead of
+   three, so the smaller size is not handed straight back as extra height. The
+   section also carried full section-pad at both ends for three short steps. */
+.how-section { padding-block: clamp(40px, 4.6vw, 68px); }
+.how-section .section-heading { margin-bottom: clamp(24px, 3vw, 40px); }
+.how-section .section-heading h2 { max-width: 20ch; font-size: clamp(26px, 2.7vw, 38px); }
 .how-steps { gap: clamp(22px, 3vw, 48px); }
-.how-steps li { padding-top: 18px; }
-.how-steps strong { margin-top: 26px; font-size: clamp(27px, 2.5vw, 38px); }
+.how-steps li { padding-top: 16px; }
+.how-steps strong { margin-top: 18px; font-size: clamp(25px, 2.2vw, 32px); }
 .how-steps p { font-size: 15px; line-height: 1.6; }
 /* The band was sized to overflow and clip at the old 58px, which is what made
    it reach both edges. At this size the row is shorter than the viewport, so

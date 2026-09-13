@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { revalidateTag } from 'next/cache';
-import { SHOPIFY_PRODUCTS_TAG } from '@/lib/shopify/client';
+import { pick, SHOPIFY_PRODUCTS_TAG } from '@/lib/shopify/client';
 import { convexHttp } from '@/lib/convex';
 import { api } from '@/convex/_generated/api';
 
@@ -9,10 +9,13 @@ import { api } from '@/convex/_generated/api';
  * - products/* busts the cached catalogue
  * - orders/* copies a snapshot into Convex for the signed-in account page
  *
- * Point Shopify at POST /api/shopify/webhook and set SHOPIFY_WEBHOOK_SECRET.
+ * Point Shopify at POST /api/shopify/webhook and set SHOPIFY_WEBHOOK_SECRET
+ * (or SHOPIFY_WEBHOOK).
  */
 export async function POST(request: Request) {
-  const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
+  // Either name works, and a blank value counts as unset rather than as an
+  // empty secret that would fail every signature check.
+  const secret = pick('SHOPIFY_WEBHOOK_SECRET', 'SHOPIFY_WEBHOOK');
   if (!secret) return Response.json({ error: 'Webhook secret not configured' }, { status: 500 });
 
   const signature = request.headers.get('x-shopify-hmac-sha256');

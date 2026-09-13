@@ -6,7 +6,7 @@ export const SHOPIFY_PRODUCTS_TAG = 'shopify-products';
  * Env names differ between the Vercel Marketplace Shopify integration and a
  * hand-created custom app, so accept the common aliases for each value.
  */
-const pick = (...names: string[]) => {
+export const pick = (...names: string[]) => {
   for (const name of names) {
     const value = process.env[name];
     if (value && value.trim()) return value.trim();
@@ -34,7 +34,7 @@ export const shopifyToken = () => pick(
   'NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN',
 );
 
-const apiVersion = () => pick('SHOPIFY_API_VERSION') ?? '2025-07';
+const apiVersion = () => pick('SHOPIFY_API_VERSION') ?? '2026-07';
 
 /**
  * Full Storefront GraphQL URL. Set this to point at a proxy or a mock store;

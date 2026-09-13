@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowUpRight, ShoppingCart } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Plus, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
 import { useConvexAuth, useQuery } from 'convex/react';
@@ -44,6 +44,16 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | null>(null);
 
 const LOCAL_KEY = 'whaleora-cart';
+/**
+ * Set the moment we hand off to Shopify checkout. Shopify stops resolving a
+ * cart id once it becomes an order, so on the way back this tells us to ask
+ * again rather than trust the state we left with.
+ */
+const HANDOFF_KEY = 'whaleora-checkout-handoff';
+
+export function markCheckoutHandoff() {
+  try { window.sessionStorage.setItem(HANDOFF_KEY, '1'); } catch { /* private mode */ }
+}
 const matchesLocalLine = (line: CartStateLine, productId: string, variantId: string | null) => line.productId === productId && line.variantId === variantId;
 
 /** Local-bag maths, used only while Shopify is unreachable or unconfigured. */
@@ -100,6 +110,39 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
       window.localStorage.setItem(LOCAL_KEY, JSON.stringify(cart.lines));
     } catch { /* device storage may be unavailable */ }
   }, [cart, ready]);
+
+  // Coming back from checkout. A plain return re-mounts and refetches on its
+  // own, but a Back press restored from bfcache does not, so listen for that
+  // and for the tab regaining focus. Only runs when we actually handed off.
+  useEffect(() => {
+    const settle = () => {
+      let handedOff = false;
+      try { handedOff = window.sessionStorage.getItem(HANDOFF_KEY) === '1'; } catch { /* private mode */ }
+      if (!handedOff) return;
+      getCartAction()
+        .then((serverCart) => {
+          if (!serverCart.connected) return;
+          setCart(serverCart);
+          // The cart is only gone once Shopify stops resolving it, which is
+          // what an order does. Anything else means checkout was abandoned and
+          // the bag should survive.
+          if (serverCart.totalQuantity === 0) {
+            try { window.sessionStorage.removeItem(HANDOFF_KEY); window.localStorage.removeItem(LOCAL_KEY); } catch { /* private mode */ }
+            setOpen(false);
+          }
+        })
+        .catch(() => { /* keep what is on screen */ });
+    };
+    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) settle(); };
+    const onVisible = () => { if (document.visibilityState === 'visible') settle(); };
+    settle();
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
 
   // Confetti should come from wherever the shopper actually acted, so track the
   // pointer and drop it on keydown, which leaves the focused button as the origin.
@@ -319,15 +362,26 @@ function CartDrawer() {
   const closeCart = useCallback(() => setOpen(false), [setOpen]);
   const drawerRef = useOverlayFocus(open, closeCart);
   const [checkoutNote, setCheckoutNote] = useState(false);
+  const [gate, setGate] = useState(false);
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const { subtotal, currencyCode, lines } = cart;
   const shippingGap = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
-  const checkout = () => {
+  const goToCheckout = () => {
     if (cart.checkoutUrl) {
+      markCheckoutHandoff();
       window.location.href = cart.checkoutUrl;
       return;
     }
     setCheckoutNote(true);
+  };
+
+  const checkout = () => {
+    if (!isAuthenticated && !isLoading) {
+      setGate(true);
+      return;
+    }
+    goToCheckout();
   };
 
   return (
@@ -349,7 +403,13 @@ function CartDrawer() {
                 <div><small>{record?.category ?? 'Whaleora'}</small>{lineSlug ? <Link href={`/products/${lineSlug}`} onClick={() => setOpen(false)}>{line.title}</Link> : line.title}<strong>{formatPrice(line.unitPrice, line.currencyCode)}</strong><div className="quantity"><button onClick={() => update(line, line.quantity - 1)} disabled={pending} aria-label="Decrease quantity">−</button><span>{line.quantity}</span><button onClick={() => update(line, line.quantity + 1)} disabled={pending} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(line)} disabled={pending}>Remove</button></div>
               </div>;
             })}</div>
-            <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p><button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href={whatsappHref("Hi Whaleora! I'd like to place an order.")}>WhatsApp</a> or email hello@whaleora.com.</p>}</div>
+            <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p>
+              {gate ? <div className="checkout-gate" role="group" aria-label="Sign in or continue as a guest">
+                <p><strong>Sign in first?</strong> Orders placed with your account email show up under Account, with tracking. You can also carry on without one.</p>
+                <Link href={`/account?next=checkout#sign-in`} className="button button-primary" onClick={() => setOpen(false)}>Sign in <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
+                <button type="button" className="button button-outline" onClick={goToCheckout} disabled={pending}>Continue as guest <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>
+                <button type="button" className="checkout-gate-back" onClick={() => setGate(false)}>Back to bag</button>
+              </div> : <button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>}{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href={whatsappHref("Hi Whaleora! I'd like to place an order.")}>WhatsApp</a> or email hello@whaleora.com.</p>}</div>
           </>
         )}
       </aside>
@@ -375,7 +435,7 @@ export function ProductCard({ product, index = 0 }: { product: ShopProduct; inde
         <span className="product-card-cue">View object <ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" /></span>
       </Link>
       <div className="product-meta"><div><Link href={`/products/${product.slug}`}>{product.title}</Link><small>{product.shortDescription}</small></div><strong>{formatPrice(product.price, product.currencyCode)}</strong></div>
-      <button className="quick-add" onClick={() => add(product)} disabled={soldOut || pending} aria-label={`Add ${product.title} to bag`}>{soldOut ? 'Sold out' : 'Add to bag'} <span>{soldOut ? '—' : '＋'}</span></button>
+      <button className="quick-add" onClick={() => add(product)} disabled={soldOut || pending} aria-label={`Add ${product.title} to bag`}>{soldOut ? 'Sold out' : pending ? 'Adding…' : <>Add to bag <Plus size={15} strokeWidth={2.2} aria-hidden="true" /></>}</button>
     </article>
   );
 }

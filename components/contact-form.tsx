@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { whatsappHref } from '@/lib/content/contact';
 import { featuredFaqs } from '@/lib/content/faq';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Plus } from 'lucide-react';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -53,7 +53,7 @@ export function ContactForm() {
     </section>
     <section className="faq-section shell section-pad" id="faq">
       <div><p className="eyebrow dark">Asked most often</p><h2>The questions people email us.</h2></div>
-      <div>{featuredFaqs.map((item) => <details key={item.id}><summary>{item.question}<span>＋</span></summary><p>{item.answer}</p></details>)}</div>
+      <div>{featuredFaqs.map((item) => <details key={item.id}><summary>{item.question}<span aria-hidden="true"><Plus size={17} strokeWidth={2} /></span></summary><p>{item.answer}</p></details>)}</div>
     </section>
   </>;
 }

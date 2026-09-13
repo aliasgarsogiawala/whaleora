@@ -88,17 +88,11 @@ a { color: inherit; text-decoration: none; }
 .text-link { min-height: 54px; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; border: 1px solid currentColor; font-size: 12px; font-weight: var(--label-weight); text-transform: uppercase; letter-spacing: var(--label-track); transition: background .25s ease, color .25s ease, border-color .25s ease, transform .25s ease; }
 .text-link:hover { transform: translateY(-2px); }
 .text-link:active { transform: translateY(0); }
-/* Icons carry their own optical weight, so they sit in the flex gap rather
-   than taking a margin, and never shrink when the label wraps. */
 .button span, .text-link span, .arrow-link span, .chooser-cta span, .pdp-reviews-link span { display: inline-flex; align-items: center; }
 .button svg, .text-link svg, .arrow-link svg, .chooser-cta svg { flex: none; }
 .product-card-cue, .feature-story strong, .secondary-stories span { display: inline-flex; align-items: center; gap: 7px; }
-/* Any link carrying an inline icon. Inline anchors let the icon break onto its
-   own line; inline-flex keeps label and icon on one baseline. */
 .icon-link { display: inline-flex; align-items: center; gap: 7px; }
 .icon-link svg { flex: none; }
-/* Icons sitting inline in prose keep their own display, so nudge them onto the
-   optical centre of the line instead of the text baseline. */
 .chooser-hint svg, .pdp-compare-hint svg, .audience-scroll-hint svg, .track-grid svg { vertical-align: -.15em; }
 @media (max-width: 900px) {
   .site-header { grid-template-columns: 1fr auto; height: 72px; }
@@ -215,9 +209,8 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .product-meta a { font-family: var(--font-display), serif; font-size: 20px; line-height: 1.15; }
 .product-meta small { max-width: 245px; color: rgba(16,40,68,.6); font-size: 11px; line-height: 1.5; }
 .product-meta strong { font-size: 13px; white-space: nowrap; }
-.quick-add { width: 100%; padding: 14px 2px; display: flex; justify-content: space-between; border: 0; background: none; text-align: left; font-size: var(--label-size); font-weight: var(--label-weight); text-transform: uppercase; letter-spacing: var(--label-track); cursor: pointer; }
-.quick-add:hover span { transform: rotate(90deg); }
-.quick-add span { transition: transform .2s ease; }
+.quick-add { width: 100%; min-height: 44px; padding: 11px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: var(--label-size); font-weight: var(--label-weight); text-transform: uppercase; letter-spacing: var(--label-track); cursor: pointer; transition: background .2s ease, color .2s ease, border-color .2s ease; }
+.quick-add svg { flex: none; }
 .center-action { display: flex; justify-content: center; margin-top: 70px; }
 .story-split { min-height: 800px; display: grid; grid-template-columns: 1.05fr .95fr; background: var(--deep); color: white; }
 .story-image { position: relative; min-height: 720px; }
@@ -340,6 +333,12 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .quantity button { cursor: pointer; }
 .remove { margin-top: 8px; padding: 0; border: 0; border-bottom: 1px solid currentColor; background: none; font-size: var(--label-size); color: rgba(16,40,68,.5); cursor: pointer; }
 .cart-total { padding: 24px 30px 30px; border-top: 1px solid var(--line); }
+.checkout-gate { display: grid; gap: 10px; margin-top: 4px; }
+.checkout-gate > p { margin: 0 0 6px; font-size: 13px; line-height: 1.6; color: rgba(16,40,68,.7); }
+.checkout-gate > p strong { color: var(--ink); }
+.checkout-gate .button { width: 100%; }
+.checkout-gate-back { padding: 6px 0 0; background: none; border: 0; cursor: pointer; font-size: 11px; font-weight: var(--label-weight); letter-spacing: var(--label-track); text-transform: uppercase; color: rgba(16,40,68,.55); }
+.checkout-gate-back:hover { color: var(--ink); }
 .cart-total > div { display: flex; justify-content: space-between; }
 .cart-total > div span { font-family: var(--font-display), serif; font-size: 28px; }
 .cart-total > div strong { font-size: 17px; }
@@ -1046,12 +1045,7 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
   .ec-print-note { max-width: none; }
 }
 
-/* Terracotta, not deep. This is the last section before the footer, which is
-   also var(--deep), so the two ran together and read as one very long footer.
-   It also matches .partnership-strip, the identical partnership CTA on the
-   home page, and separates from the ivory .hub-programmes block above. */
 .workshop-cta { padding: clamp(90px, 11vw, 160px) 0; background: var(--terracotta); color: white; }
-/* --sand on terracotta is about 1.9:1, which is not legible at label size. */
 .workshop-cta .eyebrow { color: rgba(255,255,255,.92); }
 .workshop-cta h2 { margin: 0; max-width: 15ch; font-size: clamp(34px, 4vw, 62px); font-weight: 400; line-height: 1; letter-spacing: -.03em; }
 .workshop-cta h2 em { color: #efcdb1; }
@@ -1442,7 +1436,6 @@ h1 em, h2 em { font-weight: 400; }
 .trust-bar dt { font-family: var(--font-display), serif; font-size: clamp(30px, 3.4vw, 50px); font-weight: 400; line-height: 1; letter-spacing: -.03em; color: var(--terracotta); }
 .trust-bar dd { max-width: 26ch; margin: 12px 0 0; color: rgba(16,40,68,.66); font-size: 12px; line-height: 1.55; }
 
-
 /* ---------------------------------------------------------------
    Chooser — an honest side-by-side, caveats included
    --------------------------------------------------------------- */
@@ -1481,8 +1474,8 @@ h1 em, h2 em { font-weight: 400; }
 .objection-list summary { padding: 24px 0; display: flex; justify-content: space-between; gap: 30px; align-items: baseline; list-style: none; font-family: var(--font-display), serif; font-size: clamp(21px, 1.9vw, 28px); line-height: 1.2; cursor: pointer; transition: color .2s ease; }
 .objection-list summary::-webkit-details-marker { display: none; }
 .objection-list summary:hover { color: var(--terracotta); }
-.objection-list summary span { flex: none; font-family: var(--font-sans), sans-serif; font-size: 15px; color: var(--terracotta); transition: transform .25s ease; }
-.objection-list details[open] summary span { transform: rotate(45deg); }
+.objection-list summary span, .faq-section summary span { flex: none; display: inline-flex; align-items: center; color: var(--terracotta); transition: transform .25s ease; }
+.objection-list details[open] summary span, .faq-section details[open] summary span { transform: rotate(45deg); }
 .objection-list details p { max-width: 62ch; margin: 0; padding: 0 0 26px; color: rgba(16,40,68,.7); font-size: 15px; line-height: 1.75; }
 
 /* ---------------------------------------------------------------
@@ -1701,10 +1694,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .account-note { color: rgba(16,40,68,.6); text-align: center; }
 .account-empty { padding: 36px 0 8px; }
 .account-empty h3 { margin: 0 0 10px; font: 400 28px var(--font-display), serif; }
-/* stretch, not center: the two buttons then share top and bottom edges
-   whatever their content does, instead of being centred against each
-   other and drifting apart if one of them is ever a pixel taller. */
 .account-empty-actions { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; margin-top: 22px; }
+.account-empty-actions > .button { flex: 0 0 auto; min-width: 250px; }
 .account-orders ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
 .account-orders li { padding: 22px 0; border-bottom: 1px solid var(--line); }
 .account-orders li header, .account-orders li footer { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; justify-content: space-between; }

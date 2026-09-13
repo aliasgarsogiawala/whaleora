@@ -22,8 +22,13 @@ const variantsFor = (remote: ShopifyProduct): CatalogVariant[] => remote.variant
   selectedOptions: variant.selectedOptions,
 }));
 
-/** How long a Storefront catalogue read is reused before Shopify is asked again. */
-const CATALOG_REVALIDATE_SECONDS = 900;
+/**
+ * How long a Storefront catalogue read is reused before Shopify is asked again.
+ * The products webhook busts this the moment anything changes, so this is only
+ * the fallback for when that webhook is not set up or fails to arrive. Kept
+ * short so a price edit shows up within a minute either way.
+ */
+const CATALOG_REVALIDATE_SECONDS = 60;
 
 export type CatalogProduct = Product & {
   currencyCode: string;

@@ -137,7 +137,7 @@ function AccountHome() {
             <p>Place an order with {me?.email || 'this account'}, or message us with your order number if you checked out as a guest on a different address.</p>
             <div className="account-empty-actions">
               <Link href="/products" className="button button-primary">Shop the collection <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
-              <a className="text-link" href={whatsappHref('Hi Whaleora! I have an order I’d like attached to my account.')}>WhatsApp us <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></a>
+              <a className="button button-outline" href={whatsappHref('Hi Whaleora! I have an order I’d like attached to my account.')}>WhatsApp us <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></a>
             </div>
           </div>
         ) : (

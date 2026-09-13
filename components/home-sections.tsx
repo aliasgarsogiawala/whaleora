@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ShopProduct } from '@/components/commerce';
 import { formatPrice } from '@/data/products';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Plus } from 'lucide-react';
 
 const trustPoints = [
   { figure: '130dB', label: 'Siren and strobe, on one pull' },
@@ -114,7 +114,7 @@ export function Objections() {
       <div className="objection-list">
         {objections.map((item, index) => (
           <details key={item.q} open={index === 0}>
-            <summary>{item.q}<span aria-hidden="true">＋</span></summary>
+            <summary>{item.q}<span aria-hidden="true"><Plus size={17} strokeWidth={2} /></span></summary>
             <p>{item.a}</p>
           </details>
         ))}

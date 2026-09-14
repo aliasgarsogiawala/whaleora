@@ -1759,6 +1759,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .policy-dialog-body h3 { margin: 0 0 10px; font-size: var(--label-size); font-weight: var(--label-weight); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--terracotta); }
 .policy-dialog-body p { margin: 0 0 10px; font-size: 14px; line-height: 1.75; color: rgba(16,40,68,.78); }
 .policy-dialog-body p:last-child { margin-bottom: 0; }
+.policy-dialog-body ul { margin: 0 0 10px; padding: 0; list-style: none; }
+.policy-dialog-body li { position: relative; padding-left: 18px; margin-bottom: 7px; font-size: 14px; line-height: 1.7; color: rgba(16,40,68,.78); }
+.policy-dialog-body li::before { content: ''; position: absolute; left: 3px; top: 10px; width: 4px; height: 4px; border-radius: 50%; background: var(--sand); }
+.policy-dialog-body li:last-child { margin-bottom: 0; }
 .policy-dialog-body strong { font-weight: 600; color: var(--ink); }
 .policy-dialog-body a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 600px) { .policy-dialog { width: 100vw; max-height: 100dvh; height: 100dvh; border: 0; border-radius: 0; } }

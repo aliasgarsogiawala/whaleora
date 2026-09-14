@@ -12,14 +12,15 @@ import type { CartState, CartStateLine } from '@/lib/shopify/types';
 import { whatsappHref } from '@/lib/content/contact';
 import { burstConfetti } from '@/lib/confetti';
 import { formatPrice, products } from '@/data/products';
-import { ShippingPolicyDialog } from '@/components/shipping-policy';
+import { PolicyDialog } from '@/components/policy-dialog';
+import type { PolicyKey } from '@/lib/content/policies';
 
 /** Product as rendered by the shop: local editorial plus whatever Shopify knows. */
 export type ShopProduct = CatalogProduct;
 
 const FREE_SHIPPING_THRESHOLD = 1499;
-/** Footer entry that opens the shipping policy dialog instead of navigating. */
-const SHIPPING_POLICY_HREF = '#shipping-policy';
+/** Footer entries whose href is a '#<policy>' open that dialog instead of navigating. */
+const policyKey = (href: string) => (href.startsWith('#') ? href.slice(1) as PolicyKey : null);
 
 const emptyCart: CartState = {
   connected: false,
@@ -462,20 +463,20 @@ const socials = [
 export function Footer() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
-  const [shippingPolicy, setShippingPolicy] = useState(false);
+  const [policy, setPolicy] = useState<PolicyKey | null>(null);
   const groups = useMemo(() => [
     { title: 'Shop', links: [['Shop all', '/products'], ['SOS Alarm', '/products/sos-alarm'], ['Pepper Spray', '/products/pepperspray']] },
     { title: 'Explore', links: [['Our story', '/about'], ['Safety Hub', '/safety-hub'], ['Partnerships', '/institutions']] },
-    { title: 'Support', links: [['Account', '/account'], ['Contact & FAQ', '/contact'], ['Shipping', SHIPPING_POLICY_HREF], ['Returns', '/contact']] },
+    { title: 'Support', links: [['Account', '/account'], ['Contact & FAQ', '/contact'], ['Shipping', '#shipping'], ['Returns', '#returns']] },
   ], []);
   return (
     <footer className="footer">
       <section className="community-signup"><p className="eyebrow">The monthly note</p><div><h2>One email a month. No fear-mongering.</h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">A checklist, a short read, and anything new we’ve made. Unsubscribe in one click.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button></div></form></div></section>
-      <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Prepared,<br />not afraid.</p><address>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => href === SHIPPING_POLICY_HREF
-        ? <button type="button" key={label} onClick={() => setShippingPolicy(true)}>{label}</button>
+      <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Prepared,<br />not afraid.</p><address>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => policyKey(href)
+        ? <button type="button" key={label} onClick={() => setPolicy(policyKey(href))}>{label}</button>
         : <Link href={href} key={label}>{label}</Link>)}</div>)}</div></section>
       <div className="footer-bottom"><span>© 2026 Whaleora</span><div><a href="mailto:hello@whaleora.com">hello@whaleora.com</a><span className="footer-socials">{socials.map((social) => <a key={social.label} className="footer-social" href={social.href} aria-label={social.label} title={social.label} target="_blank" rel="noreferrer noopener">{social.icon}</a>)}</span></div></div>
-      {shippingPolicy && <ShippingPolicyDialog close={() => setShippingPolicy(false)} />}
+      {policy && <PolicyDialog policy={policy} close={() => setPolicy(null)} />}
     </footer>
   );
 }

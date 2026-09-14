@@ -318,12 +318,6 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .quantity button { cursor: pointer; }
 .remove { margin-top: 8px; padding: 0; border: 0; border-bottom: 1px solid currentColor; background: none; font-size: var(--label-size); color: rgba(16,40,68,.5); cursor: pointer; }
 .cart-total { padding: 24px 30px 30px; border-top: 1px solid var(--line); }
-.checkout-gate { display: grid; gap: 10px; margin-top: 4px; }
-.checkout-gate > p { margin: 0 0 6px; font-size: 13px; line-height: 1.6; color: rgba(16,40,68,.7); }
-.checkout-gate > p strong { color: var(--ink); }
-.checkout-gate .button { width: 100%; }
-.checkout-gate-back { padding: 6px 0 0; background: none; border: 0; cursor: pointer; font-size: 11px; font-weight: var(--label-weight); letter-spacing: var(--label-track); text-transform: uppercase; color: rgba(16,40,68,.55); }
-.checkout-gate-back:hover { color: var(--ink); }
 .cart-total > div { display: flex; justify-content: space-between; }
 .cart-total > div span { font-family: var(--font-display), serif; font-size: 28px; }
 .cart-total > div strong { font-size: 17px; }
@@ -1536,3 +1530,19 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .policy-dialog-body strong { font-weight: 600; color: var(--ink); }
 .policy-dialog-body a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 600px) { .policy-dialog { width: 100vw; max-height: 100dvh; height: 100dvh; border: 0; border-radius: 0; } }
+
+/* Sign-in gate, raised when a signed-out shopper hits checkout. A dialog rather
+   than a block inside .cart-total, where `.cart-total > div` beat it on
+   specificity and flattened the buttons into a row. */
+.gate-dialog { position: fixed; inset: 0; margin: auto; padding: clamp(28px, 4vw, 38px); width: min(430px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); text-align: center; }
+.gate-dialog::backdrop { background: rgba(10,27,47,.72); }
+.gate-close { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: none; color: rgba(16,40,68,.5); cursor: pointer; transition: color .2s ease; }
+.gate-close:hover { color: var(--ink); }
+.gate-mark { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 18px; border-radius: 50%; background: var(--ivory); color: var(--terracotta); }
+.gate-dialog h2 { margin: 0 0 10px; font: 400 clamp(24px, 3vw, 29px)/1.15 var(--font-display), serif; }
+.gate-dialog > p { margin: 0 0 26px; font-size: 14px; line-height: 1.7; color: rgba(16,40,68,.7); }
+.gate-actions { display: grid; gap: 10px; }
+.gate-actions .button { width: 100%; }
+.gate-back { margin-top: 16px; padding: 6px 0 0; border: 0; background: none; cursor: pointer; font-size: var(--label-size); font-weight: var(--label-weight); letter-spacing: var(--label-track); text-transform: uppercase; color: rgba(16,40,68,.5); transition: color .2s ease; }
+.gate-back:hover { color: var(--ink); }
+@media (max-width: 480px) { .gate-dialog { width: calc(100vw - 24px); } .gate-actions .button { min-height: 50px; } }

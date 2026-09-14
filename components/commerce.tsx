@@ -12,6 +12,7 @@ import type { CartState, CartStateLine } from '@/lib/shopify/types';
 import { whatsappHref } from '@/lib/content/contact';
 import { burstConfetti } from '@/lib/confetti';
 import { formatPrice, products } from '@/data/products';
+import { CheckoutGateDialog } from '@/components/checkout-gate';
 import { PolicyDialog } from '@/components/policy-dialog';
 import type { PolicyKey } from '@/lib/content/policies';
 
@@ -361,6 +362,10 @@ function CartDrawer() {
       window.location.href = cart.checkoutUrl;
       return;
     }
+    // Nothing to hand off to. Drop back to the bag, which is where the note
+    // explaining that lives — leaving the gate up would look like a dead button.
+    setGate(false);
+    setOpen(true);
     setCheckoutNote(true);
   };
 
@@ -368,6 +373,7 @@ function CartDrawer() {
     let signedIn = false;
     try { signedIn = document.cookie.split('; ').some((entry) => entry.startsWith('whaleora_signed_in=')); } catch { /* private mode */ }
     if (!signedIn) {
+      setOpen(false);
       setGate(true);
       return;
     }
@@ -375,6 +381,7 @@ function CartDrawer() {
   };
 
   return (
+    <>
     <div ref={drawerRef} className={`cart-layer ${open ? 'open' : ''}`} role="dialog" aria-modal={open || undefined} aria-label="Shopping bag" aria-hidden={!open} inert={!open}>
       <button className="cart-backdrop" onClick={() => setOpen(false)} aria-label="Close cart" />
       <aside className="cart-drawer" aria-label="Shopping bag" aria-busy={pending}>
@@ -394,16 +401,14 @@ function CartDrawer() {
               </div>;
             })}</div>
             <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p>
-              {gate ? <div className="checkout-gate" role="group" aria-label="Sign in or continue as a guest">
-                <p><strong>Sign in first?</strong> Signing in links this order to your account, so it shows up under Account with tracking. You can also carry on without one.</p>
-                <a href="/api/auth/shopify/login?next=/account" className="button button-primary" onClick={() => setOpen(false)}>Sign in <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></a>
-                <button type="button" className="button button-outline" onClick={goToCheckout} disabled={pending}>Continue as guest <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>
-                <button type="button" className="checkout-gate-back" onClick={() => setGate(false)}>Back to bag</button>
-              </div> : <button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>}{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href={whatsappHref("Hi Whaleora! I'd like to place an order.")}>WhatsApp</a> or email hello@whaleora.com.</p>}</div>
+              <button className="button button-primary" onClick={checkout} disabled={pending}>{pending ? 'Updating…' : 'Checkout securely'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>{checkoutNote && !cart.checkoutUrl && <p className="drawer-note" role="status">Checkout isn’t connected on this build yet. To order now, message us on <a href={whatsappHref("Hi Whaleora! I'd like to place an order.")}>WhatsApp</a> or email hello@whaleora.com.</p>}</div>
           </>
         )}
       </aside>
     </div>
+    {/* Outside .cart-layer: that subtree turns inert the moment the drawer closes. */}
+    {gate && <CheckoutGateDialog pending={pending} onGuest={goToCheckout} onBack={() => { setGate(false); setOpen(true); }} />}
+    </>
   );
 }
 

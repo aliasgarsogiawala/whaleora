@@ -4,7 +4,7 @@ import { promisify } from 'node:util';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { cookies } from 'next/headers';
-import { dataDirectory, redis, usesRedis } from '@/lib/content/store';
+import { dataDirectory } from '@/lib/content/store';
 
 const scrypt = promisify(scryptCallback);
 const COOKIE = 'whaleora-admin';
@@ -66,17 +66,14 @@ const attempts = new Map<string, { count: number; expires: number }>();
 export async function allowLogin(request: Request) {
   // A shared account-wide cap also prevents spoofed client IPs bypassing the limit.
   const client = digest(request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local').toString('hex');
+  // Per-instance counters. Fluid Compute reuses instances, so a burst mostly
+  // lands on one of them, but this is not a cluster-wide guarantee.
   for (const [key, limit] of [[client, 8], ['global', 60]] as const) {
-    if (usesRedis()) {
-      const script = "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],900) end; return n";
-      if (await redis<number>(['EVAL', script, 1, `${process.env.CONTENT_NAMESPACE || 'whaleora'}:admin-attempts:${key}`]) > limit) return false;
-    } else {
-      const now = Date.now();
-      for (const [id, entry] of attempts) if (entry.expires <= now) attempts.delete(id);
-      const entry = attempts.get(key) ?? { count: 0, expires: now + 900_000 };
-      entry.count += 1; attempts.set(key, entry);
-      if (entry.count > limit) return false;
-    }
+    const now = Date.now();
+    for (const [id, entry] of attempts) if (entry.expires <= now) attempts.delete(id);
+    const entry = attempts.get(key) ?? { count: 0, expires: now + 900_000 };
+    entry.count += 1; attempts.set(key, entry);
+    if (entry.count > limit) return false;
   }
   return true;
 }

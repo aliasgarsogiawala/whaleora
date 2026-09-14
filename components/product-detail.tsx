@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, Check, Feather, Headphones, Minus, Package, Play, Plus, ShieldCheck, Truck, X, Zap, ZoomIn } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Feather, Headphones, Minus, Package, Play, Plus, RotateCcw, ShieldCheck, Truck, X, Zap, ZoomIn } from 'lucide-react';
 import { AddToCartButton } from '@/components/commerce';
 import type { CatalogProduct } from '@/lib/shopify/catalog';
 import type { Testimonial, VideoReview } from '@/lib/content/types';
@@ -88,7 +88,7 @@ export function ProductPurchase({ product, children }: { product: CatalogProduct
     {variants.length > 1 && <fieldset className="pdp-variant-picker"><legend>Choose your option: <span>{variant?.title}</span></legend><div>{variants.map((item) => <label key={item.id} className={variantId === item.id ? 'selected' : ''}><input type="radio" name={`variant-${product.id}`} checked={variantId === item.id} onChange={() => setVariantId(item.id)} /><span>{item.title}{!item.availableForSale && ' · Sold out'}</span></label>)}</div></fieldset>}
     <div className="pdp-order-row"><div className="pdp-quantity"><span>Quantity</span><div><button type="button" aria-label="Decrease quantity" disabled={quantity <= 1} onClick={() => onQuantity(quantity - 1)}><Minus size={15} /></button><input type="number" inputMode="numeric" min={1} max={10} step={1} value={quantity} onChange={(event) => onQuantity(Number(event.target.value))} aria-label="Quantity" /><button type="button" aria-label="Increase quantity" disabled={quantity >= 10} onClick={() => onQuantity(quantity + 1)}><Plus size={15} /></button></div></div><div className="pdp-order-total" aria-live="polite"><strong>{formatPrice(total, chosen.currencyCode)}</strong>{compareAt && compareAt > chosen.price ? <s>{formatPrice(compareAt * quantity, chosen.currencyCode)}</s> : null}<small>Inclusive of all taxes</small></div></div>
     <div ref={purchase} className="pdp-primary-purchase"><AddToCartButton product={chosen} quantity={quantity} label="Add to cart" /></div>
-    <div className="pdp-purchase-assurances"><span><ShieldCheck size={17} />Shopify checkout</span><span><Truck size={17} />Ships across India</span><span><Headphones size={17} />Human support</span></div>
+    <div className="pdp-purchase-assurances"><span><ShieldCheck size={17} />Shopify checkout</span><span><Truck size={17} />Ships across India</span><span><RotateCcw size={17} />7-day returns</span><span><Headphones size={17} />Human support</span></div>
     <p className="pdp-shipping-note">{chosen.currencyCode === 'INR' && total >= 1499 ? 'This set qualifies for free shipping.' : 'Free shipping on orders over ₹1,499.'} Delivery estimate shown at checkout.</p>
     <div className="pdp-support-promise"><Headphones size={24} strokeWidth={1.5} /><div><strong>Help when you need it.</strong><p>A question about your order? <Link href="/contact">Talk to our team.</Link></p></div></div>
     {children}

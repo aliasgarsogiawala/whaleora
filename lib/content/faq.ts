@@ -313,8 +313,8 @@ export const faqs: FaqEntry[] = [
     category: 'orders',
     question: 'What’s your return policy?',
     answer:
-      'If it arrived faulty, we replace it — contact us before you post anything back. For a change of mind, email hello@whaleora.com with the order details and we’ll tell you whether we can take it back unused, in original packaging.\n\nPepper spray that has been unlocked, and any tool that has been used, cannot go back into stock. We’ll always rather sort it by email than leave you guessing at a courier counter.',
-    keywords: ['return', 'refund', 'exchange', 'send back', 'policy', 'unused', 'change of mind'],
+      'You have 7 days from delivery to ask for a return — that covers a change of mind as well as anything that arrives damaged, faulty, incorrect or not what was described. Email hello@whaleora.com with your order number and we’ll take it from there.\n\nIf the fault is ours, we arrange the return and cover the shipping. For a change of mind, return shipping comes out of the refund, and the tool needs to be in a condition we can check — so pepper spray that has been unlocked, or any tool that has been used, cannot go back into stock. Refunds are started within 7 business days of us approving the return.',
+    keywords: ['return', 'refund', 'exchange', 'send back', 'policy', 'unused', 'change of mind', '7 days', 'return window'],
     followUps: ['orders-faulty', 'orders-contact', 'pepper-how'],
     links: [{ label: 'Contact support', href: '/contact' }],
   },

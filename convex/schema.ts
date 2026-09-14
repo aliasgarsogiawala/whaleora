@@ -28,6 +28,17 @@ export default defineSchema({
     .index('by_email', ['emailNormalized'])
     .index('by_shopify_id', ['shopifyId']),
 
+  // The content studio's single document, kept as JSON because its shape is
+  // already validated by lib/content/types.ts — duplicating it in Convex
+  // validators would mean two schemas to keep in step. Namespaced so preview
+  // and production can share a deployment without overwriting each other.
+  content: defineTable({
+    namespace: v.string(),
+    revision: v.number(),
+    document: v.string(),
+    updatedAt: v.string(),
+  }).index('by_namespace', ['namespace']),
+
   reviews: defineTable({
     productHandle: v.string(),
     rating: v.number(),

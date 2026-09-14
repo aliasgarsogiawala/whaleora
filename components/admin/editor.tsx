@@ -219,7 +219,7 @@ export function AdminEditor({ initial, shopify, uploadsEnabled, canSave }: { ini
     <main className="admin-main">
       <header className="admin-topbar"><div><span className="admin-kicker">Storefront / Content</span><h1>{tab === 'preview' ? 'Draft preview' : tabs.find((item) => item.id === tab)?.label}</h1></div><div className="admin-actions"><span className="admin-save-state">{dirty ? 'Unsaved changes' : unpublished ? 'Draft saved · not published' : 'All changes published'}</span><button className="admin-button" onClick={() => navigate(tab === 'preview' ? 'testimonials' : 'preview')}> {tab === 'preview' ? 'Back to editing' : 'Preview'}</button><button className="admin-button" onClick={() => save(false)} disabled={locked || !canSave || !dirty}>Save draft</button><button className="admin-button primary" onClick={() => save(true)} disabled={locked || !canSave || !unpublished}>{busy ? 'Saving…' : 'Publish'}<ArrowUpRight size={15} /></button></div></header>
       <div className="admin-body">
-        {!canSave && <p className="admin-error">Connect Upstash Redis before saving on this hosted deployment. See ADMIN.md for configuration.</p>}
+        {!canSave && <p className="admin-error">Connect Convex before saving on this hosted deployment. See ADMIN.md for configuration.</p>}
         {error && <div className="admin-error" role="alert">{error} <button onClick={reload} disabled={locked}>Reload saved draft</button></div>}
         {notice && <p className="admin-notice" role="status"><Check size={16} />{notice}</p>}
         <div className="admin-summary"><p>{summaries[tab]}</p><span>{document.publishedAt ? `Last published ${document.publishedAt.slice(0, 10)}` : 'Using starter demo content'}</span></div>

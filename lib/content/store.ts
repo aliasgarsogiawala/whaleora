@@ -2,25 +2,27 @@ import 'server-only';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { fetchMutation, fetchQuery } from 'convex/nextjs';
+import { api } from '@/convex/_generated/api';
+import { convexUrl } from '@/lib/convex';
 import { hydrateContent, initialDocument } from './defaults';
 import { validateContent, type ContentDocument, type ReviewContent } from './types';
 
 export const dataDirectory = () => resolve(process.env.CONTENT_DATA_DIR || '.whaleora');
-export const usesRedis = () => Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
-const key = () => `${process.env.CONTENT_NAMESPACE || 'whaleora'}:reviews`;
-
-export async function redis<T>(command: (string | number)[]): Promise<T> {
-  const response = await fetch(process.env.UPSTASH_REDIS_REST_URL!, { method: 'POST', headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify(command), cache: 'no-store', signal: AbortSignal.timeout(8000) });
-  if (!response.ok) throw new Error('Content storage is unavailable. Please try again.');
-  const data = await response.json();
-  if (data.error) throw new Error('Content storage rejected the request.');
-  return data.result as T;
-}
+/**
+ * Hosted deployments keep the content document in Convex, which is already the
+ * database behind orders and reviews. A local dev box with no Convex URL falls
+ * back to a file under CONTENT_DATA_DIR.
+ */
+export const usesConvex = () => Boolean(convexUrl());
+const namespace = () => process.env.CONTENT_NAMESPACE || 'whaleora';
 
 export async function readDocument(): Promise<ContentDocument> {
   let raw: string | null;
-  if (usesRedis()) raw = await redis<string | null>(['GET', key()]);
-  else {
+  if (usesConvex()) {
+    const stored = await fetchQuery(api.content.get, { namespace: namespace() }, { url: convexUrl() });
+    raw = stored?.document ?? null;
+  } else {
     try { raw = await readFile(join(dataDirectory(), 'reviews.json'), 'utf8'); }
     catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return initialDocument(); throw error; }
   }
@@ -39,16 +41,21 @@ export class ConflictError extends Error { constructor() { super('Someone saved 
 let writeQueue: Promise<unknown> = Promise.resolve();
 
 export async function saveDocument(content: ReviewContent, revision: number, publish: boolean): Promise<ContentDocument> {
-  if (!usesRedis() && process.env.VERCEL) throw new Error('Connect durable content storage before saving on Vercel.');
+  if (!usesConvex() && process.env.VERCEL) throw new Error('Connect Convex before saving on this hosted deployment.');
   const save = async () => {
     const current = await readDocument();
     if (current.revision !== revision) throw new ConflictError();
     const now = new Date().toISOString();
     const stored = hydrateContent(content);
     const next: ContentDocument = { revision: revision + 1, draft: stored, published: publish ? stored : current.published, updatedAt: now, publishedAt: publish ? now : current.publishedAt };
-    if (usesRedis()) {
-      const script = "local old=redis.call('GET',KEYS[1]); local rev=0; if old then rev=cjson.decode(old).revision end; if rev~=tonumber(ARGV[1]) then return 0 end; redis.call('SET',KEYS[1],ARGV[2]); return 1";
-      if (await redis<number>(['EVAL', script, 1, key(), revision, JSON.stringify(next)]) !== 1) throw new ConflictError();
+    if (usesConvex()) {
+      const result = await fetchMutation(api.content.save, {
+        namespace: namespace(),
+        expectedRevision: revision,
+        document: JSON.stringify(next),
+        secret: process.env.ORDERS_INGEST_SECRET ?? '',
+      }, { url: convexUrl() });
+      if (!result.ok) throw new ConflictError();
     } else {
       await mkdir(dataDirectory(), { recursive: true, mode: 0o700 });
       const temporary = join(dataDirectory(), `reviews-${randomUUID()}.tmp`);

@@ -70,7 +70,20 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                             <strong>{order.name}</strong>
                             <span>{order.processedAt ? new Date(order.processedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span>
                           </header>
-                          <p>{order.lineItems.map((item) => `${item.quantity} × ${item.title}`).join(' · ')}</p>
+                          <ul className="order-lines">
+                            {order.lineItems.map((item) => (
+                              <li key={item.id}>
+                                <span>{item.quantity} × {item.title}</span>
+                                {/* Shopify's Return rules decide this, so the button disappears
+                                    on its own once the window closes. */}
+                                {item.returnable && order.statusPageUrl && (
+                                  <a href={order.statusPageUrl} target="_blank" rel="noreferrer" className="order-return">
+                                    Return <ArrowUpRight size={13} strokeWidth={2} aria-hidden="true" />
+                                  </a>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
                           <footer>
                             <em>{order.fulfillmentStatus ? order.fulfillmentStatus.toLowerCase().replace(/_/g, ' ') : (order.financialStatus ?? '').toLowerCase()}</em>
                             <span>{formatPrice(Number(order.total), order.currencyCode)}</span>
@@ -79,6 +92,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                         </li>
                       ))}
                     </ul>
+                    <p className="account-returns-note">
+                      Returns open for 7 days after delivery — the button appears next to anything still inside that window.
+                      After it closes, email <a href="mailto:hello@whaleora.com">hello@whaleora.com</a> with your order number and we’ll look at it under our returns policy.
+                    </p>
                   </div>
                 )}
               </>

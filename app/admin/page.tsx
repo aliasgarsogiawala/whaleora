@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { credentials, isAdmin } from '@/lib/admin/auth';
-import { readDocument, usesRedis } from '@/lib/content/store';
+import { readDocument, usesConvex } from '@/lib/content/store';
 import { shopifySnapshots } from '@/lib/shopify/catalog';
 import { AdminEditor, AdminLogin } from '@/components/admin/editor';
 import './admin.css';
@@ -16,5 +16,5 @@ export default async function AdminPage() {
   if (!document) {
     return <main className="admin-login"><div className="admin-login-card"><p className="admin-kicker">Whaleora / Content studio</p><h1>Storage is unavailable.</h1><p>Your saved content has not been changed. Check your storage connection and reload this page.</p><a href="/admin" className="icon-link">Try again <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></a></div></main>;
   }
-  return <AdminEditor initial={document} shopify={shopify} uploadsEnabled={!process.env.VERCEL} canSave={!process.env.VERCEL || usesRedis()} />;
+  return <AdminEditor initial={document} shopify={shopify} uploadsEnabled={!process.env.VERCEL} canSave={!process.env.VERCEL || usesConvex()} />;
 }

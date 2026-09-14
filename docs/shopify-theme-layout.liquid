@@ -7,7 +7,9 @@
 >
   <head>
     {%- comment -%}
-      Headless storefront redirect.
+      Headless storefront redirect. Whaleora's real storefront is the Next.js
+      site; this theme exists only because the Online Store channel has to be
+      published for checkout to work.
 
       Shopify's new checkout gives no setting for where "Continue shopping" on
       the thank-you page points — it always goes to the online store root. So
@@ -23,23 +25,30 @@
         (function () {
           var search = window.location.search;
           // Theme previews and A/B tests must still render, or the theme
-          // becomes impossible to edit or preview.
+          // becomes impossible to edit.
           if (search.indexOf('preview_theme_id') > -1 || search.indexOf('_ab=') > -1) return;
           if (window.location.pathname.indexOf('/password') === 0) return;
           if (window.self !== window.top) return;
 
-          // Carry the path across, so /products/sos-alarm lands on the same
-          // product rather than dumping everyone on the home page.
-          window.location.replace(
-            {{ headless_origin | json }} +
-              window.location.pathname +
-              window.location.search +
-              window.location.hash
-          );
+          // "Continue shopping" always lands on the store root, and the root is
+          // the only page here anyone reaches deliberately (the myshopify domain
+          // is not advertised), so send it to the catalogue rather than the home
+          // page. Every other path carries straight across.
+          var path = window.location.pathname;
+          var target = {{ headless_origin | json }}
+            + (path === '/' ? '/products' : path)
+            + window.location.search
+            + window.location.hash;
+          window.location.replace(target);
         })();
       </script>
+      {%- if request.path == '/' -%}
+        {%- assign fallback = headless_origin | append: '/products' -%}
+      {%- else -%}
+        {%- assign fallback = headless_origin | append: request.path -%}
+      {%- endif -%}
       <noscript>
-        <meta http-equiv="refresh" content="0; url={{ headless_origin }}">
+        <meta http-equiv="refresh" content="0; url={{ fallback }}">
       </noscript>
     {%- endunless -%}
 

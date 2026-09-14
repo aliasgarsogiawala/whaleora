@@ -201,7 +201,8 @@
   .pdp-set-picker label > span { font-size: 15px; }
   .pdp-order-total strong { font-size: 23px; }
   .pdp-primary-purchase .button { min-height: 50px; }
-  .pdp-purchase-assurances { gap: 8px; }
+  /* Four assurances: a 2x2 grid reads better here than space-between wrapping. */
+  .pdp-purchase-assurances { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
   .pdp-purchase-assurances span { font-size: 9px; gap: 4px; }
   .pdp-purchase-assurances svg { width: 14px; }
   .pdp-service-strip > div { flex-direction: column; gap: 16px; padding-block: 22px; align-items: flex-start; }

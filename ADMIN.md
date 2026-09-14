@@ -6,7 +6,7 @@ Open `/admin` to edit product copy, Safety Hub checklists and habits, written te
 
 Run `npm run dev`, visit `http://localhost:3000/admin`, and sign in with `ADMIN_PASSWORD` from `.env.local` (or create a password of 8+ characters if that is unset). First-time setup is only available on a local development hostname. Credentials are scrypt-hashed; the browser receives an eight-hour HttpOnly session cookie.
 
-Content and uploads persist in `.whaleora/`, which is gitignored. Back up this directory. `CONTENT_DATA_DIR` can point to another private persistent directory. Do not put it inside `public/`. Local storage is intended for a single server process; use Redis for multi-instance hosting.
+Content lives in Convex whenever `NEXT_PUBLIC_CONVEX_URL` is set — including locally, under the `CONTENT_NAMESPACE` you configure (default `whaleora`, kept separate from the deployed namespaces). With no Convex URL it falls back to a file in `.whaleora/`, which is gitignored; back up that directory. `CONTENT_DATA_DIR` can point to another private persistent directory. Do not put it inside `public/`. The file fallback is for a single server process only.
 
 New items start hidden. Complete all required fields before saving, even for hidden items. Keep the demo checkbox enabled for fictional content. Real testimonials require permission from their authors.
 
@@ -25,18 +25,18 @@ Set these server-only environment variables before deployment:
 ADMIN_PASSWORD=<a unique password, at least 8 characters>
 ADMIN_SESSION_SECRET=<random secret, at least 32 characters>
 ADMIN_ORIGIN=https://your-store-domain.example
-UPSTASH_REDIS_REST_URL=<Upstash Redis REST endpoint>
-UPSTASH_REDIS_REST_TOKEN=<Upstash Redis REST token>
+NEXT_PUBLIC_CONVEX_URL=<Convex deployment URL>
+ORDERS_INGEST_SECRET=<the same secret set in the Convex deployment>
 CONTENT_NAMESPACE=whaleora-production
 ```
 
 Generate a session secret with `openssl rand -hex 32`. Never prefix these variables with `NEXT_PUBLIC_`. Changing the password or secret invalidates existing sessions. `ADMIN_ORIGIN` must exactly match the origin used to visit the panel (no trailing slash); set it when using a reverse proxy. Use HTTPS in production.
 
-Vercel saves require Redis and local uploads are disabled there. Upload videos/images to Shopify Files or your media host and paste their HTTPS URLs. Redis holds the content document, not video files. An empty Redis database starts with the bundled demo reviews; to migrate local content, copy `.whaleora/reviews.json` into the Redis key `<CONTENT_NAMESPACE>:reviews` before editing on the new host. Take a backup first. Keep preview and production namespaces separate.
+Vercel saves require Convex and local uploads are disabled there. Upload videos/images to Shopify Files or your media host and paste their HTTPS URLs. Convex holds the content document, not video files. An empty namespace starts with the bundled demo reviews; to migrate local content, paste `.whaleora/reviews.json` into a `content` row with that `namespace` before editing on the new host. Take a backup first. Keep preview and production namespaces separate — they are rows in the same table, so a shared name means one environment overwrites the other.
 
-The adapter uses the [Upstash REST API](https://upstash.com/docs/redis/features/restapi) with atomic revision checks. If storage is unavailable, the public storefront falls back to bundled demos and the admin refuses to save; errors do not overwrite saved content. This project does not provision a hosted database automatically.
+The content document is a single row in the Convex `content` table, written through `convex/content.ts`. Convex mutations are transactional, so the revision check that detects concurrent edits is an ordinary read-compare-write. The `save` mutation is guarded by `ORDERS_INGEST_SECRET`, which must match between the Next.js server and the Convex deployment — a Convex mutation is otherwise callable by anyone holding the deployment URL. If storage is unavailable, the public storefront falls back to bundled demos and the admin refuses to save; errors do not overwrite saved content.
 
-For a self-hosted Node server, a persistent private `CONTENT_DATA_DIR` can be used instead of Redis. Use one server process and back up both credentials and content. Configure the password and session secret through environment variables in production.
+For a self-hosted Node server, a persistent private `CONTENT_DATA_DIR` can be used instead of Convex. Use one server process and back up both credentials and content. Configure the password and session secret through environment variables in production.
 
 ## Checks
 

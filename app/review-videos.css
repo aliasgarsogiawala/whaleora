@@ -46,14 +46,6 @@
 }
 
 .review-demo-note { display: inline-block; margin-top: 10px; font-size: 12px; color: rgba(16,40,68,.6); }
-.review-card { border-radius: 8px; }
-.review-card > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.review-card .journey-card-shade { background: linear-gradient(180deg, rgba(10,27,47,.2), transparent 35%, rgba(10,27,47,.12) 55%, var(--deep) 76%); }
-.review-card-top { position: absolute; z-index: 4; inset: 16px 16px auto; display: flex; justify-content: space-between; gap: 12px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
-.review-card-top span { background: var(--deep); color: var(--paper); padding: 6px 8px; }
-.review-play { position: absolute; top: 42%; left: 50%; z-index: 3; transform: translate(-50%, -50%); display: grid; place-items: center; width: 48px; height: 48px; padding-left: 3px; border: 1px solid rgba(255,255,255,.7); border-radius: 50%; background: rgba(10,27,47,.35); color: white; }
-.review-card .journey-card-copy h3 { font-size: 30px; line-height: 1.08; }
-.review-card .journey-card-copy > span { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 .review-dialog { position: fixed; inset: 0; margin: auto; padding: 0; width: min(440px, calc(100vw - 28px)); max-height: calc(100dvh - 28px); border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); overflow-y: auto; }
 .review-dialog::backdrop { background: rgba(10,27,47,.78); }
 .review-player-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 8px 20px; border-bottom: 1px solid var(--line); }
@@ -66,10 +58,6 @@
 .review-player-caption a { display: inline-flex; gap: 20px; align-items: center; min-height: 44px; border-bottom: 1px solid var(--ink); font-size: 11px; }
 @media (max-width: 600px) {
   .cart-button { min-width: 52px; padding-inline: 8px; gap: 5px; }
-  .review-card { border-radius: 6px; }
-  .review-card-top { inset: 12px 10px auto; font-size: 8px; gap: 5px; }
-  .review-card .journey-card-copy { left: 16px; right: 16px; bottom: 18px; }
-  .review-card .journey-card-copy h3 { font-size: 25px; }
   .review-section .journey-instruction { font-size: 9px; gap: 10px; }
   .review-section .journey-instruction i { width: 30px; }
 }

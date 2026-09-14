@@ -41,13 +41,6 @@ export const PRODUCTS_QUERY = /* GraphQL */ `
   }
 `;
 
-export const PRODUCT_BY_HANDLE_QUERY = /* GraphQL */ `
-  ${PRODUCT_FRAGMENT}
-  query ProductByHandle($handle: String!) {
-    product(handle: $handle) { ...ProductFields }
-  }
-`;
-
 const CART_FRAGMENT = /* GraphQL */ `
   ${IMAGE_FRAGMENT}
   fragment CartFields on Cart {
@@ -129,12 +122,3 @@ export const CART_LINES_REMOVE_MUTATION = /* GraphQL */ `
   }
 `;
 
-export const CART_BUYER_IDENTITY_UPDATE_MUTATION = /* GraphQL */ `
-  ${CART_FRAGMENT}
-  mutation CartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
-    cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
-      cart { ...CartFields }
-      userErrors { field message }
-    }
-  }
-`;

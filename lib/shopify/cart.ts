@@ -1,6 +1,5 @@
 import { assertNoUserErrors, shopifyFetch } from './client';
 import {
-  CART_BUYER_IDENTITY_UPDATE_MUTATION,
   CART_CREATE_MUTATION,
   CART_LINES_ADD_MUTATION,
   CART_LINES_REMOVE_MUTATION,
@@ -60,12 +59,3 @@ export async function removeLine(cartId: string, lineId: string): Promise<Shopif
   return data.cartLinesRemove.cart;
 }
 
-export async function setBuyerEmail(cartId: string, email: string): Promise<ShopifyCart> {
-  const data = await shopifyFetch<{ cartBuyerIdentityUpdate: CartMutationResult }>({
-    query: CART_BUYER_IDENTITY_UPDATE_MUTATION,
-    variables: { cartId, buyerIdentity: { email } },
-  });
-  assertNoUserErrors(data.cartBuyerIdentityUpdate.userErrors, 'cartBuyerIdentityUpdate');
-  if (!data.cartBuyerIdentityUpdate.cart) throw new Error('cartBuyerIdentityUpdate returned no cart');
-  return data.cartBuyerIdentityUpdate.cart;
-}

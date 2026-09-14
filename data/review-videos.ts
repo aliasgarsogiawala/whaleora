@@ -8,4 +8,3 @@ export const reviewVideos = [
   { id: 'whistle-on-the-go', title: 'Ready to come along.', product: 'Survival Whistle', slug: 'whistle', poster: '/lifestyle/whistle-bag-shot.webp', video: '/reviews/whistle-on-the-go.mp4', duration: '0:08' },
 ] as const;
 
-export type ReviewVideo = (typeof reviewVideos)[number];

@@ -18,11 +18,3 @@ export const guides: Guide[] = [
   { title: 'Trusting the quiet signal', category: "Women's Safety", type: 'Editorial', time: '7 min', tone: 'sage', excerpt: 'Turning situational awareness into a steady habit, without living in fear.', checklistId: 'women-commute' },
 ];
 
-export const personas = [
-  { title: 'Women', description: 'Everyday movement, commutes and practical confidence.', category: "Women's Safety" },
-  { title: 'Students', description: 'Campus, shared living, late classes and travel.', category: 'Student Safety' },
-  { title: 'Travellers', description: 'Preparation for transit, stays and unfamiliar places.', category: 'Travel' },
-  { title: 'Professionals', description: 'Commutes, field work and after-hours routines.', category: 'Workplace' },
-  { title: 'Families', description: 'Shared plans, contacts and age-appropriate habits.', category: 'Family' },
-  { title: 'Institutions', description: 'Programmes and resources for safer communities.', category: 'All' },
-];

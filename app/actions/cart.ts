@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { handleToProductId } from '@/lib/shopify/catalog';
-import { addLine, createCart, fetchCart, removeLine, setBuyerEmail, updateLine } from '@/lib/shopify/cart';
+import { addLine, createCart, fetchCart, removeLine, updateLine } from '@/lib/shopify/cart';
 import { currentCustomerEmail } from '@/lib/shopify/customer';
 import { isShopifyConfigured } from '@/lib/shopify/client';
 import type { CartState, ShopifyCart } from '@/lib/shopify/types';
@@ -105,19 +105,6 @@ export async function updateCartLineAction(lineId: string, quantity: number): Pr
     if (!cartId) return emptyConnected;
     const cart = quantity < 1 ? await removeLine(cartId, lineId) : await updateLine(cartId, lineId, quantity);
     return toCartState(cart);
-  });
-}
-
-export async function setCartBuyerEmailAction(email: string): Promise<void> {
-  const trimmed = email.trim();
-  if (!trimmed || !trimmed.includes('@')) return;
-  await guard(async () => {
-    const cartId = await readCartId();
-    if (!cartId) return emptyConnected;
-    const cart = await fetchCart(cartId);
-    if (!cart) return emptyConnected;
-    await setBuyerEmail(cart.id, trimmed);
-    return emptyConnected;
   });
 }
 

@@ -335,4 +335,3 @@ export const hubProgrammes = [
 
 export const checklistById = new Map(hubChecklists.map((item) => [item.id, item]));
 export const numberById = new Map(hubNumbers.map((item) => [item.id, item]));
-export const profileById = new Map(hubProfiles.map((item) => [item.id, item]));

@@ -6,7 +6,7 @@ import { ArrowRight, ArrowUpRight, Plus, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from 'react';
 import { AccountLink } from '@/components/account-link';
-import { addToCartAction, getCartAction, removeCartLineAction, setCartBuyerEmailAction, updateCartLineAction } from '@/app/actions/cart';
+import { addToCartAction, getCartAction, removeCartLineAction, updateCartLineAction } from '@/app/actions/cart';
 import type { CatalogProduct } from '@/lib/shopify/catalog';
 import type { CartState, CartStateLine } from '@/lib/shopify/types';
 import { whatsappHref } from '@/lib/content/contact';

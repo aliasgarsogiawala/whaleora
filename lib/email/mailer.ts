@@ -49,7 +49,3 @@ export async function sendMail(mail: Mail) {
   return { id: info.messageId };
 }
 
-/** Opens a connection and authenticates without sending, for setup checks. */
-export async function verifyMailer() {
-  await transport().verify();
-}

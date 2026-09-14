@@ -184,10 +184,6 @@ async function activeSession(): Promise<Session | null> {
   }
 }
 
-export async function isCustomerSignedIn() {
-  return Boolean(await activeSession());
-}
-
 /** Runs a Customer Account API query as the signed-in customer. */
 export async function customerQuery<T>(query: string, variables?: Record<string, unknown>): Promise<T | null> {
   const session = await activeSession();

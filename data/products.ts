@@ -194,4 +194,3 @@ export const formatPrice = (price: number, currencyCode = 'INR') =>
     maximumFractionDigits: Number.isInteger(price) ? 0 : 2,
   }).format(price);
 
-export const cheapest = (list: Pick<Product, 'price'>[] = products) => Math.min(...list.map((product) => product.price));

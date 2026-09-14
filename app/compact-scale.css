@@ -186,7 +186,7 @@
 .footer-brand > p { font-size: 24px; margin-block: 18px; }
 .footer-brand img { width: 148px; }
 .footer-links h3 { margin-bottom: 14px; }
-.footer-links a { margin: 8px 0; }
+.footer-links a, .footer-links button { margin: 8px 0; }
 .footer-word { font-size: clamp(36px, 6.2vw, 84px); }
 
 /* Height-aware rhythm. Everything above derives vertical space from vw, which

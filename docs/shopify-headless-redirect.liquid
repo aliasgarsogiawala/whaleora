@@ -1,0 +1,42 @@
+{%- comment -%}
+  Continue shopping -> the headless storefront.
+
+  Shopify's new checkout gives no setting for where "Continue shopping" on the
+  thank-you page points: it always goes to the online store's root. There is no
+  admin option and no Storefront API field for it (confirmed against Shopify's
+  own developer forum, where the question is still open).
+
+  So redirect the online store instead. Paste this at the very top of
+  layout/theme.liquid, immediately after the opening <head> tag, in whichever
+  theme the Online Store channel is publishing. Checkout, the thank-you page and
+  customer accounts are not themed, so none of them are affected — only the
+  storefront pages a shopper would land on, which is exactly what we want to
+  hand back to the headless site.
+
+  The path is carried across, so /products/sos-alarm on the myshopify domain
+  lands on /products/sos-alarm here rather than dumping everyone on the home page.
+{%- endcomment -%}
+
+{%- assign headless_origin = 'https://whaleora.com' -%}
+
+{%- unless request.design_mode -%}
+  <script>
+    (function () {
+      // Theme editor, previews and the password page must still render, or the
+      // theme becomes impossible to edit.
+      var search = window.location.search;
+      if (search.indexOf('preview_theme_id') > -1 || search.indexOf('_ab=') > -1) return;
+      if (window.location.pathname.indexOf('/password') === 0) return;
+      if (window.self !== window.top) return;
+
+      var target = {{ headless_origin | json }}
+        + window.location.pathname
+        + window.location.search
+        + window.location.hash;
+      window.location.replace(target);
+    })();
+  </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0; url={{ headless_origin }}">
+  </noscript>
+{%- endunless -%}

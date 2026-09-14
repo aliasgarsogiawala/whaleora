@@ -291,8 +291,8 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .footer-brand address { font-style: normal; color: rgba(255,255,255,.5); font-size: 12px; line-height: 1.7; }
 .footer-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
 .footer-links h3 { margin: 0 0 25px; color: #efcdb1; font-size: var(--label-size); text-transform: uppercase; letter-spacing: var(--label-track); }
-.footer-links a { display: block; margin: 14px 0; font-size: 13px; color: rgba(255,255,255,.72); }
-.footer-links a:hover { color: white; }
+.footer-links a, .footer-links button { display: block; margin: 14px 0; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; text-align: left; color: rgba(255,255,255,.72); cursor: pointer; }
+.footer-links a:hover, .footer-links button:hover { color: white; }
 .footer-bottom { margin: 0 max(6vw, calc((100vw - 1540px)/2)); padding: 22px 0; display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.15); font-size: var(--label-size); text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.45); }
 .footer-bottom div { display: flex; align-items: center; gap: 25px; }
 .footer-socials { display: flex; align-items: center; gap: 10px; }
@@ -1178,7 +1178,7 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
   .community-signup, .footer-main { padding-left: 18px; padding-right: 18px; }
   .community-signup h2 { font-size: 26px; }
   .footer-links { gap: 15px; }
-  .footer-links a { font-size: 11px; }
+  .footer-links a, .footer-links button { font-size: 11px; }
   .footer-bottom { margin-inline: 18px; display: block; }
   .footer-bottom div { margin-top: 15px; flex-wrap: wrap; }
   .footer-word { margin-bottom: -0.08em; font-size: 12vw; }
@@ -1745,3 +1745,20 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .account-signin > p { margin: 0 0 22px; color: rgba(16,40,68,.68); line-height: 1.7; }
 .account-note-small { margin: 14px 0 0; font-size: 12px; color: rgba(16,40,68,.55); }
 .account-orders li footer .icon-link { font-size: 12px; color: var(--terracotta); }
+
+/* Shipping policy, opened from the footer instead of living on its own page. */
+.policy-dialog { position: fixed; inset: 0; margin: auto; padding: 0; width: min(760px, calc(100vw - 28px)); max-height: calc(100dvh - 56px); border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); overflow: hidden; display: flex; flex-direction: column; }
+.policy-dialog::backdrop { background: rgba(10,27,47,.8); }
+.policy-dialog-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px 8px 18px; gap: 12px; border-bottom: 1px solid var(--line); font-size: var(--label-size); font-weight: var(--label-weight); letter-spacing: var(--label-track); text-transform: uppercase; }
+.policy-dialog-top button { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.policy-dialog-body { padding: clamp(22px, 3.4vw, 36px); overflow-y: auto; overscroll-behavior: contain; }
+.policy-dialog-body h2 { margin: 0 0 8px; font: 400 clamp(26px, 3.2vw, 34px)/1.1 var(--font-display), serif; }
+.policy-updated { margin: 0 0 22px; font-size: 12px; color: rgba(16,40,68,.5); }
+.policy-intro { margin: 0 0 8px; font-size: 15px; line-height: 1.75; color: rgba(16,40,68,.78); }
+.policy-dialog-body section { margin-top: 26px; }
+.policy-dialog-body h3 { margin: 0 0 10px; font-size: var(--label-size); font-weight: var(--label-weight); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--terracotta); }
+.policy-dialog-body p { margin: 0 0 10px; font-size: 14px; line-height: 1.75; color: rgba(16,40,68,.78); }
+.policy-dialog-body p:last-child { margin-bottom: 0; }
+.policy-dialog-body strong { font-weight: 600; color: var(--ink); }
+.policy-dialog-body a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 600px) { .policy-dialog { width: 100vw; max-height: 100dvh; height: 100dvh; border: 0; border-radius: 0; } }

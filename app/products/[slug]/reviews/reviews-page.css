@@ -1,0 +1,55 @@
+/* Nested per-product reviews page. Builds on product-page.css, which the route imports first. */
+
+.reviews-page { padding-bottom: clamp(60px, 9vw, 120px); }
+
+.reviews-head { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: clamp(24px, 4vw, 64px); align-items: start; padding-block: clamp(12px, 2vw, 28px) clamp(28px, 4vw, 48px); }
+.reviews-head-copy h1 { margin: 0; font: 600 clamp(30px, 4.2vw, 52px)/1.08 var(--font-sans); letter-spacing: -.035em; }
+.reviews-head-note { margin: 18px 0 0; max-width: 52ch; font-size: 14px; line-height: 1.75; color: rgba(16, 40, 68, .68); }
+.reviews-head-actions { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
+.reviews-back { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(16, 40, 68, .62); }
+.reviews-back:hover { color: var(--terracotta); }
+
+.reviews-summary { display: grid; gap: 20px; border: 1px solid var(--line); border-radius: 12px; padding: clamp(20px, 2.4vw, 28px); background: var(--ivory); }
+.reviews-summary-product { display: flex; align-items: center; gap: 14px; }
+.reviews-summary-image { position: relative; flex: none; width: 60px; height: 60px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+.reviews-summary-image img { object-fit: cover; }
+.reviews-summary-product strong { display: block; font-size: 13px; font-weight: 600; }
+.reviews-summary-product span span { display: block; margin-top: 5px; font-size: 11px; color: rgba(16, 40, 68, .65); }
+.reviews-summary-product:hover strong { color: var(--terracotta); }
+.reviews-summary-empty { margin: 0; font-size: 13px; line-height: 1.7; color: rgba(16, 40, 68, .65); }
+
+.reviews-average { display: flex; align-items: center; gap: 14px; padding-top: 20px; border-top: 1px solid var(--line); }
+.reviews-average > strong { font: 600 38px/1 var(--font-sans); letter-spacing: -.03em; }
+.reviews-average span { font-size: 11px; color: rgba(16, 40, 68, .65); }
+.reviews-average .pdp-review-stars { margin-bottom: 6px; }
+
+.reviews-spread { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.reviews-spread li { display: grid; grid-template-columns: 26px 1fr 20px; align-items: center; gap: 10px; font-size: 11px; color: rgba(16, 40, 68, .65); }
+.reviews-spread li > span:last-child { text-align: right; }
+.reviews-bar { height: 6px; border-radius: 999px; background: rgba(16, 40, 68, .1); overflow: hidden; }
+.reviews-bar i { display: block; height: 100%; border-radius: 999px; background: var(--terracotta); }
+
+.reviews-videos { padding-top: 0; }
+.reviews-list-section .pdp-reviews-heading h2 { margin: 0; font: 600 clamp(22px, 2.5vw, 32px)/1.2 var(--font-sans); letter-spacing: -.03em; }
+
+.reviews-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.reviews-card { margin: 0; display: flex; flex-direction: column; gap: 18px; border: 1px solid var(--line); border-radius: 10px; padding: 26px; background: var(--ivory); overflow-wrap: anywhere; }
+.reviews-card blockquote { margin: 0; flex: 1; font-size: 15px; line-height: 1.8; }
+.reviews-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.reviews-card-top time { font-size: 10px; color: rgba(16, 40, 68, .55); }
+.reviews-card figcaption { display: flex; align-items: center; gap: 10px; padding-top: 18px; border-top: 1px solid var(--line); }
+.reviews-card figcaption strong { display: block; font-size: 11px; font-weight: 600; }
+.reviews-card figcaption > span > span { display: block; margin-top: 4px; font-size: 10px; color: rgba(16, 40, 68, .65); }
+.reviews-card figcaption small { margin-left: auto; font-size: 9px; color: rgba(16, 40, 68, .65); }
+
+.reviews-write { scroll-margin-top: 90px; }
+.reviews-write .review-form { margin-top: 0; }
+
+@media (max-width: 980px) {
+  .reviews-head { grid-template-columns: 1fr; }
+  .reviews-list { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .reviews-card { padding: 20px; }
+  .reviews-head-actions .button { width: 100%; }
+}

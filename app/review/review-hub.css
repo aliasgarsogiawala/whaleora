@@ -1,0 +1,22 @@
+/* "Leave a review" landing page: pick a product, then write on its own review page. */
+
+.review-hub { padding-bottom: clamp(60px, 9vw, 120px); }
+.review-hub .pdp-breadcrumb { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 24px; font-size: 10px; color: rgba(16, 40, 68, .55); }
+.review-hub .pdp-breadcrumb a:hover { color: var(--terracotta); }
+
+.review-hub-head { max-width: 62ch; padding-block: clamp(12px, 2vw, 24px) clamp(28px, 4vw, 48px); }
+.review-hub-head h1 { margin: 0; font: 600 clamp(30px, 4.2vw, 52px)/1.08 var(--font-sans); letter-spacing: -.035em; }
+.review-hub-head p { margin: 18px 0 0; font-size: 14px; line-height: 1.75; color: rgba(16, 40, 68, .68); }
+
+.review-hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.review-hub-card { display: flex; flex-direction: column; gap: 18px; border: 1px solid var(--line); border-radius: 12px; padding: 22px; background: var(--ivory); }
+.review-hub-image { position: relative; display: block; aspect-ratio: 4 / 3; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+.review-hub-image img { object-fit: cover; }
+.review-hub-card h2 { margin: 0; font: 600 16px/1.3 var(--font-sans); letter-spacing: -.02em; }
+.review-hub-card h2 a:hover { color: var(--terracotta); }
+.review-hub-card p { margin: 10px 0 0; font-size: 13px; line-height: 1.7; color: rgba(16, 40, 68, .68); }
+.review-hub-price { display: block; margin-top: 10px; font-size: 11px; color: rgba(16, 40, 68, .6); }
+.review-hub-actions { margin-top: auto; display: grid; gap: 12px; justify-items: start; }
+.review-hub-actions .button { width: 100%; }
+.review-hub-read { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(16, 40, 68, .62); }
+.review-hub-read:hover { color: var(--terracotta); }

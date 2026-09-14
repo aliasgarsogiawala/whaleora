@@ -64,10 +64,25 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 ) : (
                   <div className="account-orders">
                     <ul>
-                      {profile.orders.map((order) => (
-                        <li key={order.id}>
+                      {profile.orders.map((order) => {
+                        /* Shopify's own page for this order. If the store's API version did
+                           not return one, fall back to the hosted orders list so the row
+                           still takes people somewhere real. */
+                        const openUrl = order.statusPageUrl ?? profile.ordersUrl;
+                        return (
+                        /* The whole row opens the order on Shopify — the link on the order
+                           number stretches over the card, and the Return and Track links
+                           sit above it so they still reach their own targets. */
+                        <li key={order.id} className={openUrl ? 'order-card is-linked' : 'order-card'}>
                           <header>
-                            <strong>{order.name}</strong>
+                            {openUrl ? (
+                              <a className="order-open" href={openUrl} target="_blank" rel="noreferrer">
+                                <strong>{order.name}</strong>
+                                <span className="order-open-hint">View order on Shopify <ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" /></span>
+                              </a>
+                            ) : (
+                              <strong>{order.name}</strong>
+                            )}
                             <span>{order.processedAt ? new Date(order.processedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span>
                           </header>
                           <ul className="order-lines">
@@ -90,7 +105,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                             {order.trackingUrl && <a href={order.trackingUrl} target="_blank" rel="noreferrer" className="icon-link">Track parcel <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" /></a>}
                           </footer>
                         </li>
-                      ))}
+                        );
+                      })}
                     </ul>
                     <p className="account-returns-note">
                       Returns open for 7 days after delivery — the button appears next to anything still inside that window.

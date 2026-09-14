@@ -313,3 +313,8 @@
 @media (max-width: 600px) {
   .review-form-pair { grid-template-columns: 1fr; }
 }
+
+.pdp-reviews-actions { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
+.pdp-reviews-all { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(16, 40, 68, .62); }
+.pdp-reviews-all:hover { color: var(--terracotta); }
+@media (max-width: 600px) { .pdp-reviews-actions .button { width: 100%; } }

@@ -8,7 +8,6 @@ import { ArrowRight, ArrowUpRight, Headphones, PackageCheck, Truck } from 'lucid
 import { publishedContent } from '@/lib/content/store';
 import { productReviews } from '@/lib/content/product-reviews';
 import { approvedReviews } from '@/lib/convex';
-import { ReviewForm } from '@/components/review-form';
 import { formatPrice } from '@/data/products';
 import { getCatalog, getCatalogProduct } from '@/lib/shopify/catalog';
 import './product-page.css';
@@ -41,13 +40,16 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const related = catalog.filter((item) => item.id !== product.id).slice(0, 3);
   const { quotes, videos } = productReviews(content, product);
   const written = await approvedReviews(product.shopify?.handle ?? product.slug);
+  // The page shows a taste of the reviews; the full set lives on /products/[slug]/reviews.
+  const writtenPreview = written.slice(0, 3);
+  const quotePreview = quotes.slice(0, Math.max(0, 3 - writtenPreview.length));
 
   return <main className="pdp-reference">
     <nav className="pdp-breadcrumb shell" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href="/products">Shop</Link><span>/</span><span aria-current="page">{product.title}</span></nav>
     <section className="pdp-layout shell">
       <div className="pdp-media-column"><ProductGallery key={product.id} product={product} /><ProductQuote items={quotes} /></div>
       <ProductPurchase key={product.id} product={product}>
-        {content.settings.showWritten && <a className="pdp-reviews-link" href="#product-reviews">Read product reviews ({quotes.length + written.length}) <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></a>}
+        {content.settings.showWritten && <Link className="pdp-reviews-link" href={`/products/${product.slug}/reviews`}>Read product reviews ({quotes.length + written.length}) <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></Link>}
         <ProductReviewRail items={videos} />
         {related.length > 0 && <section className="pdp-pair-with"><h2>Pair it with</h2>{related.slice(0, 2).map((item) => <div className="pdp-pair-row" key={item.id}><Link href={`/products/${item.slug}`} className="pdp-pair-image"><Image src={item.images[0] || '/brand/whaleora-logo.svg'} alt={item.title} fill sizes="64px" /></Link><div><Link href={`/products/${item.slug}`}>{item.title}</Link><span>{formatPrice(item.price, item.currencyCode)}</span></div><AddToCartButton product={item} label="Add" /></div>)}</section>}
       </ProductPurchase>
@@ -62,17 +64,20 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
       {quotes.some((item) => item.demo) && <p className="pdp-reviews-disclosure">Reviews marked “Demo” are sample content, not customer feedback.</p>}
       {(quotes.length + written.length) ? <div className="pdp-written-grid">
-        {written.map((review) => <figure className="pdp-written-card" key={review.id}>
+        {writtenPreview.map((review) => <figure className="pdp-written-card" key={review.id}>
           <div className="pdp-review-stars" aria-label={`${review.rating} out of 5`}>{'★'.repeat(review.rating)}<span>{'★'.repeat(5 - review.rating)}</span></div>
           <blockquote>“{review.body}”</blockquote>
           <figcaption><span className="pdp-review-initials" aria-hidden="true">{review.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('')}</span><span><strong>{review.name}</strong><span>{product.title}</span></span>{review.verifiedBuyer && <small className="is-verified">Verified buyer</small>}</figcaption>
         </figure>)}
-        {quotes.map((review) => <figure className="pdp-written-card" key={review.id}>
+        {quotePreview.map((review) => <figure className="pdp-written-card" key={review.id}>
           <blockquote>“{review.quote}”</blockquote>
           <figcaption><span className="pdp-review-initials" aria-hidden="true">{review.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('')}</span><span><strong>{review.name}</strong><span>{product.title}</span></span>{review.demo && <small>Demo</small>}</figcaption>
         </figure>)}
       </div> : <p className="pdp-reviews-empty">No written reviews for this product yet. Be the first.</p>}
-      <ReviewForm productHandle={product.shopify?.handle ?? product.slug} productTitle={product.title} />
+      <div className="pdp-reviews-actions">
+        <Link className="button button-outline" href={`/products/${product.slug}/reviews#write`}>Write a review</Link>
+        {(quotes.length + written.length) > 0 && <Link className="icon-link pdp-reviews-all" href={`/products/${product.slug}/reviews`}>Read all {quotes.length + written.length} {quotes.length + written.length === 1 ? 'review' : 'reviews'} <span aria-hidden="true"><ArrowUpRight size={15} strokeWidth={2} /></span></Link>}
+      </div>
     </section>}
 
     {product.howItWorks.length > 0 && <section className="pdp-how shell pdp-section" id="how-to-use"><div className="pdp-section-heading"><p className="eyebrow dark">Simple by design</p><h2>How to use it.</h2><p>Get familiar with it before you need it. Start with the instructions included with your product.</p></div><div className="pdp-how-layout"><div className="pdp-how-image"><Image src={product.images[1] || product.images[0] || '/brand/whaleora-logo.svg'} alt={`${product.title} up close`} fill sizes="(max-width: 800px) 90vw, 40vw" /></div><ol>{product.howItWorks.map((step, i) => <li key={step.title}><span>0{i + 1}</span><div><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol></div></section>}

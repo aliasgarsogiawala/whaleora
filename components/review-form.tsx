@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation } from 'convex/react';
 import { Check, Star } from 'lucide-react';
 import { api } from '@/convex/_generated/api';
 
 type Status = 'idle' | 'sending' | 'sent' | 'held' | 'duplicate' | 'error';
 
-export function ReviewForm({ productHandle, productTitle }: { productHandle: string; productTitle: string }) {
+export function ReviewForm({ productHandle, productTitle, defaultOpen = false }: { productHandle: string; productTitle: string; defaultOpen?: boolean }) {
   const submit = useMutation(api.reviews.submit);
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const [open, setOpen] = useState(defaultOpen);
   const [rating, setRating] = useState(0);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState('');
@@ -33,6 +35,8 @@ export function ReviewForm({ productHandle, productTitle }: { productHandle: str
       form.reset();
       setRating(0);
       setStatus(result.held ? 'held' : 'sent');
+      // Pull the published review into the list above without a manual reload.
+      if (!result.held) router.refresh();
     } catch (problem) {
       setError(problem instanceof Error ? problem.message : 'That did not send. Please try again.');
       setStatus('error');
@@ -44,7 +48,7 @@ export function ReviewForm({ productHandle, productTitle }: { productHandle: str
       <Check size={20} aria-hidden="true" />
       <div>
         <strong>Thank you — it is live.</strong>
-        <p>Your review is on this page now. Refresh to see it.</p>
+        <p>Your review is published on this page now.</p>
       </div>
     </div>;
   }

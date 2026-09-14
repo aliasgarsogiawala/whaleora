@@ -1,4 +1,4 @@
-import { customerQuery } from './customer';
+import { customerAccountOrdersUrl, customerQuery } from './customer';
 
 /**
  * Orders as the account page needs them. Split into two field sets: the return
@@ -58,7 +58,13 @@ export type CustomerOrder = {
   lineItems: CustomerOrderLine[];
 };
 
-export type CustomerProfile = { email: string | null; name: string | null; orders: CustomerOrder[] };
+export type CustomerProfile = {
+  email: string | null;
+  name: string | null;
+  /** Shopify's hosted orders list, used when an order has no status page of its own. */
+  ordersUrl: string | null;
+  orders: CustomerOrder[];
+};
 
 type Raw = {
   customer: {
@@ -88,9 +94,11 @@ export async function customerProfile(): Promise<CustomerProfile | null> {
   if (!data?.customer) return null;
   const { customer } = data;
   const name = [customer.firstName, customer.lastName].filter(Boolean).join(' ').trim();
+  const ordersUrl = await customerAccountOrdersUrl();
   return {
     email: customer.emailAddress?.emailAddress ?? null,
     name: name || null,
+    ordersUrl,
     orders: (customer.orders?.nodes ?? []).map((order) => {
       const fulfillment = order.fulfillments.nodes[0];
       const tracking = fulfillment?.trackingInformation?.[0];

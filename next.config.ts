@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: 'https', hostname: 'cdn.shopify.com', pathname: '/**' }],
   },
+  // Older "leave a review" links pointed at /reviews; keep them landing somewhere real.
+  async redirects() {
+    return [{ source: '/reviews', destination: '/review', permanent: false }];
+  },
 };
 
 export default nextConfig;

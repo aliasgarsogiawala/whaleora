@@ -205,6 +205,23 @@ export async function customerQuery<T>(query: string, variables?: Record<string,
   return body.data ?? null;
 }
 
+/**
+ * Shopify's own hosted account pages. The Customer Account API endpoint is
+ * `https://shopify.com/{shop_id}/account/customer/api/…`, so the shop id comes
+ * from discovery rather than another env var. Used as the fallback target when
+ * an order carries no statusPageUrl of its own.
+ */
+export async function customerAccountOrdersUrl(): Promise<string | null> {
+  try {
+    const { graphql } = await discover();
+    const url = new URL(graphql);
+    const shopId = url.pathname.match(/^\/(\d+)\//)?.[1];
+    return shopId ? `${url.origin}/${shopId}/account/orders` : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function customerLogoutUrl() {
   const session = unseal((await cookies()).get(SESSION_COOKIE)?.value ?? '');
   const { logout } = await discover();

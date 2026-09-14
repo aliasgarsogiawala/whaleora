@@ -1475,6 +1475,21 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .account-returns-note a { border-bottom: 1px solid var(--terracotta); color: var(--terracotta); }
 .account-orders li em { font-style: normal; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--terracotta); }
 .account-orders li a { font-size: 13px; }
+
+/* An order row opens its own order page on Shopify. The link on the order
+   number carries a stretched ::after so the whole row is the target, and the
+   Return and Track links are lifted above it to keep their own. */
+.account-orders li.order-card { position: relative; padding-inline: 14px; margin-inline: -14px; border-radius: 8px; transition: background .2s ease; }
+.account-orders li.is-linked:hover, .account-orders li.is-linked:focus-within { background: rgba(16,40,68,.04); }
+.account-orders li a.order-open { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: inherit; color: var(--terracotta); }
+.account-orders li a.order-open svg { align-self: center; }
+/* Says out loud where the row goes, so the order does not look like flat text. */
+.order-open-hint { align-self: center; display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: var(--label-weight); letter-spacing: var(--label-track); text-transform: uppercase; color: rgba(16,40,68,.5); transition: color .2s ease; }
+.account-orders li.is-linked:hover .order-open-hint, .account-orders li.is-linked:focus-within .order-open-hint { color: var(--terracotta); }
+.account-orders li a.order-open::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.account-orders li a.order-open:hover strong, .account-orders li a.order-open:focus-visible strong { text-decoration: underline; text-underline-offset: 3px; }
+/* Above the stretched link, or these would never be reachable. */
+.account-orders li .order-lines a, .account-orders li footer a { position: relative; z-index: 1; }
 @media (max-width: 700px) {
   .account-toolbar { flex-direction: column; align-items: flex-start; }
   .account-panel-home { padding: 22px 18px 26px; }

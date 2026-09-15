@@ -43,7 +43,6 @@ export default async function Home() {
 
         <div className="hero-inner shell">
           <div className="hero-copy">
-            <p className="eyebrow hero-eyebrow">{catalog.length} objects · {formatPrice(prices.min, prices.currencyCode)} to {formatPrice(prices.max, prices.currencyCode)}</p>
             <h1>Small enough to forget.<br /><em>Loud enough to matter.</em></h1>
             <p className="hero-intro">A 130dB alarm, a 120dB whistle, a pepper spray and a car window breaker. Each one does a single job, needs no app, and lives on your keyring.</p>
             <div className="hero-actions">

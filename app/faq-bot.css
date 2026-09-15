@@ -342,8 +342,13 @@
     right: 0;
     bottom: 0;
     width: 100%;
-    height: min(92dvh, calc(100dvh - 10px));
-    max-height: 100dvh;
+    /* Was 92dvh, which made an assistant panel read as a takeover: the page
+       vanished behind it and there was nothing left to tap to get back. A
+       sheet that leaves the page visible above it is easier to dismiss and
+       less startling to open. dvh, so it shrinks with the keyboard. */
+    height: min(72dvh, 560px);
+    min-height: min(400px, 78dvh);
+    max-height: calc(100dvh - 56px);
     border-radius: 18px 18px 0 0;
     border-left: 0;
     border-right: 0;
@@ -364,7 +369,7 @@
   .faq-bot-foot { padding: 0 16px calc(12px + env(safe-area-inset-bottom)); flex-shrink: 0; }
   .faq-bot.is-pdp.is-open .faq-bot-panel {
     bottom: 0;
-    height: min(92dvh, calc(100dvh - 10px));
+    height: min(72dvh, 560px);
   }
 }
 

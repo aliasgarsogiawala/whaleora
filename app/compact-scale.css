@@ -349,3 +349,51 @@
 }
 @media (prefers-reduced-motion: reduce) {
 }
+
+/* --- headings on phones -------------------------------------------------
+   Headings are held to a narrow measure (11–22ch) so the desktop layout gets
+   a deliberate ragged edge rather than one long line. A phone is already
+   narrower than that measure, so the cap stops doing anything useful and
+   only throws away usable width: "One pull. No app, no pairing, no charging."
+   breaks after three words with half the screen empty beside it. Below the
+   phone breakpoint the viewport is the measure, so release the cap and let
+   the text run.
+
+   These need the same specificity as the rules they answer, and this file
+   loads after globals.css, so source order settles it without !important. */
+@media (max-width: 600px) {
+  .section-heading h2,
+  .how-section .section-heading h2,
+  .story-copy h2,
+  .hub-intro h2,
+  .community-signup h2,
+  .scenarios h2,
+  .about-story-hero h1,
+  .founder-quote h2,
+  .about-audience-heading h2,
+  .why-chapter h2,
+  .confidence-heading h2,
+  .warranty-card-note h2,
+  .approach h2,
+  .collaboration h2,
+  .institution-cta h2,
+  .featured-guide h2,
+  .profile-lab-heading h2,
+  .hub-programmes-head h2,
+  .ec-heading h2,
+  .workshop-cta h2,
+  .faq-section h2,
+  .journey-heading h2,
+  .objections h2,
+  .not-found h1 {
+    max-width: none;
+  }
+
+  /* Hard breaks written for the desktop measure do the same damage, and no
+     width rule can undo them — the break is in the markup. */
+  .footer-brand p br,
+  .safety-hero-grid h1 br,
+  .not-found h1 br {
+    display: none;
+  }
+}

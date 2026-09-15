@@ -303,6 +303,11 @@ body:has(.pdp-sticky-purchase) .footer-bottom { padding-bottom: calc(22px + 74px
 @media (max-width: 900px) {
   body:has(.pdp-sticky-purchase) .footer-bottom { padding-bottom: calc(22px + 144px + env(safe-area-inset-bottom)); }
 }
+@media (max-width: 600px) {
+  /* The floating buttons are hidden on a product page at this width, so the
+     lane only has to clear the purchase bar they were stacked above. */
+  body:has(.pdp-sticky-purchase) .footer-bottom { padding-bottom: calc(22px + 74px + env(safe-area-inset-bottom)); }
+}
 
 /* Cart */
 .cart-layer { position: fixed; inset: 0; z-index: 200; visibility: hidden; }

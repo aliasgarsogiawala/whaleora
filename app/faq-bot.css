@@ -335,6 +335,16 @@
   }
 }
 
+@media (max-width: 600px) {
+  /* A product page already carries a sticky purchase bar along the bottom of
+     the screen. Stacking a WhatsApp bubble and an Ask-us pill on top of that
+     put three competing calls to action in the same corner of the one screen
+     where the buying decision happens. Both go on phones; help is still a tap
+     away from the support block on the page itself, the header and the footer. */
+  .faq-bot.is-pdp .faq-bot-launcher,
+  .faq-bot.is-pdp .faq-wa { display: none; }
+}
+
 @media (max-width: 700px) {
   .faq-bot-backdrop { z-index: 91; }
   .faq-bot.is-widget .faq-bot-panel {

@@ -91,7 +91,7 @@ const objections = [
   },
   {
     q: 'What happens when the battery dies?',
-    a: 'The SOS Alarm takes a CR2032 — the same coin cell as a car key fob, about ₹50 at any chemist. One comes in the box. The whistle and the window breaker have no battery at all, which is exactly why we sell them.',
+    a: 'The SOS Alarm takes a Lithium Ion — the same coin cell as a car key fob, about ₹50 at any chemist. One comes in the box. The whistle and the window breaker have no battery at all, which is exactly why we sell them.',
   },
   {
     q: 'Can I take these on a flight?',

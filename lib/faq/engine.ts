@@ -26,7 +26,7 @@ const JAILBREAK = /\b(ignore (all )?(previous|prior|above) (instructions|prompts
 const NOT_SOLD = /\b(tasers?|stun guns?|firearms?|handguns?|pistols?)\b/i;
 
 const PRODUCT_HINTS: { pattern: RegExp; category: FaqCategory }[] = [
-  { pattern: /\b(sos|alarm|siren|strobe|130|cr2032|pin)\b/, category: 'alarm' },
+  { pattern: /\b(sos|alarm|siren|strobe|130|Lithium Ion|pin)\b/, category: 'alarm' },
   { pattern: /\b(pepper|spray|oc|capsicum|50ml)\b/, category: 'pepper' },
   { pattern: /\b(whistle|120db|breath)\b/, category: 'whistle' },
   { pattern: /\b(window|breaker|glass|tungsten|seatbelt|car|glovebox)\b/, category: 'window' },

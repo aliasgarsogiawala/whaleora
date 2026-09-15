@@ -75,7 +75,7 @@ export default async function Home() {
           <p className="eyebrow">{alarm.title} · {alarm.price}</p>
           <h2>One pull. No app, no pairing, no charging.</h2>
           <p>Pull the pin and it does two things at once — a 130dB dual-siren and a strobe. Push the pin back in and it stops. That’s the entire interface, and it’s deliberate: anything you have to unlock or remember is one step too many.</p>
-          <dl><div><dt>130dB</dt><dd>Dual siren + strobe</dd></div><div><dt>38g</dt><dd>Sits on a keyring</dd></div><div><dt>CR2032</dt><dd>Swap it yourself</dd></div></dl>
+          <dl><div><dt>130dB</dt><dd>Dual siren + strobe</dd></div><div><dt>38g</dt><dd>Sits on a keyring</dd></div><div><dt>Lithium Ion</dt><dd>Swap it yourself</dd></div></dl>
           <Link href="/products/sos-alarm" className="button button-light">Buy the {alarm.title} — {alarm.price} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
         </div>
       </section>

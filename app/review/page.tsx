@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default async function ReviewHubPage() {
   const catalog = await getCatalog();
 
-  return <main className="review-hub">
+  return <main className="page-main review-hub">
     <nav className="pdp-breadcrumb shell" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><span aria-current="page">Write a review</span></nav>
 
     <section className="shell review-hub-head">

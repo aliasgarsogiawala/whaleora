@@ -45,7 +45,7 @@ export default async function ProductReviewsPage({ params }: { params: Promise<{
   const average = written.length ? written.reduce((sum, review) => sum + review.rating, 0) / written.length : 0;
   const spread = [5, 4, 3, 2, 1].map((value) => ({ value, count: written.filter((review) => review.rating === value).length }));
 
-  return <main className="pdp-reference reviews-page">
+  return <main className="page-main pdp-reference reviews-page">
     <nav className="pdp-breadcrumb shell" aria-label="Breadcrumb">
       <Link href="/">Home</Link><span>/</span>
       <Link href="/products">Shop</Link><span>/</span>

@@ -45,7 +45,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const writtenPreview = written.slice(0, 3);
   const quotePreview = quotes.slice(0, Math.max(0, 3 - writtenPreview.length));
 
-  return <main className="pdp-reference">
+  return <main className="page-main pdp-reference">
     <nav className="pdp-breadcrumb shell" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href="/products">Shop</Link><span>/</span><span aria-current="page">{product.title}</span></nav>
     <section className="pdp-layout shell">
       <div className="pdp-media-column"><ProductGallery key={product.id} product={product} /><ProductQuote items={quotes} /></div>

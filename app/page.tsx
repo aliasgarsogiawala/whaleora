@@ -15,7 +15,7 @@ export default async function Home() {
   const [catalog, content, prices] = await Promise.all([getCatalog(), publishedContent(), catalogPrices()]);
   const alarm = { title: prices.titleFor('sos-alarm'), price: formatPrice(prices.priceFor('sos-alarm'), prices.currencyCode) };
   return (
-    <main>
+    <main className="page-main">
       <section className="hero" data-hero-overlay>
         <div className="hero-media">
           {/* Pexels 35574649, Anupriya Datta — Mumbai commute at CST. Pexels License. */}

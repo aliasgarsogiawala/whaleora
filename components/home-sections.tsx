@@ -5,7 +5,7 @@ import { ArrowRight, ArrowUpRight, Plus } from 'lucide-react';
 
 const trustPoints = [
   { figure: '130dB', label: 'Siren and strobe, on one pull' },
-  { figure: '38g', label: 'The alarm, on your keyring' },
+  { figure: '28g', label: 'The alarm, on your keyring' },
   { figure: null, label: 'Where the collection starts' },
   { figure: '₹1,499+', label: 'Free shipping across India' },
 ];

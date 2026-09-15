@@ -1411,8 +1411,12 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .button-primary:hover { background: #c25a33; }
 
 @media (max-width: 600px) {
-  .hero-actions { gap: 16px; }
-  .hero-actions .button { width: 100%; }
+  /* Stacked, the two CTAs read as a pair, so they have to measure the same.
+     .text-link is an outlined button rather than a run of text, and was the
+     only one left at its intrinsic width — stopping short of the filled one
+     above it. Stretch the row instead of widening each: anything else added
+     here lines up on its own. */
+  .hero-actions { gap: 16px; flex-direction: column; align-items: stretch; }
   .scenario-ticker { justify-content: flex-start; }
 }
 

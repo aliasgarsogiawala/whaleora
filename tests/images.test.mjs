@@ -34,3 +34,43 @@ test('non-HTTPS and malformed values are rejected', () => {
 test('the host list is what next.config.ts builds remotePatterns from', () => {
   assert.deepEqual([...IMAGE_HOSTS], ['cdn.shopify.com', '**.myshopify.com']);
 });
+
+test('a Shopify photo is recognised, local art and other hosts are not', async () => {
+  const { isShopifyImage } = await import('../lib/images.ts');
+  assert.equal(isShopifyImage('https://cdn.shopify.com/s/files/1/x.png'), true);
+  assert.equal(isShopifyImage('/products/sos-alarm-mockup.webp'), false);
+  assert.equal(isShopifyImage('https://example.com/x.png'), false);
+  assert.equal(isShopifyImage('https://cdn.shopify.com.attacker.net/x.png'), false);
+});
+
+test('the loader asks Shopify for the width, preserving the cache-busting query', async () => {
+  const { shopifyImageLoader } = await import('../lib/images.ts');
+  assert.equal(
+    shopifyImageLoader({ src: 'https://cdn.shopify.com/s/files/1/0818/Whistlemockup.png?v=1786186648', width: 1200 }),
+    'https://cdn.shopify.com/s/files/1/0818/Whistlemockup_1200x.png?v=1786186648');
+});
+
+test('a size Shopify already put in the filename is replaced, not stacked', async () => {
+  const { shopifyImageLoader } = await import('../lib/images.ts');
+  assert.equal(
+    shopifyImageLoader({ src: 'https://cdn.shopify.com/s/files/1/a_1600x.png?v=1', width: 640 }),
+    'https://cdn.shopify.com/s/files/1/a_640x.png?v=1');
+  assert.equal(
+    shopifyImageLoader({ src: 'https://cdn.shopify.com/s/files/1/a_1600x900.png?v=1', width: 640 }),
+    'https://cdn.shopify.com/s/files/1/a_640x.png?v=1');
+});
+
+test('a converted second extension stays last, where Shopify wants it', async () => {
+  const { shopifyImageLoader } = await import('../lib/images.ts');
+  assert.equal(
+    shopifyImageLoader({ src: 'https://cdn.shopify.com/s/files/1/a.png.webp?v=1', width: 800 }),
+    'https://cdn.shopify.com/s/files/1/a_800x.png.webp?v=1');
+});
+
+test('an extensionless name and a non-URL are handled without throwing', async () => {
+  const { shopifyImageLoader } = await import('../lib/images.ts');
+  assert.equal(
+    shopifyImageLoader({ src: 'https://cdn.shopify.com/s/files/1/plain?v=1', width: 400 }),
+    'https://cdn.shopify.com/s/files/1/plain_400x?v=1');
+  assert.equal(shopifyImageLoader({ src: '/products/local.webp', width: 400 }), '/products/local.webp');
+});

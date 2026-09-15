@@ -888,6 +888,8 @@ em { font-family: var(--font-display), serif; font-weight: 400; }
 .ec-clear { border: 0; background: none; padding: 8px 0; color: rgba(255,255,255,.55); font-size: var(--label-size); font-weight: var(--label-weight);
   letter-spacing: var(--label-track); text-transform: uppercase; cursor: pointer; transition: color .2s ease; }
 .ec-clear:hover { color: #fff; }
+/* Reserves its own line height so the row does not shift as the label appears. */
+.ec-save-state { min-width: 6ch; color: rgba(255,255,255,.45); font-size: 12px; line-height: 1.55; font-variant-numeric: tabular-nums; }
 .ec-print-note { margin: 0; max-width: 32ch; color: rgba(255,255,255,.5); font-size: 12px; line-height: 1.55; }
 
 /* --- tap-now numbers ------------------------------------------- */

@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import { ProductImage } from '@/components/product-image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { guideCategories, guides } from '@/data/guides';
@@ -154,7 +154,7 @@ export function SafetyHubExplorer({ checklists, catalog }: { checklists: HubChec
                   return (
                     <Link key={product.slug} href={`/products/${product.slug}`} className="hub-product">
                       <span className="hub-product-visual">
-                        <Image src={product.images[0] || PRODUCT_IMAGE_FALLBACK} alt="" fill sizes="160px" />
+                        <ProductImage src={product.images[0] || PRODUCT_IMAGE_FALLBACK} alt="" fill sizes="160px" />
                       </span>
                       <span>
                         <small>{formatPrice(product.price, product.currencyCode ?? 'INR')}</small>

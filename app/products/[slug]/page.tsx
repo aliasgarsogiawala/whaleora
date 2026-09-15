@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { ProductImage } from '@/components/product-image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AddToCartButton, ProductCard } from '@/components/commerce';
@@ -52,7 +52,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <ProductPurchase key={product.id} product={product}>
         {content.settings.showWritten && <Link className="pdp-reviews-link" href={`/products/${product.slug}/reviews`}>Read product reviews ({quotes.length + written.length}) <span aria-hidden="true"><ArrowUpRight size={16} strokeWidth={2} /></span></Link>}
         <ProductReviewRail items={videos} />
-        {related.length > 0 && <section className="pdp-pair-with"><h2>Pair it with</h2>{related.slice(0, 2).map((item) => <div className="pdp-pair-row" key={item.id}><Link href={`/products/${item.slug}`} className="pdp-pair-image"><Image src={item.images[0] || PRODUCT_IMAGE_FALLBACK} alt={item.title} fill sizes="64px" /></Link><div><Link href={`/products/${item.slug}`}>{item.title}</Link><span>{formatPrice(item.price, item.currencyCode)}</span></div><AddToCartButton product={item} label="Add" /></div>)}</section>}
+        {related.length > 0 && <section className="pdp-pair-with"><h2>Pair it with</h2>{related.slice(0, 2).map((item) => <div className="pdp-pair-row" key={item.id}><Link href={`/products/${item.slug}`} className="pdp-pair-image"><ProductImage src={item.images[0] || PRODUCT_IMAGE_FALLBACK} alt={item.title} fill sizes="64px" /></Link><div><Link href={`/products/${item.slug}`}>{item.title}</Link><span>{formatPrice(item.price, item.currencyCode)}</span></div><AddToCartButton product={item} label="Add" /></div>)}</section>}
       </ProductPurchase>
     </section>
 
@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
     </section>}
 
-    {product.howItWorks.length > 0 && <section className="pdp-how shell pdp-section" id="how-to-use"><div className="pdp-section-heading"><p className="eyebrow dark">Simple by design</p><h2>How to use it.</h2><p>Get familiar with it before you need it. Start with the instructions included with your product.</p></div><div className="pdp-how-layout"><div className="pdp-how-image"><Image src={product.images[1] || product.images[0] || PRODUCT_IMAGE_FALLBACK} alt={`${product.title} up close`} fill sizes="(max-width: 800px) 90vw, 40vw" /></div><ol>{product.howItWorks.map((step, i) => <li key={step.title}><span>0{i + 1}</span><div><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol></div></section>}
+    {product.howItWorks.length > 0 && <section className="pdp-how shell pdp-section" id="how-to-use"><div className="pdp-section-heading"><p className="eyebrow dark">Simple by design</p><h2>How to use it.</h2><p>Get familiar with it before you need it. Start with the instructions included with your product.</p></div><div className="pdp-how-layout"><div className="pdp-how-image"><ProductImage src={product.images[1] || product.images[0] || PRODUCT_IMAGE_FALLBACK} alt={`${product.title} up close`} fill sizes="(max-width: 800px) 90vw, 40vw" /></div><ol>{product.howItWorks.map((step, i) => <li key={step.title}><span>0{i + 1}</span><div><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol></div></section>}
 
     {product.scenarios.length > 0 && <section className="pdp-use-section pdp-section"><div className="shell"><div className="pdp-section-heading"><p className="eyebrow dark">Made for your everyday</p><h2>A little more prepared.<br />Wherever the day takes you.</h2><p>{product.shortDescription}</p></div><div className="pdp-use-grid">{product.scenarios.map((scenario, i) => <article key={scenario}><span>0{i + 1}</span><h3>{scenario}</h3><p>{i % 2 === 0 ? 'Keep it somewhere easy to reach.' : 'Make it part of your everyday kit.'}</p></article>)}</div><p className="pdp-use-caveat">{product.compare.caveat}</p></div></section>}
 

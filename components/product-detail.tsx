@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { ProductImage } from '@/components/product-image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Check, Feather, Headphones, Minus, Package, Play, Plus, RotateCcw, ShieldCheck, Truck, X, Zap, ZoomIn } from 'lucide-react';
@@ -38,12 +39,12 @@ export function ProductGallery({ product }: { product: CatalogProduct }) {
         const dx = event.changedTouches[0].clientX - touch.current.x; const dy = event.changedTouches[0].clientY - touch.current.y; touch.current = null;
         if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) navigate(dx < 0 ? 1 : -1);
       }} onTouchCancel={() => { touch.current = null; }}>
-        {images.length ? <><Image key={images[index]} src={images[index]} alt={`${product.title} — view ${index + 1}`} fill priority={index === 0} sizes="(max-width: 600px) 100vw, (max-width: 900px) 75vw, 40vw" /><button type="button" className="pdp-zoom" aria-label="Enlarge product image" onClick={() => setZoom(true)}><ZoomIn size={18} /></button><span className="pdp-image-count" aria-live="polite">{index + 1} / {images.length}</span></> : <span className="pdp-image-fallback">{product.title}</span>}
+        {images.length ? <><ProductImage key={images[index]} src={images[index]} alt={`${product.title} — view ${index + 1}`} fill priority={index === 0} sizes="(max-width: 600px) 100vw, (max-width: 900px) 75vw, 40vw" /><button type="button" className="pdp-zoom" aria-label="Enlarge product image" onClick={() => setZoom(true)}><ZoomIn size={18} /></button><span className="pdp-image-count" aria-live="polite">{index + 1} / {images.length}</span></> : <span className="pdp-image-fallback">{product.title}</span>}
       </div>
       {product.highlights.length > 0 && <div className="pdp-highlight-rail">{product.highlights.slice(0, 3).map((highlight, i) => { const Icon = icons[i]; return <div key={highlight.label}><Icon size={25} strokeWidth={1.5} aria-hidden="true" /><strong>{highlight.value}</strong><span>{highlight.label}</span></div>; })}</div>}
     </div>
-    {images.length > 1 && <div className="pdp-thumbnails" aria-label="Product images"><button type="button" className="pdp-gallery-arrow" aria-label="Previous product image" onClick={() => navigate(-1)}><ArrowLeft size={17} /></button><div>{images.map((image, i) => <button type="button" key={`${image}-${i}`} className={i === index ? 'is-active' : ''} onClick={() => setActive(i)} aria-label={`Show product image ${i + 1}`} aria-pressed={i === index}><Image src={image} alt="" fill sizes="72px" /></button>)}</div><button type="button" className="pdp-gallery-arrow" aria-label="Next product image" onClick={() => navigate(1)}><ArrowRight size={17} /></button></div>}
-    {zoom && <MediaDialog title={`${product.title} · Image ${index + 1}`} close={() => setZoom(false)}><div className="pdp-zoom-image"><Image src={images[index]} alt={product.title} fill sizes="90vw" /></div></MediaDialog>}
+    {images.length > 1 && <div className="pdp-thumbnails" aria-label="Product images"><button type="button" className="pdp-gallery-arrow" aria-label="Previous product image" onClick={() => navigate(-1)}><ArrowLeft size={17} /></button><div>{images.map((image, i) => <button type="button" key={`${image}-${i}`} className={i === index ? 'is-active' : ''} onClick={() => setActive(i)} aria-label={`Show product image ${i + 1}`} aria-pressed={i === index}><ProductImage src={image} alt="" fill sizes="72px" /></button>)}</div><button type="button" className="pdp-gallery-arrow" aria-label="Next product image" onClick={() => navigate(1)}><ArrowRight size={17} /></button></div>}
+    {zoom && <MediaDialog title={`${product.title} · Image ${index + 1}`} close={() => setZoom(false)}><div className="pdp-zoom-image"><ProductImage src={images[index]} alt={product.title} fill sizes="90vw" /></div></MediaDialog>}
   </div>;
 }
 

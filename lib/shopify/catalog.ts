@@ -238,12 +238,20 @@ export async function getCatalogProduct(slug: string): Promise<CatalogProduct | 
   return catalog.find((product) => product.slug === slug);
 }
 
-/** Handle → local product id, so Shopify cart lines can be shown with local copy. */
+/**
+ * Handle → local product id, so Shopify cart lines can be shown with local copy.
+ * Deliberately not built on `getCatalog`: every cart action funnels through
+ * here, and a studio override can change what a product *says* but never which
+ * handle it lives at — so the cart should not wait on a content read to learn
+ * a mapping that only the bundled records and Shopify decide.
+ */
 export async function handleToProductId(): Promise<Map<string, string>> {
-  const catalog = await getCatalog();
-  return new Map(
-    catalog
-      .filter((product): product is CatalogProduct & { shopify: NonNullable<CatalogProduct['shopify']> } => product.shopify !== null)
-      .map((product) => [product.shopify.handle, product.id]),
-  );
+  const remote = await fetchShopifyProducts();
+  const byHandle = new Map(remote.map((item) => [item.handle, item]));
+  const byTitle = new Map(remote.map((item) => [normalise(item.title), item]));
+  const pairs = products.flatMap((local) => {
+    const match = byHandle.get(handleFor(local)) ?? byTitle.get(normalise(local.title));
+    return match?.variants.nodes.length ? [[match.handle, local.id] as const] : [];
+  });
+  return new Map(pairs);
 }

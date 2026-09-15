@@ -8,7 +8,7 @@ import { ReviewForm } from '@/components/review-form';
 import { publishedContent } from '@/lib/content/store';
 import { productReviews } from '@/lib/content/product-reviews';
 import { approvedReviews } from '@/lib/convex';
-import { formatPrice } from '@/data/products';
+import { formatPrice, PRODUCT_IMAGE_FALLBACK } from '@/data/products';
 import { getCatalog, getCatalogProduct } from '@/lib/shopify/catalog';
 import '../product-page.css';
 import './reviews-page.css';
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!product) return {};
   const title = `${product.title} reviews | Whaleora`;
   const description = `What customers say about the ${product.title}, and a place to write your own review.`;
-  return { title, description, openGraph: { title, description, images: [{ url: product.images[0] }] } };
+  return { title, description, openGraph: { title, description, images: [{ url: product.images[0] || PRODUCT_IMAGE_FALLBACK }] } };
 }
 
 export default async function ProductReviewsPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -66,7 +66,7 @@ export default async function ProductReviewsPage({ params }: { params: Promise<{
 
       <aside className="reviews-summary" aria-label="Rating summary">
         <Link href={`/products/${product.slug}`} className="reviews-summary-product">
-          <span className="reviews-summary-image"><Image src={product.images[0] || '/brand/whaleora-logo.svg'} alt={product.title} fill sizes="72px" /></span>
+          <span className="reviews-summary-image"><Image src={product.images[0] || PRODUCT_IMAGE_FALLBACK} alt={product.title} fill sizes="72px" /></span>
           <span><strong>{product.title}</strong><span>{formatPrice(product.price, product.currencyCode)}</span></span>
         </Link>
         {written.length ? <>

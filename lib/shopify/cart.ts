@@ -29,11 +29,19 @@ export async function createCart(variantId: string, quantity: number, email?: st
   return data.cartCreate.cart;
 }
 
-export async function addLine(cartId: string, variantId: string, quantity: number): Promise<ShopifyCart> {
+/**
+ * Null when Shopify no longer knows the cart — expired, or already an order.
+ * It reports that as a `cartId` user error (while quietly handing back a fresh
+ * cart of its own, which drops any buyer identity), so the caller has to check
+ * rather than trust the cart it gets. A network fault still throws, so a blip
+ * is never mistaken for a cart worth replacing.
+ */
+export async function addLine(cartId: string, variantId: string, quantity: number): Promise<ShopifyCart | null> {
   const data = await shopifyFetch<{ cartLinesAdd: CartMutationResult }>({
     query: CART_LINES_ADD_MUTATION,
     variables: { cartId, lines: [{ merchandiseId: variantId, quantity }] },
   });
+  if (data.cartLinesAdd.userErrors.some((error) => error.field?.includes('cartId'))) return null;
   assertNoUserErrors(data.cartLinesAdd.userErrors, 'cartLinesAdd');
   if (!data.cartLinesAdd.cart) throw new Error('cartLinesAdd returned no cart');
   return data.cartLinesAdd.cart;

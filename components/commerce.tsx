@@ -9,9 +9,10 @@ import { AccountLink } from '@/components/account-link';
 import { addToCartAction, getCartAction, removeCartLineAction, updateCartLineAction } from '@/app/actions/cart';
 import type { CatalogProduct } from '@/lib/shopify/catalog';
 import type { CartState, CartStateLine } from '@/lib/shopify/types';
+import { addLine, dropLine, lineIdFor, setLineQuantity, unsellable, withLines } from '@/lib/shopify/cart-state';
 import { whatsappHref } from '@/lib/content/contact';
 import { burstConfetti } from '@/lib/confetti';
-import { formatPrice, products } from '@/data/products';
+import { formatPrice, products, PRODUCT_IMAGE_FALLBACK } from '@/data/products';
 import { CheckoutGateDialog } from '@/components/checkout-gate';
 import { PolicyDialog } from '@/components/policy-dialog';
 import type { PolicyKey } from '@/lib/content/policies';
@@ -57,8 +58,6 @@ const HANDOFF_KEY = 'whaleora-checkout-handoff';
 export function markCheckoutHandoff() {
   try { window.sessionStorage.setItem(HANDOFF_KEY, '1'); } catch { /* private mode */ }
 }
-const matchesLocalLine = (line: CartStateLine, productId: string, variantId: string | null) => line.productId === productId && line.variantId === variantId;
-
 /** Local-bag maths, used only while Shopify is unreachable or unconfigured. */
 const localLine = (product: ShopProduct, quantity: number): CartStateLine => ({
   id: null,
@@ -66,24 +65,21 @@ const localLine = (product: ShopProduct, quantity: number): CartStateLine => ({
   variantId: product.shopify?.variantId ?? null,
   handle: product.shopify?.handle ?? product.slug,
   title: product.title,
+  image: product.images[0] ?? null,
   quantity,
   unitPrice: product.price,
   currencyCode: product.currencyCode ?? 'INR',
 });
 
-const recalculate = (lines: CartStateLine[]): CartState => ({
-  ...emptyCart,
-  lines,
-  subtotal: lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0),
-  totalQuantity: lines.reduce((sum, line) => sum + line.quantity, 0),
-  currencyCode: lines[0]?.currencyCode ?? 'INR',
-});
+const recalculate = (lines: CartStateLine[]): CartState => withLines(emptyCart, lines);
 
 export function CommerceProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartState>(emptyCart);
   const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
   const [pending, startTransition] = useTransition();
+  /** The last cart Shopify actually confirmed, which is where real line ids live. */
+  const confirmed = useRef<CartState | null>(null);
 
   // Read the Shopify cart from its cookie. If the store is not connected, fall
   // back to whatever the previous local-only bag held.
@@ -93,6 +89,7 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
       .then((serverCart) => {
         if (!active) return;
         if (serverCart.connected) {
+          confirmed.current = serverCart;
           setCart(serverCart);
           setReady(true);
           return;
@@ -125,6 +122,7 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
       getCartAction()
         .then((serverCart) => {
           if (!serverCart.connected) return;
+          confirmed.current = serverCart;
           setCart(serverCart);
           // The cart is only gone once Shopify stops resolving it, which is
           // what an order does. Anything else means checkout was abandoned and
@@ -170,51 +168,59 @@ export function CommerceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const applyLocal = useCallback((next: (lines: CartStateLine[]) => CartStateLine[]) => {
-    setCart((current) => recalculate(next(current.lines)));
+    setCart((current) => withLines(current, next(current.lines)));
+  }, []);
+
+  /**
+   * Shopify takes the better part of a second to answer a cart mutation, so the
+   * drawer must not wait for it: every change lands on screen at once and the
+   * response reconciles it when it arrives. Only the newest request may write
+   * that response, so a slow reply can never undo a later click.
+   */
+  const issued = useRef(0);
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const reconcile = useCallback((send: () => Promise<CartState>) => {
+    const mine = ++issued.current;
+    startTransition(async () => {
+      // One at a time: Shopify applies each mutation to the cart it holds, so
+      // overlapping calls could answer out of order and reconcile the drawer
+      // back to a state the shopper has already moved past.
+      const run = queue.current.then(send, send);
+      queue.current = run.catch(() => undefined);
+      const next = await run;
+      if (!next.connected) return;
+      confirmed.current = next;
+      if (issued.current === mine) setCart(next);
+    });
   }, []);
 
   const add = useCallback((product: ShopProduct, quantity = 1) => {
     celebrate();
     setOpen(true);
-    const variantId = product.shopify?.variantId;
-    if (cart.connected && variantId) {
-      startTransition(async () => {
-        const next = await addToCartAction(variantId, quantity);
-        if (next.connected) setCart(next);
-      });
-      return;
-    }
-    applyLocal((lines) => {
-      const exists = lines.find((line) => matchesLocalLine(line, product.id, variantId ?? null));
-      return exists
-        ? lines.map((line) => matchesLocalLine(line, product.id, variantId ?? null) ? { ...line, quantity: line.quantity + quantity } : line)
-        : [...lines, localLine(product, quantity)];
-    });
-  }, [applyLocal, cart.connected, celebrate]);
+    const variantId = product.shopify?.variantId ?? null;
+    applyLocal((lines) => addLine(lines, localLine(product, quantity)));
+    if (cart.connected && variantId) reconcile(() => addToCartAction(variantId, quantity));
+  }, [applyLocal, cart.connected, celebrate, reconcile]);
 
   const update = useCallback((line: CartStateLine, quantity: number) => {
-    if (cart.connected && line.id) {
-      startTransition(async () => {
-        const next = await updateCartLineAction(line.id!, quantity);
-        if (next.connected) setCart(next);
-      });
-      return;
-    }
-    applyLocal((lines) => quantity < 1
-      ? lines.filter((item) => !matchesLocalLine(item, line.productId, line.variantId))
-      : lines.map((item) => matchesLocalLine(item, line.productId, line.variantId) ? { ...item, quantity } : item));
-  }, [applyLocal, cart.connected]);
+    applyLocal((lines) => setLineQuantity(lines, line, quantity));
+    if (!cart.connected) return;
+    reconcile(async () => {
+      const id = lineIdFor(line, confirmed.current);
+      // No id even after the queue drained means Shopify never took this line;
+      // ask for the cart it does hold rather than leave the drawer guessing.
+      return id ? updateCartLineAction(id, quantity) : getCartAction();
+    });
+  }, [applyLocal, cart.connected, reconcile]);
 
   const remove = useCallback((line: CartStateLine) => {
-    if (cart.connected && line.id) {
-      startTransition(async () => {
-        const next = await removeCartLineAction(line.id!);
-        if (next.connected) setCart(next);
-      });
-      return;
-    }
-    applyLocal((lines) => lines.filter((item) => !matchesLocalLine(item, line.productId, line.variantId)));
-  }, [applyLocal, cart.connected]);
+    applyLocal((lines) => dropLine(lines, line));
+    if (!cart.connected) return;
+    reconcile(async () => {
+      const id = lineIdFor(line, confirmed.current);
+      return id ? removeCartLineAction(id) : getCartAction();
+    });
+  }, [applyLocal, cart.connected, reconcile]);
 
   const value = useMemo<CartContextValue>(
     () => ({ cart, pending, open, setOpen, add, update, remove, count: cart.totalQuantity }),
@@ -396,8 +402,8 @@ function CartDrawer() {
               // A Shopify-only line may carry no handle; then the title is plain text.
               const lineSlug = record?.slug ?? line.handle;
               return <div className="cart-line" key={line.id ?? line.variantId ?? line.productId}>
-                <Image src={record?.images[0] ?? '/products/survival-whistle-mockup.webp'} width={130} height={130} alt="" />
-                <div><small>{record?.category ?? 'Whaleora'}</small>{lineSlug ? <Link href={`/products/${lineSlug}`} onClick={() => setOpen(false)}>{line.title}</Link> : line.title}<strong>{formatPrice(line.unitPrice, line.currencyCode)}</strong><div className="quantity"><button onClick={() => update(line, line.quantity - 1)} disabled={pending} aria-label="Decrease quantity">−</button><span>{line.quantity}</span><button onClick={() => update(line, line.quantity + 1)} disabled={pending} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(line)} disabled={pending}>Remove</button></div>
+                <Image src={record?.images[0] || line.image || PRODUCT_IMAGE_FALLBACK} width={130} height={130} alt="" />
+                <div><small>{record?.category ?? 'Whaleora'}</small>{lineSlug ? <Link href={`/products/${lineSlug}`} onClick={() => setOpen(false)}>{line.title}</Link> : line.title}<strong>{formatPrice(line.unitPrice, line.currencyCode)}</strong><div className="quantity"><button onClick={() => update(line, line.quantity - 1)} aria-label="Decrease quantity">−</button><span>{line.quantity}</span><button onClick={() => update(line, line.quantity + 1)} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(line)}>Remove</button></div>
               </div>;
             })}</div>
             <div className="cart-total"><div><span>Subtotal</span><strong>{formatPrice(subtotal, currencyCode)}</strong></div><p>Taxes included. Shipping calculated at checkout.</p>
@@ -413,20 +419,19 @@ function CartDrawer() {
 }
 
 export function AddToCartButton({ product, quantity = 1, className = '', label = 'Add to bag' }: { product: ShopProduct; quantity?: number; className?: string; label?: string }) {
-  const { add, pending } = useCart();
-  const soldOut = product.shopify ? !product.shopify.availableForSale : false;
-  if (soldOut) return <button className={`button button-primary ${className}`} disabled>Sold out</button>;
+  const { add, cart, pending } = useCart();
+  if (unsellable(product, cart.connected)) return <button className={`button button-primary ${className}`} disabled>Sold out</button>;
   return <button className={`button button-primary ${className}`} onClick={() => add(product, quantity)} disabled={pending}>{pending ? 'Adding…' : label} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>;
 }
 
 export function ProductCard({ product, index = 0 }: { product: ShopProduct; index?: number }) {
-  const { add, pending } = useCart();
-  const soldOut = product.shopify ? !product.shopify.availableForSale : false;
+  const { add, cart, pending } = useCart();
+  const soldOut = unsellable(product, cart.connected);
   return (
     <article className="product-card" style={{ '--accent': product.accent } as React.CSSProperties}>
       <Link href={`/products/${product.slug}`} className="product-visual">
         <small>0{index + 1} · {product.category}</small>
-        <Image src={product.slug === 'pepperspray' ? '/products/pepper-spray-product.webp' : product.images[0]} width={700} height={700} alt={product.title} sizes="(max-width: 1100px) 50vw, 25vw" />
+        <Image src={product.images[0] || PRODUCT_IMAGE_FALLBACK} width={700} height={700} alt={product.title} sizes="(max-width: 1100px) 50vw, 25vw" />
         <span className="product-card-cue">View object <ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" /></span>
       </Link>
       <div className="product-meta"><div><Link href={`/products/${product.slug}`}>{product.title}</Link><small>{product.shortDescription}</small></div><strong>{formatPrice(product.price, product.currencyCode)}</strong></div>

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { formatPrice } from '@/data/products';
+import { formatPrice, PRODUCT_IMAGE_FALLBACK } from '@/data/products';
 import { getCatalog } from '@/lib/shopify/catalog';
 import './review-hub.css';
 
@@ -29,7 +29,7 @@ export default async function ReviewHubPage() {
     <section className="shell review-hub-grid" aria-label="Choose a product to review">
       {catalog.map((product) => <article className="review-hub-card" key={product.id}>
         <Link href={`/products/${product.slug}/reviews`} className="review-hub-image" aria-hidden="true" tabIndex={-1}>
-          <Image src={product.images[0] || '/brand/whaleora-logo.svg'} alt="" fill sizes="(max-width: 700px) 90vw, 300px" />
+          <Image src={product.images[0] || PRODUCT_IMAGE_FALLBACK} alt="" fill sizes="(max-width: 700px) 90vw, 300px" />
         </Link>
         <div>
           <h2><Link href={`/products/${product.slug}/reviews`}>{product.title}</Link></h2>

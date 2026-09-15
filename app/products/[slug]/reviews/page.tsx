@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { ProductImage } from '@/components/product-image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
@@ -66,7 +66,7 @@ export default async function ProductReviewsPage({ params }: { params: Promise<{
 
       <aside className="reviews-summary" aria-label="Rating summary">
         <Link href={`/products/${product.slug}`} className="reviews-summary-product">
-          <span className="reviews-summary-image"><Image src={product.images[0] || PRODUCT_IMAGE_FALLBACK} alt={product.title} fill sizes="72px" /></span>
+          <span className="reviews-summary-image"><ProductImage src={product.images[0] || PRODUCT_IMAGE_FALLBACK} alt={product.title} fill sizes="72px" /></span>
           <span><strong>{product.title}</strong><span>{formatPrice(product.price, product.currencyCode)}</span></span>
         </Link>
         {written.length ? <>

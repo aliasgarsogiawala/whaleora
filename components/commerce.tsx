@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { ProductImage } from '@/components/product-image';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Plus, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -402,7 +403,7 @@ function CartDrawer() {
               // A Shopify-only line may carry no handle; then the title is plain text.
               const lineSlug = record?.slug ?? line.handle;
               return <div className="cart-line" key={line.id ?? line.variantId ?? line.productId}>
-                <Image src={record?.images[0] || line.image || PRODUCT_IMAGE_FALLBACK} width={130} height={130} alt="" />
+                <ProductImage src={record?.images[0] || line.image || PRODUCT_IMAGE_FALLBACK} width={130} height={130} alt="" />
                 <div><small>{record?.category ?? 'Whaleora'}</small>{lineSlug ? <Link href={`/products/${lineSlug}`} onClick={() => setOpen(false)}>{line.title}</Link> : line.title}<strong>{formatPrice(line.unitPrice, line.currencyCode)}</strong><div className="quantity"><button onClick={() => update(line, line.quantity - 1)} aria-label="Decrease quantity">−</button><span>{line.quantity}</span><button onClick={() => update(line, line.quantity + 1)} aria-label="Increase quantity">+</button></div><button className="remove" onClick={() => remove(line)}>Remove</button></div>
               </div>;
             })}</div>
@@ -431,7 +432,7 @@ export function ProductCard({ product, index = 0 }: { product: ShopProduct; inde
     <article className="product-card" style={{ '--accent': product.accent } as React.CSSProperties}>
       <Link href={`/products/${product.slug}`} className="product-visual">
         <small>0{index + 1} · {product.category}</small>
-        <Image src={product.images[0] || PRODUCT_IMAGE_FALLBACK} width={700} height={700} alt={product.title} sizes="(max-width: 1100px) 50vw, 25vw" />
+        <ProductImage src={product.images[0] || PRODUCT_IMAGE_FALLBACK} width={700} height={700} alt={product.title} sizes="(max-width: 1100px) 50vw, 25vw" />
         <span className="product-card-cue">View object <ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" /></span>
       </Link>
       <div className="product-meta"><div><Link href={`/products/${product.slug}`}>{product.title}</Link><small>{product.shortDescription}</small></div><strong>{formatPrice(product.price, product.currencyCode)}</strong></div>

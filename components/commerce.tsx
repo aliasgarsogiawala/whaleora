@@ -342,7 +342,7 @@ export function Header() {
         </nav>
         <div className="mobile-menu-footer">
           <Link href="/products" className="button button-primary menu-cta" onClick={() => setMenuOpen(false)}>Shop the collection <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></Link>
-          <p>Prepared, not afraid.<br />Designed in India.</p>
+          <p>Your Safety. Our Priority.<br />Designed in India.</p>
         </div>
       </div>
     </>
@@ -483,7 +483,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <section className="community-signup"><p className="eyebrow">The monthly note</p><div><h2>One email a month. No fear-mongering.</h2><form onSubmit={(event) => { event.preventDefault(); if (email) setSent(true); }}><label htmlFor="community-email">A checklist, a short read, and anything new we’ve made. Unsubscribe in one click.</label><div><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Your email address" required /><button type="submit" aria-label="Subscribe">{sent ? 'Thank you' : 'Join'} <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button></div></form></div></section>
-      <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Prepared,<br />not afraid.</p><address><strong>WhaleBeing</strong>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => policyKey(href)
+      <section className="footer-main"><div className="footer-brand"><Image src="/brand/whaleora-logo.svg" width={220} height={60} alt="Whaleora" /><p>Your Safety.<br />Our Priority.</p><address><strong>WhaleBeing</strong>Sambhaji Nagar, Thane<br />Maharashtra, India</address></div><div className="footer-links">{groups.map((group) => <div key={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => policyKey(href)
         ? <button type="button" key={label} onClick={() => setPolicy(policyKey(href))}>{label}</button>
         : <Link href={href} key={label}>{label}</Link>)}</div>)}</div></section>
       <div className="footer-bottom"><span>© 2026 Whaleora</span><div><a href="mailto:hello@whaleora.com">hello@whaleora.com</a><span className="footer-socials">{socials.map((social) => <a key={social.label} className="footer-social" href={social.href} aria-label={social.label} title={social.label} target="_blank" rel="noreferrer noopener">{social.icon}</a>)}</span></div></div>

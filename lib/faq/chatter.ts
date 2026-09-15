@@ -20,7 +20,7 @@ const LINES: { pattern: RegExp; text: string; ids?: string[] }[] = [
   {
     pattern: /\bwho(?: are|'?re| r) (?:you|u)\b(?! (guys|people|all|selling|shipping))/,
     text:
-      'A FAQ box, not a person. I match what you type to the catalogue — SOS alarm, whistle, pepper spray, window breaker, plus orders and travel rules.\n\nIf you meant the company: Whaleora is Sheuli’s, from Mumbai. “Prepared, not afraid.”',
+      'A FAQ box, not a person. I match what you type to the catalogue — SOS alarm, whistle, pepper spray, window breaker, plus orders and travel rules.\n\nIf you meant the company: Whaleora is Sheuli’s, from Mumbai. “Your Safety. Our Priority.”',
     ids: ['brand-what', 'choose-which'],
   },
   {

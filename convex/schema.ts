@@ -39,6 +39,42 @@ export default defineSchema({
     updatedAt: v.string(),
   }).index('by_namespace', ['namespace']),
 
+  /**
+   * Emergency contact cards built on the Safety Hub.
+   *
+   * `ownerKey` is the only way back to a card: the signed-in customer's
+   * normalised email, or an opaque id held in an httpOnly cookie for everyone
+   * else. It never reaches the browser, and neither does anything here — every
+   * read goes through a server action holding the shared secret.
+   *
+   * The contents are medical and locational, so nothing in this table is
+   * exposed by a public query, and only the fields the card prints are stored.
+   */
+  emergencyCards: defineTable({
+    ownerKey: v.string(),
+    // Present once the owner has signed in, so a card started anonymously can
+    // be claimed by an account later.
+    email: v.optional(v.string()),
+    emailNormalized: v.optional(v.string()),
+    accountName: v.optional(v.string()),
+    card: v.object({
+      name: v.string(),
+      blood: v.string(),
+      notes: v.string(),
+      contactOneName: v.string(),
+      contactOneRelation: v.string(),
+      contactOnePhone: v.string(),
+      contactTwoName: v.string(),
+      contactTwoRelation: v.string(),
+      contactTwoPhone: v.string(),
+      address: v.string(),
+    }),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index('by_owner', ['ownerKey'])
+    .index('by_email', ['emailNormalized']),
+
   reviews: defineTable({
     productHandle: v.string(),
     rating: v.number(),

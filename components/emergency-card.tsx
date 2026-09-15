@@ -1,17 +1,25 @@
 'use client';
 
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { clearCardAction, loadCardAction, saveCardAction } from '@/app/actions/emergency-card';
+import { blankCard, cardLimit, isCardEmpty, toCard, type CardData } from '@/lib/emergency-card';
 
 /**
  * The emergency contact card the Safety Hub has been promising as a tool.
  *
- * Everything typed here stays in this browser: the card is rendered locally,
- * saved to localStorage and printed by the device. Nothing is sent anywhere,
- * which is the whole point of a card that works when your phone does not.
+ * The card is rendered and printed by the device, and localStorage remains the
+ * copy that works with no network — the whole point of a card for when your
+ * phone does not. It is also saved to the account, keyed on the signed-in
+ * customer's email or an opaque device id, so it survives a cleared browser and
+ * follows a signed-in owner to a new device. The page says so plainly: this
+ * holds medical details and a home address, and people should not have to guess
+ * where it goes.
  */
 
 const STORAGE_KEY = 'whaleora-emergency-card';
+/** Long enough that a save is a pause in typing, short enough to feel saved. */
+const SAVE_DEBOUNCE_MS = 1200;
 
 const bloodGroups = ['A+', 'A−', 'B+', 'B−', 'AB+', 'AB−', 'O+', 'O−', 'Not known'] as const;
 
@@ -23,25 +31,7 @@ export const emergencyNumbers = [
   { label: 'Fire', number: '101' },
 ];
 
-type CardData = {
-  name: string;
-  blood: string;
-  notes: string;
-  contactOneName: string;
-  contactOneRelation: string;
-  contactOnePhone: string;
-  contactTwoName: string;
-  contactTwoRelation: string;
-  contactTwoPhone: string;
-  address: string;
-};
-
-const blank: CardData = {
-  name: '', blood: '', notes: '',
-  contactOneName: '', contactOneRelation: '', contactOnePhone: '',
-  contactTwoName: '', contactTwoRelation: '', contactTwoPhone: '',
-  address: '',
-};
+const blank = blankCard;
 
 /** Placeholder copy doubles as an example of how much detail is useful. */
 const sample: CardData = {
@@ -138,18 +128,28 @@ export function EmergencyCard() {
   const formId = useId();
   const [data, setData] = useState<CardData>(blank);
   const [restored, setRestored] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   // Restore after mount so the server and client first paint agree. Deferred
   // a microtask, matching how SafetyHubExplorer reads its own initial state.
   useEffect(() => {
     let active = true;
-    queueMicrotask(() => {
+    queueMicrotask(async () => {
       if (!active) return;
+      let local: CardData | null = null;
       try {
         const saved = window.localStorage.getItem(STORAGE_KEY);
-        if (saved) setData({ ...blank, ...(JSON.parse(saved) as Partial<CardData>) });
+        if (saved) local = toCard(JSON.parse(saved));
       } catch { /* private mode, or storage is blocked */ }
-      setRestored(true);
+      if (local && !isCardEmpty(local)) setData(local);
+
+      // The stored card wins only where the device has nothing, so a card
+      // being edited offline is never overwritten by an older saved copy.
+      try {
+        const stored = await loadCardAction();
+        if (active && stored && (!local || isCardEmpty(local))) setData(stored.card);
+      } catch { /* storage is optional; the device copy still works */ }
+      if (active) setRestored(true);
     });
     return () => { active = false; };
   }, []);
@@ -161,13 +161,36 @@ export function EmergencyCard() {
     } catch { /* nothing we can do, and nothing worth interrupting for */ }
   }, [data, restored]);
 
-  const set = (key: keyof CardData) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setData((current) => ({ ...current, [key]: event.target.value }));
+  // Saved on a pause in typing rather than every keystroke, so a card is not
+  // written to the account character by character. Driven from the edit itself
+  // rather than an effect on `data`: saving is a response to what someone
+  // typed, not state to be synchronised, and the restore below must not trigger
+  // a save of the card it just read back.
+  const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (pending.current) clearTimeout(pending.current); }, []);
 
-  const clear = () => {
-    setData(blank);
-    try { window.localStorage.removeItem(STORAGE_KEY); } catch { /* see above */ }
+  const scheduleSave = useCallback((next: CardData) => {
+    if (pending.current) clearTimeout(pending.current);
+    if (isCardEmpty(next)) return;
+    setStatus('saving');
+    pending.current = setTimeout(() => {
+      void saveCardAction(next).then((result) => setStatus(result.ok ? 'saved' : 'idle'));
+    }, SAVE_DEBOUNCE_MS);
+  }, []);
+
+  const set = (key: keyof CardData) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const next = { ...data, [key]: event.target.value.slice(0, cardLimit(key)) };
+    setData(next);
+    scheduleSave(next);
   };
+
+  const clear = useCallback(() => {
+    if (pending.current) clearTimeout(pending.current);
+    setData(blank);
+    setStatus('idle');
+    try { window.localStorage.removeItem(STORAGE_KEY); } catch { /* see above */ }
+    void clearCardAction();
+  }, []);
 
   const field = (key: keyof CardData, label: string, extra?: React.InputHTMLAttributes<HTMLInputElement>) => (
     <label className="ec-field">
@@ -188,7 +211,7 @@ export function EmergencyCard() {
       <div className="shell">
         <div className="ec-heading">
           <div>
-            <p className="eyebrow">Free tool · Nothing leaves this device</p>
+            <p className="eyebrow">Free tool · Works offline, saved so you can get it back</p>
             <h2 id={`${formId}-title`}>The card that works<br /><em>when your phone doesn’t.</em></h2>
           </div>
           <p>
@@ -235,8 +258,10 @@ export function EmergencyCard() {
             </fieldset>
 
             <p className="ec-privacy">
-              This card is built in your browser and saved only here. We never receive it, and it is
-              not sent anywhere when you print.
+              This card prints from your browser and keeps working with no signal. A copy is saved to
+              Whaleora so you can get it back if this device is lost or wiped — including the medical
+              notes, address and contacts you enter here. Signed in, it follows your account to a new
+              device. <strong>Clear</strong> deletes both copies.
             </p>
           </form>
 
@@ -255,6 +280,9 @@ export function EmergencyCard() {
               <div className="ec-actions">
                 <button type="button" className="button button-primary" onClick={() => window.print()}>Print the card <span aria-hidden="true"><ArrowRight size={16} strokeWidth={2} /></span></button>
                 <button type="button" className="ec-clear" onClick={clear}>Clear</button>
+                <span className="ec-save-state" role="status" aria-live="polite">
+                  {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : ''}
+                </span>
               </div>
             </div>
           </div>

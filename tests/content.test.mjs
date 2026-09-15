@@ -82,10 +82,17 @@ test('defaults absent override fields rather than failing', () => {
 });
 test('keeps a deliberate price and image override', () => {
   const value = fixture();
-  value.products = [{ ...sampleProduct(), price: 1499.5, images: ['/products/alarm.webp', 'https://cdn.example.com/alarm.jpg'] }];
+  value.products = [{ ...sampleProduct(), price: 1499.5, images: ['/products/alarm.webp', 'https://cdn.shopify.com/s/files/1/alarm.jpg'] }];
   const product = validateContent(value).products[0];
   assert.equal(product.price, 1499.5);
   assert.equal(product.images.length, 2);
+});
+test('rejects a product photo the image optimiser could not serve', () => {
+  // next/image answers an unlisted host with a 400 and no explanation, so the
+  // studio has to refuse the URL rather than let it reach the live site.
+  const value = fixture();
+  value.products = [{ ...sampleProduct(), images: ['https://images.unsplash.com/photo-1.jpg'] }];
+  assert.throws(() => validateContent(value), /cdn\.shopify\.com/);
 });
 test('rejects an unusable price override or image URL', () => {
   for (const price of [-1, Number.NaN, '1499']) {

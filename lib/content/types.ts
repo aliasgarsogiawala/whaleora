@@ -1,3 +1,4 @@
+import { imageHostHint, isOptimisableImage } from '../images.ts';
 export type Testimonial = { id: string; quote: string; name: string; detail: string; row: 1 | 2; visible: boolean; demo: boolean };
 export type VideoReview = { id: string; title: string; product: string; slug: string; poster: string; video: string; duration: string; visible: boolean; demo: boolean };
 /**
@@ -53,6 +54,17 @@ export function validateContent(input: unknown): ReviewContent {
     try { const url = new URL(result); if (url.protocol === 'https:' && !url.username && !url.password) return result; } catch { /* Report a field error below. */ }
     throw new Error(`${label} must be a local path or an HTTPS media URL.`);
   };
+  /**
+   * Product photos are the one media field that goes through next/image, so
+   * they are also the one field whose host has to be on the optimiser's list.
+   * Video and poster URLs stay unrestricted: both render through plain markup,
+   * which will fetch from anywhere.
+   */
+  const imageMedia = (value: unknown, label: string) => {
+    const result = media(value, label);
+    if (!isOptimisableImage(result)) throw new Error(`${label} must be a local path or an image URL on ${imageHostHint}.`);
+    return result;
+  };
   const list = (value: unknown) => { if (!Array.isArray(value) || value.length > 40) throw new Error('Each section supports up to 40 reviews.'); return value; };
   const strings = (value: unknown, label: string, maxItems: number, maxLen: number, minItems = 1) => {
     if (!Array.isArray(value) || value.length < minItems || value.length > maxItems) throw new Error(`${label} needs ${minItems}–${maxItems} entries.`);
@@ -95,7 +107,7 @@ export function validateContent(input: unknown): ReviewContent {
       title: text(entry.title, 'Product title', 80, false),
       shortDescription: text(entry.shortDescription, 'Short description', 280, false),
       longDescription: text(entry.longDescription, 'Long description', 1200, false),
-      images: Array.isArray(entry.images) ? entry.images.map((item, index) => media(item, `Product image ${index + 1}`)) : [],
+      images: Array.isArray(entry.images) ? entry.images.map((item, index) => imageMedia(item, `Product image ${index + 1}`)) : [],
       price,
       label: text(entry.label, 'Product label', 80, false),
       features: strings(entry.features, 'Feature', 8, 80),

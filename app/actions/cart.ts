@@ -55,6 +55,7 @@ async function toCartState(cart: ShopifyCart): Promise<CartState> {
       variantId: line.merchandise.id,
       handle: line.merchandise.product.handle,
       title: line.merchandise.product.title,
+      image: line.merchandise.image?.url ?? null,
       quantity: line.quantity,
       unitPrice: Number.parseFloat(line.cost.amountPerQuantity.amount),
       currencyCode: line.cost.amountPerQuantity.currencyCode,
@@ -92,8 +93,18 @@ export async function getCartAction(): Promise<CartState> {
 export async function addToCartAction(variantId: string, quantity = 1): Promise<CartState> {
   return guard(async () => {
     const cartId = await readCartId();
-    let cart = cartId ? await fetchCart(cartId) : null;
-    cart = cart ? await addLine(cart.id, variantId, quantity) : await createCart(variantId, quantity, await currentCustomerEmail());
+    // Straight to cartLinesAdd. Asking Shopify whether the cart still exists
+    // first doubled the round-trips on the hottest path in the shop, and it
+    // answers that question itself: a cart it no longer knows comes back null,
+    // and only then is a second call worth paying for.
+    if (cartId) {
+      const cart = await addLine(cartId, variantId, quantity);
+      if (cart) {
+        await writeCartId(cart.id);
+        return toCartState(cart);
+      }
+    }
+    const cart = await createCart(variantId, quantity, await currentCustomerEmail());
     await writeCartId(cart.id);
     return toCartState(cart);
   });

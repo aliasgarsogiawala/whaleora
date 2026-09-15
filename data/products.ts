@@ -184,6 +184,14 @@ export const getProduct = (slug: string) => products.find((product) => product.s
 /** Shopify handle for a product, falling back to the URL slug. */
 export const handleFor = (product: Pick<Product, 'slug' | 'shopifyHandle'>) => product.shopifyHandle ?? product.slug;
 
+/**
+ * Shown wherever a product has no photography yet — a store product added
+ * before its media, say. Every image slot needs *some* fallback, and it has to
+ * be something that belongs to no product in particular: naming a real one here
+ * means a new product silently wears another product's photo.
+ */
+export const PRODUCT_IMAGE_FALLBACK = '/brand/whaleora-logo.svg';
+
 const localeFor = (currencyCode: string) => (currencyCode === 'INR' ? 'en-IN' : 'en-US');
 
 export const formatPrice = (price: number, currencyCode = 'INR') =>

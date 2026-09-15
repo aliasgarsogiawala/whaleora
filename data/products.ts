@@ -50,9 +50,9 @@ export const products: Product[] = [
     specifications: [
       { label: 'Siren output', value: '130dB dual-siren' },
       { label: 'Lighting', value: 'Built-in emergency strobe LED' },
-      { label: 'Battery', value: 'Replaceable Lithium Ion (included)' },
+      { label: 'Battery', value: 'Chargeable Battery (C-Type USB included)' },
       { label: 'Build', value: 'Impact-resistant polymer' },
-      { label: 'Weight', value: '38 grams' },
+      { label: 'Weight', value: '28 grams' },
     ],
     howItWorks: [
       { title: 'Carry', text: 'Clip it where it stays within easy reach.' },
@@ -62,11 +62,11 @@ export const products: Product[] = [
     scenarios: ['Campus', 'Commute', 'Travel', 'Evening walks'],
     included: ['Personal SOS Alarm', 'Lithium Ion battery', 'Keychain attachment'],
     accent: '#d7673d',
-    highlights: [{ value: '130 dB', label: 'Dual siren' }, { value: '38 g', label: 'Carry weight' }, { value: 'Lithium Ion', label: 'Swap it yourself' }],
+    highlights: [{ value: '130 dB', label: 'Dual siren' }, { value: '28 g', label: 'Carry weight' }, { value: 'Chargeable Battery', label: 'Long Battery Life' }],
     compare: {
       job: 'Makes noise you cannot ignore',
       reachFor: 'Someone is following you, or you need people to look up right now',
-      power: 'Lithium Ion battery, included',
+      power: 'C-Type USB, included',
       carry: 'Keyring or bag strap',
       caveat: 'Noise draws attention. It does not stop anyone on its own.',
     },

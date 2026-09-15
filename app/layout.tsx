@@ -20,14 +20,14 @@ export const metadata: Metadata = {
   description: 'A 130dB SOS alarm, a 120dB whistle, pepper spray and a car window breaker. Honest specs and free shipping over ₹1,499 across India.',
   openGraph: {
     title: 'Whaleora — Personal safety tools that fit on a keyring',
-    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects for the way you actually move.',
+    description: 'Designed for everyday carry. Ready for unexpected moments. Whaleora makes thoughtfully designed personal safety essentials for everyday life — from a 130dB SOS alarm to a whistle, pepper spray and car window breaker.',
     images: [{ url: '/og.png', width: 1536, height: 1024, alt: 'Whaleora personal safety objects' }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Whaleora — Personal safety tools that fit on a keyring',
-    description: 'Small enough to forget. Loud enough to matter. Four everyday safety objects for the way you actually move.',
+    description: 'Designed for everyday carry. Ready for unexpected moments. Whaleora makes thoughtfully designed personal safety essentials for everyday life — from a 130dB SOS alarm to a whistle, pepper spray and car window breaker.',
     images: ['/og.png'],
   },
 };

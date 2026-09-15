@@ -58,7 +58,7 @@ export const faqs: FaqEntry[] = [
     category: 'choose',
     question: 'What’s the difference between the alarm and the whistle?',
     answer:
-      'Same job — make noise — different failure modes.\n\nThe SOS Alarm is louder (130dB vs 120dB), adds a strobe, and runs until you push the pin back in. It needs a Lithium Ion coin cell, which is included and replaceable.\n\nThe whistle needs nothing except your breath. Twelve grams, aviation-grade aluminium, nothing to charge or break. That’s why we sell them together: the alarm for when you can pull a pin; the whistle for when the battery is dead, the electronics fail, or you just want a second, silent-until-needed signal on a bag zip.',
+      'Same job — make noise — different failure modes.\n\nThe SOS Alarm is louder (130dB vs 120dB), adds a strobe, and runs until you push the pin back in. It runs on a chargeable Lithium Ion battery,required to be charged using a C-Type USB cable. \n\nThe whistle needs nothing except your breath. Twelve grams, aviation-grade aluminium, nothing to charge or break. That’s why we sell them together: the alarm for when you can pull a pin; the whistle for when the battery is dead, the electronics fail, or you just want a second, silent-until-needed signal on a bag zip.',
     keywords: ['alarm vs whistle', 'difference', 'compare alarm', 'siren vs whistle', 'both', 'instead'],
     followUps: ['choose-kit', 'alarm-how', 'whistle-how', 'care-battery'],
     links: [
@@ -125,7 +125,7 @@ export const faqs: FaqEntry[] = [
     category: 'choose',
     question: 'Why not a ₹99 alarm from a marketplace?',
     answer:
-      'Plenty of cheap alarms are labelled 130dB and deliver nothing close. Ours lists the things you can hold us to: output, weight (38g), cell type (Lithium Ion), and build. If a unit doesn’t hold up, email hello@whaleora.com — you don’t have to build a case first.\n\nWe’d rather be compared on those numbers than on a discount badge.',
+      'Plenty of cheap alarms are labelled 130dB and deliver nothing close. Ours lists the things you can hold us to: output, weight (28g), cell type (Lithium Ion), and build. If a unit doesn’t hold up, email hello@whaleora.com — you don’t have to build a case first.\n\nWe’d rather be compared on those numbers than on a discount badge.',
     keywords: ['cheap', 'amazon', 'flipkart', '99', 'duplicate', 'fake', 'why whaleora', 'quality', 'rated'],
     followUps: ['alarm-loud', 'orders-faulty', 'choose-prices'],
     links: [{ label: 'SOS Alarm specs', href: '/products/sos-alarm' }],
@@ -167,8 +167,8 @@ export const faqs: FaqEntry[] = [
     category: 'alarm',
     question: 'How big is the SOS Alarm?',
     answer:
-      '38 grams, impact-resistant polymer, compact keychain format. It is meant to live next to your keys, not in a drawer.\n\nIn the box: the alarm, a Lithium Ion battery, and a keychain attachment. Weather-resistant casing — rain on a commute is fine; it is not a dive watch.',
-    keywords: ['weight', 'size', 'heavy', 'how heavy', 'how big', '38g', '38 grams', 'small', 'keyring', 'keychain', 'compact', 'dimensions', 'weather-resistant', 'waterproof', 'rain'],
+      '28 grams, impact-resistant polymer, compact keychain format. It is meant to live next to your keys, not in a drawer.\n\nIn the box: the alarm, a C-Type charging cable, user manual, and a keychain attachment. Weather-resistant casing — rain on a commute is fine; it is not a dive watch.',
+    keywords: ['weight', 'size', 'heavy', 'how heavy', 'how big', '28g', '28 grams', 'small', 'keyring', 'keychain', 'compact', 'dimensions', 'weather-resistant', 'waterproof', 'rain'],
     followUps: ['care-battery', 'alarm-how', 'choose-kit'],
     links: [{ label: 'Personal SOS Alarm', href: '/products/sos-alarm' }],
   },
@@ -358,7 +358,7 @@ export const faqs: FaqEntry[] = [
     featured: true,
     question: 'Do the alarms need charging? What if the battery dies?',
     answer:
-      'No charging cable. The SOS Alarm runs on a replaceable Lithium Ion coin cell — the same one as a car key fob, about ₹50 at any chemist. One comes in the box. Swap it yourself; there is no service centre visit.\n\nThe whistle and the window breaker have no battery and no electronics at all, which is exactly why we sell them alongside the alarm. If the cell dies at a bad moment, you still have a 120dB breath-powered backup if you clipped one on.',
+      'The SOS Alarm runs on a chargeable Lithium Ion battery,required to be charged using a C-Type USB cable. One comes in the box. If not used one charge lasts for a month.\n\nThe whistle and the window breaker have no battery and no electronics at all, which is exactly why we sell them alongside the alarm. If the cell dies at a bad moment, you still have a 120dB breath-powered backup if you clipped one on.',
     keywords: ['battery', 'charge', 'charging', 'Lithium Ion', 'coin cell', 'dies', 'dead', 'replace battery', 'usb', 'power'],
     followUps: ['care-test', 'choose-alarm-vs-whistle', 'alarm-how'],
     links: [{ label: 'Personal SOS Alarm', href: '/products/sos-alarm' }],

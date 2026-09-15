@@ -142,7 +142,15 @@
 .emergency-card { padding-bottom: clamp(40px, 4.4vw, 66px); }
 .ec-heading { margin-bottom: clamp(30px, 3.8vw, 52px); }
 .ec-heading h2 { font-size: clamp(27px, 2.8vw, 40px); }
-.ec-board { grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr); gap: clamp(24px, 3vw, 42px); }
+/* The gap is a safe tightening at any width, but the two columns are not:
+   globals.css collapses .ec-board to one column at 1100px, and this file
+   loads after it, so an unscoped rule here reinstated the second column on
+   phones. It asks for 260px beside the form, which a phone cannot give —
+   the form and the card were crushed side by side and overflowed. */
+.ec-board { gap: clamp(24px, 3vw, 42px); }
+@media (min-width: 1101px) {
+  .ec-board { grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr); }
+}
 .ec-form { padding: 22px 22px 18px; }
 .ec-form fieldset { margin-bottom: 20px; }
 .ec-form legend { padding-bottom: 12px; }

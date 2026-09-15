@@ -3,6 +3,7 @@ import { Geist, Lora } from 'next/font/google';
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
 import { ConvexClientProvider } from '@/components/convex-provider';
 import { SiteFrame } from '@/components/site-frame';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import './card-refinements.css';
 import './review-videos.css';
@@ -40,6 +41,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <ConvexClientProvider>
             <SiteFrame>{children}</SiteFrame>
           </ConvexClientProvider>
+          {/* Cookieless page analytics. Sends nothing when running outside a
+              Vercel deployment, so local work does not report as traffic. */}
+          <Analytics />
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>
